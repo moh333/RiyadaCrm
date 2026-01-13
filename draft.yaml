@@ -1,0 +1,2121 @@
+models:
+  User:
+    table: users
+    fillable:
+      - '*'
+  Cache:
+    table: cache
+    fillable:
+      - '*'
+  Job:
+    table: jobs
+    fillable:
+      - '*'
+  Tenant:
+    table: tenants
+    fillable:
+      - '*'
+  Domain:
+    table: domains
+    fillable:
+      - '*'
+  PersonalAccessToken:
+    table: personal_access_tokens
+    fillable:
+      - '*'
+  ComVtigerWorkflowActivatedonce:
+    table: com_vtiger_workflow_activatedonce
+    fillable:
+      - '*'
+  ComVtigerWorkflowTasktypesSeq:
+    table: com_vtiger_workflow_tasktypes_seq
+    fillable:
+      - '*'
+  ComVtigerWorkflowTasktype:
+    table: com_vtiger_workflow_tasktypes
+    fillable:
+      - '*'
+  ComVtigerWorkflowsSeq:
+    table: com_vtiger_workflows_seq
+    fillable:
+      - '*'
+  ComVtigerWorkflow:
+    table: com_vtiger_workflows
+    fillable:
+      - '*'
+  ComVtigerWorkflowtaskQueue:
+    table: com_vtiger_workflowtask_queue
+    fillable:
+      - '*'
+  ComVtigerWorkflowtasksEntitymethodSeq:
+    table: com_vtiger_workflowtasks_entitymethod_seq
+    fillable:
+      - '*'
+  ComVtigerWorkflowtasksEntitymethod:
+    table: com_vtiger_workflowtasks_entitymethod
+    fillable:
+      - '*'
+  ComVtigerWorkflowtasksSeq:
+    table: com_vtiger_workflowtasks_seq
+    fillable:
+      - '*'
+  ComVtigerWorkflowtask:
+    table: com_vtiger_workflowtasks
+    fillable:
+      - '*'
+  ComVtigerWorkflowtemplate:
+    table: com_vtiger_workflowtemplates
+    fillable:
+      - '*'
+  VtigerAccount:
+    table: vtiger_account
+    fillable:
+      - '*'
+  VtigerAccountbillad:
+    table: vtiger_accountbillads
+    fillable:
+      - '*'
+  VtigerAccountrating:
+    table: vtiger_accountrating
+    fillable:
+      - '*'
+  VtigerAccountscf:
+    table: vtiger_accountscf
+    fillable:
+      - '*'
+  VtigerAccountshipad:
+    table: vtiger_accountshipads
+    fillable:
+      - '*'
+  VtigerAccounttypeSeq:
+    table: vtiger_accounttype_seq
+    fillable:
+      - '*'
+  VtigerAccounttype:
+    table: vtiger_accounttype
+    fillable:
+      - '*'
+  VtigerActionmapping:
+    table: vtiger_actionmapping
+    fillable:
+      - '*'
+  VtigerActivityRecurringInfo:
+    table: vtiger_activity_recurring_info
+    fillable:
+      - '*'
+  VtigerActivityReminderPopup:
+    table: vtiger_activity_reminder_popup
+    fillable:
+      - '*'
+  VtigerActivityReminder:
+    table: vtiger_activity_reminder
+    fillable:
+      - '*'
+  VtigerActivity:
+    table: vtiger_activity
+    fillable:
+      - '*'
+  VtigerActivityViewSeq:
+    table: vtiger_activity_view_seq
+    fillable:
+      - '*'
+  VtigerActivityView:
+    table: vtiger_activity_view
+    fillable:
+      - '*'
+  VtigerActivitycf:
+    table: vtiger_activitycf
+    fillable:
+      - '*'
+  VtigerActivityproductrel:
+    table: vtiger_activityproductrel
+    fillable:
+      - '*'
+  VtigerActivitytypeSeq:
+    table: vtiger_activitytype_seq
+    fillable:
+      - '*'
+  VtigerActivitytype:
+    table: vtiger_activitytype
+    fillable:
+      - '*'
+  VtigerAnnouncement:
+    table: vtiger_announcement
+    fillable:
+      - '*'
+  VtigerApp2tab:
+    table: vtiger_app2tab
+    fillable:
+      - '*'
+  VtigerAsset:
+    table: vtiger_assets
+    fillable:
+      - '*'
+  VtigerAssetscf:
+    table: vtiger_assetscf
+    fillable:
+      - '*'
+  VtigerAssetstatusSeq:
+    table: vtiger_assetstatus_seq
+    fillable:
+      - '*'
+  VtigerAssetstatus:
+    table: vtiger_assetstatus
+    fillable:
+      - '*'
+  VtigerAsterisk:
+    table: vtiger_asterisk
+    fillable:
+      - '*'
+  VtigerAsteriskextension:
+    table: vtiger_asteriskextensions
+    fillable:
+      - '*'
+  VtigerAsteriskincomingcall:
+    table: vtiger_asteriskincomingcalls
+    fillable:
+      - '*'
+  VtigerAsteriskincomingevent:
+    table: vtiger_asteriskincomingevents
+    fillable:
+      - '*'
+  VtigerAttachment:
+    table: vtiger_attachments
+    fillable:
+      - '*'
+  VtigerAttachmentsfolderSeq:
+    table: vtiger_attachmentsfolder_seq
+    fillable:
+      - '*'
+  VtigerAttachmentsfolder:
+    table: vtiger_attachmentsfolder
+    fillable:
+      - '*'
+  VtigerAuditTrial:
+    table: vtiger_audit_trial
+    fillable:
+      - '*'
+  VtigerBlocksSeq:
+    table: vtiger_blocks_seq
+    fillable:
+      - '*'
+  VtigerBlock:
+    table: vtiger_blocks
+    fillable:
+      - '*'
+  VtigerCalendarDefaultActivitytypesSeq:
+    table: vtiger_calendar_default_activitytypes_seq
+    fillable:
+      - '*'
+  VtigerCalendarDefaultActivitytype:
+    table: vtiger_calendar_default_activitytypes
+    fillable:
+      - '*'
+  VtigerCalendarUserActivitytypesSeq:
+    table: vtiger_calendar_user_activitytypes_seq
+    fillable:
+      - '*'
+  VtigerCalendarUserActivitytype:
+    table: vtiger_calendar_user_activitytypes
+    fillable:
+      - '*'
+  VtigerCalendarsharedtypeSeq:
+    table: vtiger_calendarsharedtype_seq
+    fillable:
+      - '*'
+  VtigerCalendarsharedtype:
+    table: vtiger_calendarsharedtype
+    fillable:
+      - '*'
+  VtigerCalldurationSeq:
+    table: vtiger_callduration_seq
+    fillable:
+      - '*'
+  VtigerCallduration:
+    table: vtiger_callduration
+    fillable:
+      - '*'
+  VtigerCampaign:
+    table: vtiger_campaign
+    fillable:
+      - '*'
+  VtigerCampaignaccountrel:
+    table: vtiger_campaignaccountrel
+    fillable:
+      - '*'
+  VtigerCampaigncontrel:
+    table: vtiger_campaigncontrel
+    fillable:
+      - '*'
+  VtigerCampaignleadrel:
+    table: vtiger_campaignleadrel
+    fillable:
+      - '*'
+  VtigerCampaignrelstatusSeq:
+    table: vtiger_campaignrelstatus_seq
+    fillable:
+      - '*'
+  VtigerCampaignrelstatus:
+    table: vtiger_campaignrelstatus
+    fillable:
+      - '*'
+  VtigerCampaignscf:
+    table: vtiger_campaignscf
+    fillable:
+      - '*'
+  VtigerCampaignstatusSeq:
+    table: vtiger_campaignstatus_seq
+    fillable:
+      - '*'
+  VtigerCampaignstatus:
+    table: vtiger_campaignstatus
+    fillable:
+      - '*'
+  VtigerCampaigntypeSeq:
+    table: vtiger_campaigntype_seq
+    fillable:
+      - '*'
+  VtigerCampaigntype:
+    table: vtiger_campaigntype
+    fillable:
+      - '*'
+  VtigerCarrierSeq:
+    table: vtiger_carrier_seq
+    fillable:
+      - '*'
+  VtigerCarrier:
+    table: vtiger_carrier
+    fillable:
+      - '*'
+  VtigerCntactivityrel:
+    table: vtiger_cntactivityrel
+    fillable:
+      - '*'
+  VtigerContactaddress:
+    table: vtiger_contactaddress
+    fillable:
+      - '*'
+  VtigerContactdetail:
+    table: vtiger_contactdetails
+    fillable:
+      - '*'
+  VtigerContactscf:
+    table: vtiger_contactscf
+    fillable:
+      - '*'
+  VtigerContactsubdetail:
+    table: vtiger_contactsubdetails
+    fillable:
+      - '*'
+  VtigerContpotentialrel:
+    table: vtiger_contpotentialrel
+    fillable:
+      - '*'
+  VtigerContractPrioritySeq:
+    table: vtiger_contract_priority_seq
+    fillable:
+      - '*'
+  VtigerContractPriority:
+    table: vtiger_contract_priority
+    fillable:
+      - '*'
+  VtigerContractStatusSeq:
+    table: vtiger_contract_status_seq
+    fillable:
+      - '*'
+  VtigerContractStatus:
+    table: vtiger_contract_status
+    fillable:
+      - '*'
+  VtigerContractTypeSeq:
+    table: vtiger_contract_type_seq
+    fillable:
+      - '*'
+  VtigerContractType:
+    table: vtiger_contract_type
+    fillable:
+      - '*'
+  VtigerConvertleadmapping:
+    table: vtiger_convertleadmapping
+    fillable:
+      - '*'
+  VtigerConvertpotentialmapping:
+    table: vtiger_convertpotentialmapping
+    fillable:
+      - '*'
+  VtigerCrmentitySeq:
+    table: vtiger_crmentity_seq
+    fillable:
+      - '*'
+  VtigerCrmentity:
+    table: vtiger_crmentity
+    fillable:
+      - '*'
+  VtigerCrmentityUserField:
+    table: vtiger_crmentity_user_field
+    fillable:
+      - '*'
+  VtigerCrmentityrel:
+    table: vtiger_crmentityrel
+    fillable:
+      - '*'
+  VtigerCrmsetup:
+    table: vtiger_crmsetup
+    fillable:
+      - '*'
+  VtigerCronTask:
+    table: vtiger_cron_task
+    fillable:
+      - '*'
+  VtigerCurrenciesSeq:
+    table: vtiger_currencies_seq
+    fillable:
+      - '*'
+  VtigerCurrency:
+    table: vtiger_currency
+    fillable:
+      - '*'
+  VtigerCurrencyDecimalSeparatorSeq:
+    table: vtiger_currency_decimal_separator_seq
+    fillable:
+      - '*'
+  VtigerCurrencyDecimalSeparator:
+    table: vtiger_currency_decimal_separator
+    fillable:
+      - '*'
+  VtigerCurrencyGroupingPatternSeq:
+    table: vtiger_currency_grouping_pattern_seq
+    fillable:
+      - '*'
+  VtigerCurrencyGroupingPattern:
+    table: vtiger_currency_grouping_pattern
+    fillable:
+      - '*'
+  VtigerCurrencyGroupingSeparatorSeq:
+    table: vtiger_currency_grouping_separator_seq
+    fillable:
+      - '*'
+  VtigerCurrencyGroupingSeparator:
+    table: vtiger_currency_grouping_separator
+    fillable:
+      - '*'
+  VtigerCurrencyInfoSeq:
+    table: vtiger_currency_info_seq
+    fillable:
+      - '*'
+  VtigerCurrencyInfo:
+    table: vtiger_currency_info
+    fillable:
+      - '*'
+  VtigerCurrencySymbolPlacementSeq:
+    table: vtiger_currency_symbol_placement_seq
+    fillable:
+      - '*'
+  VtigerCurrencySymbolPlacement:
+    table: vtiger_currency_symbol_placement
+    fillable:
+      - '*'
+  VtigerCustomaction:
+    table: vtiger_customaction
+    fillable:
+      - '*'
+  VtigerCustomerdetail:
+    table: vtiger_customerdetails
+    fillable:
+      - '*'
+  VtigerCustomerportalField:
+    table: vtiger_customerportal_fields
+    fillable:
+      - '*'
+  VtigerCustomerportalPref:
+    table: vtiger_customerportal_prefs
+    fillable:
+      - '*'
+  VtigerCustomerportalRelatedmoduleinfo:
+    table: vtiger_customerportal_relatedmoduleinfo
+    fillable:
+      - '*'
+  VtigerCustomerportalSetting:
+    table: vtiger_customerportal_settings
+    fillable:
+      - '*'
+  VtigerCustomerportalTab:
+    table: vtiger_customerportal_tabs
+    fillable:
+      - '*'
+  VtigerCustomviewSeq:
+    table: vtiger_customview_seq
+    fillable:
+      - '*'
+  VtigerCustomview:
+    table: vtiger_customview
+    fillable:
+      - '*'
+  VtigerCv2group:
+    table: vtiger_cv2group
+    fillable:
+      - '*'
+  VtigerCv2role:
+    table: vtiger_cv2role
+    fillable:
+      - '*'
+  VtigerCv2r:
+    table: vtiger_cv2rs
+    fillable:
+      - '*'
+  VtigerCv2user:
+    table: vtiger_cv2users
+    fillable:
+      - '*'
+  VtigerCvadvfilterGrouping:
+    table: vtiger_cvadvfilter_grouping
+    fillable:
+      - '*'
+  VtigerCvadvfilter:
+    table: vtiger_cvadvfilter
+    fillable:
+      - '*'
+  VtigerCvcolumnlist:
+    table: vtiger_cvcolumnlist
+    fillable:
+      - '*'
+  VtigerCvstdfilter:
+    table: vtiger_cvstdfilter
+    fillable:
+      - '*'
+  VtigerDashboardTab:
+    table: vtiger_dashboard_tabs
+    fillable:
+      - '*'
+  VtigerDatashareGrp2grp:
+    table: vtiger_datashare_grp2grp
+    fillable:
+      - '*'
+  VtigerDatashareGrp2role:
+    table: vtiger_datashare_grp2role
+    fillable:
+      - '*'
+  VtigerDatashareGrp2r:
+    table: vtiger_datashare_grp2rs
+    fillable:
+      - '*'
+  VtigerDatashareModuleRel:
+    table: vtiger_datashare_module_rel
+    fillable:
+      - '*'
+  VtigerDatashareRelatedmodulePermission:
+    table: vtiger_datashare_relatedmodule_permission
+    fillable:
+      - '*'
+  VtigerDatashareRelatedmodulesSeq:
+    table: vtiger_datashare_relatedmodules_seq
+    fillable:
+      - '*'
+  VtigerDatashareRelatedmodule:
+    table: vtiger_datashare_relatedmodules
+    fillable:
+      - '*'
+  VtigerDatashareRole2group:
+    table: vtiger_datashare_role2group
+    fillable:
+      - '*'
+  VtigerDatashareRole2role:
+    table: vtiger_datashare_role2role
+    fillable:
+      - '*'
+  VtigerDatashareRole2r:
+    table: vtiger_datashare_role2rs
+    fillable:
+      - '*'
+  VtigerDatashareRs2grp:
+    table: vtiger_datashare_rs2grp
+    fillable:
+      - '*'
+  VtigerDatashareRs2role:
+    table: vtiger_datashare_rs2role
+    fillable:
+      - '*'
+  VtigerDatashareRs2r:
+    table: vtiger_datashare_rs2rs
+    fillable:
+      - '*'
+  VtigerDateFormatSeq:
+    table: vtiger_date_format_seq
+    fillable:
+      - '*'
+  VtigerDateFormat:
+    table: vtiger_date_format
+    fillable:
+      - '*'
+  VtigerDayoftheweekSeq:
+    table: vtiger_dayoftheweek_seq
+    fillable:
+      - '*'
+  VtigerDayoftheweek:
+    table: vtiger_dayoftheweek
+    fillable:
+      - '*'
+  VtigerDefOrgField:
+    table: vtiger_def_org_field
+    fillable:
+      - '*'
+  VtigerDefOrgShareSeq:
+    table: vtiger_def_org_share_seq
+    fillable:
+      - '*'
+  VtigerDefOrgShare:
+    table: vtiger_def_org_share
+    fillable:
+      - '*'
+  VtigerDefaultRecordViewSeq:
+    table: vtiger_default_record_view_seq
+    fillable:
+      - '*'
+  VtigerDefaultRecordView:
+    table: vtiger_default_record_view
+    fillable:
+      - '*'
+  VtigerDefaultactivitytypeSeq:
+    table: vtiger_defaultactivitytype_seq
+    fillable:
+      - '*'
+  VtigerDefaultactivitytype:
+    table: vtiger_defaultactivitytype
+    fillable:
+      - '*'
+  VtigerDefaultcalendarviewSeq:
+    table: vtiger_defaultcalendarview_seq
+    fillable:
+      - '*'
+  VtigerDefaultcalendarview:
+    table: vtiger_defaultcalendarview
+    fillable:
+      - '*'
+  VtigerDefaultcv:
+    table: vtiger_defaultcv
+    fillable:
+      - '*'
+  VtigerDefaulteventstatusSeq:
+    table: vtiger_defaulteventstatus_seq
+    fillable:
+      - '*'
+  VtigerDefaulteventstatus:
+    table: vtiger_defaulteventstatus
+    fillable:
+      - '*'
+  VtigerDefaultlandingpageSeq:
+    table: vtiger_defaultlandingpage_seq
+    fillable:
+      - '*'
+  VtigerDefaultlandingpage:
+    table: vtiger_defaultlandingpage
+    fillable:
+      - '*'
+  VtigerDurationMinutesSeq:
+    table: vtiger_duration_minutes_seq
+    fillable:
+      - '*'
+  VtigerDurationMinute:
+    table: vtiger_duration_minutes
+    fillable:
+      - '*'
+  VtigerDurationhr:
+    table: vtiger_durationhrs
+    fillable:
+      - '*'
+  VtigerDurationmin:
+    table: vtiger_durationmins
+    fillable:
+      - '*'
+  VtigerEmailAccess:
+    table: vtiger_email_access
+    fillable:
+      - '*'
+  VtigerEmailTrack:
+    table: vtiger_email_track
+    fillable:
+      - '*'
+  VtigerEmaildetail:
+    table: vtiger_emaildetails
+    fillable:
+      - '*'
+  VtigerEmailsRecipientpref:
+    table: vtiger_emails_recipientprefs
+    fillable:
+      - '*'
+  VtigerEmailslookup:
+    table: vtiger_emailslookup
+    fillable:
+      - '*'
+  VtigerEmailtemplatesSeq:
+    table: vtiger_emailtemplates_seq
+    fillable:
+      - '*'
+  VtigerEmailtemplate:
+    table: vtiger_emailtemplates
+    fillable:
+      - '*'
+  VtigerEntityname:
+    table: vtiger_entityname
+    fillable:
+      - '*'
+  VtigerEventhandlerModuleSeq:
+    table: vtiger_eventhandler_module_seq
+    fillable:
+      - '*'
+  VtigerEventhandlerModule:
+    table: vtiger_eventhandler_module
+    fillable:
+      - '*'
+  VtigerEventhandlersSeq:
+    table: vtiger_eventhandlers_seq
+    fillable:
+      - '*'
+  VtigerEventhandler:
+    table: vtiger_eventhandlers
+    fillable:
+      - '*'
+  VtigerEventstatusSeq:
+    table: vtiger_eventstatus_seq
+    fillable:
+      - '*'
+  VtigerEventstatus:
+    table: vtiger_eventstatus
+    fillable:
+      - '*'
+  VtigerExpectedresponseSeq:
+    table: vtiger_expectedresponse_seq
+    fillable:
+      - '*'
+  VtigerExpectedresponse:
+    table: vtiger_expectedresponse
+    fillable:
+      - '*'
+  VtigerExtnstoreUser:
+    table: vtiger_extnstore_users
+    fillable:
+      - '*'
+  VtigerFaq:
+    table: vtiger_faq
+    fillable:
+      - '*'
+  VtigerFaqcategoriesSeq:
+    table: vtiger_faqcategories_seq
+    fillable:
+      - '*'
+  VtigerFaqcategory:
+    table: vtiger_faqcategories
+    fillable:
+      - '*'
+  VtigerFaqcf:
+    table: vtiger_faqcf
+    fillable:
+      - '*'
+  VtigerFaqcomment:
+    table: vtiger_faqcomments
+    fillable:
+      - '*'
+  VtigerFaqstatusSeq:
+    table: vtiger_faqstatus_seq
+    fillable:
+      - '*'
+  VtigerFaqstatus:
+    table: vtiger_faqstatus
+    fillable:
+      - '*'
+  VtigerFeedback:
+    table: vtiger_feedback
+    fillable:
+      - '*'
+  VtigerFieldSeq:
+    table: vtiger_field_seq
+    fillable:
+      - '*'
+  VtigerField:
+    table: vtiger_field
+    fillable:
+      - '*'
+  VtigerFieldmodulerel:
+    table: vtiger_fieldmodulerel
+    fillable:
+      - '*'
+  VtigerFreetaggedObject:
+    table: vtiger_freetagged_objects
+    fillable:
+      - '*'
+  VtigerFreetagsSeq:
+    table: vtiger_freetags_seq
+    fillable:
+      - '*'
+  VtigerFreetag:
+    table: vtiger_freetags
+    fillable:
+      - '*'
+  VtigerGlacctSeq:
+    table: vtiger_glacct_seq
+    fillable:
+      - '*'
+  VtigerGlacct:
+    table: vtiger_glacct
+    fillable:
+      - '*'
+  VtigerGoogleEventCalendarMapping:
+    table: vtiger_google_event_calendar_mapping
+    fillable:
+      - '*'
+  VtigerGoogleOauth2:
+    table: vtiger_google_oauth2
+    fillable:
+      - '*'
+  VtigerGoogleSyncFieldmapping:
+    table: vtiger_google_sync_fieldmapping
+    fillable:
+      - '*'
+  VtigerGoogleSyncSetting:
+    table: vtiger_google_sync_settings
+    fillable:
+      - '*'
+  VtigerGroup2grouprel:
+    table: vtiger_group2grouprel
+    fillable:
+      - '*'
+  VtigerGroup2role:
+    table: vtiger_group2role
+    fillable:
+      - '*'
+  VtigerGroup2r:
+    table: vtiger_group2rs
+    fillable:
+      - '*'
+  VtigerGroup:
+    table: vtiger_groups
+    fillable:
+      - '*'
+  VtigerHomeLayout:
+    table: vtiger_home_layout
+    fillable:
+      - '*'
+  VtigerHomedashbd:
+    table: vtiger_homedashbd
+    fillable:
+      - '*'
+  VtigerHomedefault:
+    table: vtiger_homedefault
+    fillable:
+      - '*'
+  VtigerHomemodule:
+    table: vtiger_homemodule
+    fillable:
+      - '*'
+  VtigerHomemodulefld:
+    table: vtiger_homemoduleflds
+    fillable:
+      - '*'
+  VtigerHomereportchart:
+    table: vtiger_homereportchart
+    fillable:
+      - '*'
+  VtigerHomerss:
+    table: vtiger_homerss
+    fillable:
+      - '*'
+  VtigerHomestuffSeq:
+    table: vtiger_homestuff_seq
+    fillable:
+      - '*'
+  VtigerHomestuff:
+    table: vtiger_homestuff
+    fillable:
+      - '*'
+  VtigerHourFormatSeq:
+    table: vtiger_hour_format_seq
+    fillable:
+      - '*'
+  VtigerHourFormat:
+    table: vtiger_hour_format
+    fillable:
+      - '*'
+  VtigerImportLock:
+    table: vtiger_import_locks
+    fillable:
+      - '*'
+  VtigerImportMap:
+    table: vtiger_import_maps
+    fillable:
+      - '*'
+  VtigerImportQueue:
+    table: vtiger_import_queue
+    fillable:
+      - '*'
+  VtigerIndustrySeq:
+    table: vtiger_industry_seq
+    fillable:
+      - '*'
+  VtigerIndustry:
+    table: vtiger_industry
+    fillable:
+      - '*'
+  VtigerInventoryTandcSeq:
+    table: vtiger_inventory_tandc_seq
+    fillable:
+      - '*'
+  VtigerInventoryTandc:
+    table: vtiger_inventory_tandc
+    fillable:
+      - '*'
+  VtigerInventorycharge:
+    table: vtiger_inventorycharges
+    fillable:
+      - '*'
+  VtigerInventorychargesrel:
+    table: vtiger_inventorychargesrel
+    fillable:
+      - '*'
+  VtigerInventorynotificationSeq:
+    table: vtiger_inventorynotification_seq
+    fillable:
+      - '*'
+  VtigerInventorynotification:
+    table: vtiger_inventorynotification
+    fillable:
+      - '*'
+  VtigerInventoryproductrelSeq:
+    table: vtiger_inventoryproductrel_seq
+    fillable:
+      - '*'
+  VtigerInventoryproductrel:
+    table: vtiger_inventoryproductrel
+    fillable:
+      - '*'
+  VtigerInventoryshippingrel:
+    table: vtiger_inventoryshippingrel
+    fillable:
+      - '*'
+  VtigerInventorysubproductrel:
+    table: vtiger_inventorysubproductrel
+    fillable:
+      - '*'
+  VtigerInventorytaxinfoSeq:
+    table: vtiger_inventorytaxinfo_seq
+    fillable:
+      - '*'
+  VtigerInventorytaxinfo:
+    table: vtiger_inventorytaxinfo
+    fillable:
+      - '*'
+  VtigerInvitee:
+    table: vtiger_invitees
+    fillable:
+      - '*'
+  VtigerInvoiceRecurringInfo:
+    table: vtiger_invoice_recurring_info
+    fillable:
+      - '*'
+  VtigerInvoice:
+    table: vtiger_invoice
+    fillable:
+      - '*'
+  VtigerInvoicebillad:
+    table: vtiger_invoicebillads
+    fillable:
+      - '*'
+  VtigerInvoicecf:
+    table: vtiger_invoicecf
+    fillable:
+      - '*'
+  VtigerInvoiceshipad:
+    table: vtiger_invoiceshipads
+    fillable:
+      - '*'
+  VtigerInvoicestatusSeq:
+    table: vtiger_invoicestatus_seq
+    fillable:
+      - '*'
+  VtigerInvoicestatus:
+    table: vtiger_invoicestatus
+    fillable:
+      - '*'
+  VtigerInvoicestatushistory:
+    table: vtiger_invoicestatushistory
+    fillable:
+      - '*'
+  VtigerLanguageSeq:
+    table: vtiger_language_seq
+    fillable:
+      - '*'
+  VtigerLanguage:
+    table: vtiger_language
+    fillable:
+      - '*'
+  VtigerLeadViewSeq:
+    table: vtiger_lead_view_seq
+    fillable:
+      - '*'
+  VtigerLeadView:
+    table: vtiger_lead_view
+    fillable:
+      - '*'
+  VtigerLeadaddress:
+    table: vtiger_leadaddress
+    fillable:
+      - '*'
+  VtigerLeaddetail:
+    table: vtiger_leaddetails
+    fillable:
+      - '*'
+  VtigerLeadscf:
+    table: vtiger_leadscf
+    fillable:
+      - '*'
+  VtigerLeadsourceSeq:
+    table: vtiger_leadsource_seq
+    fillable:
+      - '*'
+  VtigerLeadsource:
+    table: vtiger_leadsource
+    fillable:
+      - '*'
+  VtigerLeadstage:
+    table: vtiger_leadstage
+    fillable:
+      - '*'
+  VtigerLeadstatusSeq:
+    table: vtiger_leadstatus_seq
+    fillable:
+      - '*'
+  VtigerLeadstatus:
+    table: vtiger_leadstatus
+    fillable:
+      - '*'
+  VtigerLeadsubdetail:
+    table: vtiger_leadsubdetails
+    fillable:
+      - '*'
+  VtigerLinksSeq:
+    table: vtiger_links_seq
+    fillable:
+      - '*'
+  VtigerLink:
+    table: vtiger_links
+    fillable:
+      - '*'
+  VtigerLoginhistory:
+    table: vtiger_loginhistory
+    fillable:
+      - '*'
+  VtigerMailAccount:
+    table: vtiger_mail_accounts
+    fillable:
+      - '*'
+  VtigerMailerQueue:
+    table: vtiger_mailer_queue
+    fillable:
+      - '*'
+  VtigerMailerQueueattachment:
+    table: vtiger_mailer_queueattachments
+    fillable:
+      - '*'
+  VtigerMailerQueueinfo:
+    table: vtiger_mailer_queueinfo
+    fillable:
+      - '*'
+  VtigerMailmanagerMailattachment:
+    table: vtiger_mailmanager_mailattachments
+    fillable:
+      - '*'
+  VtigerMailmanagerMailrecord:
+    table: vtiger_mailmanager_mailrecord
+    fillable:
+      - '*'
+  VtigerMailmanagerMailrel:
+    table: vtiger_mailmanager_mailrel
+    fillable:
+      - '*'
+  VtigerMailscannerAction:
+    table: vtiger_mailscanner_actions
+    fillable:
+      - '*'
+  VtigerMailscannerFolder:
+    table: vtiger_mailscanner_folders
+    fillable:
+      - '*'
+  VtigerMailscannerId:
+    table: vtiger_mailscanner_ids
+    fillable:
+      - '*'
+  VtigerMailscannerRuleaction:
+    table: vtiger_mailscanner_ruleactions
+    fillable:
+      - '*'
+  VtigerMailscannerRule:
+    table: vtiger_mailscanner_rules
+    fillable:
+      - '*'
+  VtigerMailscanner:
+    table: vtiger_mailscanner
+    fillable:
+      - '*'
+  VtigerManufacturerSeq:
+    table: vtiger_manufacturer_seq
+    fillable:
+      - '*'
+  VtigerManufacturer:
+    table: vtiger_manufacturer
+    fillable:
+      - '*'
+  VtigerMobileAlert:
+    table: vtiger_mobile_alerts
+    fillable:
+      - '*'
+  VtigerModcomment:
+    table: vtiger_modcomments
+    fillable:
+      - '*'
+  VtigerModcommentscf:
+    table: vtiger_modcommentscf
+    fillable:
+      - '*'
+  VtigerModentityNumSeq:
+    table: vtiger_modentity_num_seq
+    fillable:
+      - '*'
+  VtigerModentityNum:
+    table: vtiger_modentity_num
+    fillable:
+      - '*'
+  VtigerModtrackerBasicSeq:
+    table: vtiger_modtracker_basic_seq
+    fillable:
+      - '*'
+  VtigerModtrackerBasic:
+    table: vtiger_modtracker_basic
+    fillable:
+      - '*'
+  VtigerModtrackerDetail:
+    table: vtiger_modtracker_detail
+    fillable:
+      - '*'
+  VtigerModtrackerRelation:
+    table: vtiger_modtracker_relations
+    fillable:
+      - '*'
+  VtigerModtrackerTab:
+    table: vtiger_modtracker_tabs
+    fillable:
+      - '*'
+  VtigerModuleDashboardWidget:
+    table: vtiger_module_dashboard_widgets
+    fillable:
+      - '*'
+  VtigerNoOfCurrencyDecimalsSeq:
+    table: vtiger_no_of_currency_decimals_seq
+    fillable:
+      - '*'
+  VtigerNoOfCurrencyDecimal:
+    table: vtiger_no_of_currency_decimals
+    fillable:
+      - '*'
+  VtigerNotebookContent:
+    table: vtiger_notebook_contents
+    fillable:
+      - '*'
+  VtigerNote:
+    table: vtiger_notes
+    fillable:
+      - '*'
+  VtigerNotescf:
+    table: vtiger_notescf
+    fillable:
+      - '*'
+  VtigerNotificationschedulerSeq:
+    table: vtiger_notificationscheduler_seq
+    fillable:
+      - '*'
+  VtigerNotificationscheduler:
+    table: vtiger_notificationscheduler
+    fillable:
+      - '*'
+  VtigerOpportunityTypeSeq:
+    table: vtiger_opportunity_type_seq
+    fillable:
+      - '*'
+  VtigerOpportunityType:
+    table: vtiger_opportunity_type
+    fillable:
+      - '*'
+  VtigerOpportunitystage:
+    table: vtiger_opportunitystage
+    fillable:
+      - '*'
+  VtigerOrgShareAction2tab:
+    table: vtiger_org_share_action2tab
+    fillable:
+      - '*'
+  VtigerOrgShareActionMapping:
+    table: vtiger_org_share_action_mapping
+    fillable:
+      - '*'
+  VtigerOrganizationdetailsSeq:
+    table: vtiger_organizationdetails_seq
+    fillable:
+      - '*'
+  VtigerOrganizationdetail:
+    table: vtiger_organizationdetails
+    fillable:
+      - '*'
+  VtigerOthereventdurationSeq:
+    table: vtiger_othereventduration_seq
+    fillable:
+      - '*'
+  VtigerOthereventduration:
+    table: vtiger_othereventduration
+    fillable:
+      - '*'
+  VtigerParenttab:
+    table: vtiger_parenttab
+    fillable:
+      - '*'
+  VtigerParenttabrel:
+    table: vtiger_parenttabrel
+    fillable:
+      - '*'
+  VtigerPaymentDurationSeq:
+    table: vtiger_payment_duration_seq
+    fillable:
+      - '*'
+  VtigerPaymentDuration:
+    table: vtiger_payment_duration
+    fillable:
+      - '*'
+  VtigerPbxmanagerGateway:
+    table: vtiger_pbxmanager_gateway
+    fillable:
+      - '*'
+  VtigerPbxmanagerPhonelookup:
+    table: vtiger_pbxmanager_phonelookup
+    fillable:
+      - '*'
+  VtigerPbxmanager:
+    table: vtiger_pbxmanager
+    fillable:
+      - '*'
+  VtigerPbxmanagercf:
+    table: vtiger_pbxmanagercf
+    fillable:
+      - '*'
+  VtigerPicklistDependency:
+    table: vtiger_picklist_dependency
+    fillable:
+      - '*'
+  VtigerPicklistSeq:
+    table: vtiger_picklist_seq
+    fillable:
+      - '*'
+  VtigerPicklist:
+    table: vtiger_picklist
+    fillable:
+      - '*'
+  VtigerPicklistTransition:
+    table: vtiger_picklist_transitions
+    fillable:
+      - '*'
+  VtigerPicklistvaluesSeq:
+    table: vtiger_picklistvalues_seq
+    fillable:
+      - '*'
+  VtigerPobillad:
+    table: vtiger_pobillads
+    fillable:
+      - '*'
+  VtigerPortal:
+    table: vtiger_portal
+    fillable:
+      - '*'
+  VtigerPortalinfo:
+    table: vtiger_portalinfo
+    fillable:
+      - '*'
+  VtigerPoshipad:
+    table: vtiger_poshipads
+    fillable:
+      - '*'
+  VtigerPostatusSeq:
+    table: vtiger_postatus_seq
+    fillable:
+      - '*'
+  VtigerPostatus:
+    table: vtiger_postatus
+    fillable:
+      - '*'
+  VtigerPostatushistory:
+    table: vtiger_postatushistory
+    fillable:
+      - '*'
+  VtigerPotential:
+    table: vtiger_potential
+    fillable:
+      - '*'
+  VtigerPotentialscf:
+    table: vtiger_potentialscf
+    fillable:
+      - '*'
+  VtigerPotstagehistory:
+    table: vtiger_potstagehistory
+    fillable:
+      - '*'
+  VtigerPricebook:
+    table: vtiger_pricebook
+    fillable:
+      - '*'
+  VtigerPricebookcf:
+    table: vtiger_pricebookcf
+    fillable:
+      - '*'
+  VtigerPricebookproductrel:
+    table: vtiger_pricebookproductrel
+    fillable:
+      - '*'
+  VtigerPriority:
+    table: vtiger_priority
+    fillable:
+      - '*'
+  VtigerProductcategorySeq:
+    table: vtiger_productcategory_seq
+    fillable:
+      - '*'
+  VtigerProductcategory:
+    table: vtiger_productcategory
+    fillable:
+      - '*'
+  VtigerProductcf:
+    table: vtiger_productcf
+    fillable:
+      - '*'
+  VtigerProductcurrencyrel:
+    table: vtiger_productcurrencyrel
+    fillable:
+      - '*'
+  VtigerProduct:
+    table: vtiger_products
+    fillable:
+      - '*'
+  VtigerProducttaxrel:
+    table: vtiger_producttaxrel
+    fillable:
+      - '*'
+  VtigerProfile2field:
+    table: vtiger_profile2field
+    fillable:
+      - '*'
+  VtigerProfile2globalpermission:
+    table: vtiger_profile2globalpermissions
+    fillable:
+      - '*'
+  VtigerProfile2standardpermission:
+    table: vtiger_profile2standardpermissions
+    fillable:
+      - '*'
+  VtigerProfile2tab:
+    table: vtiger_profile2tab
+    fillable:
+      - '*'
+  VtigerProfile2utility:
+    table: vtiger_profile2utility
+    fillable:
+      - '*'
+  VtigerProfileSeq:
+    table: vtiger_profile_seq
+    fillable:
+      - '*'
+  VtigerProfile:
+    table: vtiger_profile
+    fillable:
+      - '*'
+  VtigerProgressSeq:
+    table: vtiger_progress_seq
+    fillable:
+      - '*'
+  VtigerProgress:
+    table: vtiger_progress
+    fillable:
+      - '*'
+  VtigerProject:
+    table: vtiger_project
+    fillable:
+      - '*'
+  VtigerProjectcf:
+    table: vtiger_projectcf
+    fillable:
+      - '*'
+  VtigerProjectmilestone:
+    table: vtiger_projectmilestone
+    fillable:
+      - '*'
+  VtigerProjectmilestonecf:
+    table: vtiger_projectmilestonecf
+    fillable:
+      - '*'
+  VtigerProjectmilestonetypeSeq:
+    table: vtiger_projectmilestonetype_seq
+    fillable:
+      - '*'
+  VtigerProjectmilestonetype:
+    table: vtiger_projectmilestonetype
+    fillable:
+      - '*'
+  VtigerProjectprioritySeq:
+    table: vtiger_projectpriority_seq
+    fillable:
+      - '*'
+  VtigerProjectpriority:
+    table: vtiger_projectpriority
+    fillable:
+      - '*'
+  VtigerProjectstatusSeq:
+    table: vtiger_projectstatus_seq
+    fillable:
+      - '*'
+  VtigerProjectstatus:
+    table: vtiger_projectstatus
+    fillable:
+      - '*'
+  VtigerProjecttaskStatusColor:
+    table: vtiger_projecttask_status_color
+    fillable:
+      - '*'
+  VtigerProjecttask:
+    table: vtiger_projecttask
+    fillable:
+      - '*'
+  VtigerProjecttaskcf:
+    table: vtiger_projecttaskcf
+    fillable:
+      - '*'
+  VtigerProjecttaskprioritySeq:
+    table: vtiger_projecttaskpriority_seq
+    fillable:
+      - '*'
+  VtigerProjecttaskpriority:
+    table: vtiger_projecttaskpriority
+    fillable:
+      - '*'
+  VtigerProjecttaskprogressSeq:
+    table: vtiger_projecttaskprogress_seq
+    fillable:
+      - '*'
+  VtigerProjecttaskprogress:
+    table: vtiger_projecttaskprogress
+    fillable:
+      - '*'
+  VtigerProjecttaskstatusSeq:
+    table: vtiger_projecttaskstatus_seq
+    fillable:
+      - '*'
+  VtigerProjecttaskstatus:
+    table: vtiger_projecttaskstatus
+    fillable:
+      - '*'
+  VtigerProjecttasktypeSeq:
+    table: vtiger_projecttasktype_seq
+    fillable:
+      - '*'
+  VtigerProjecttasktype:
+    table: vtiger_projecttasktype
+    fillable:
+      - '*'
+  VtigerProjecttypeSeq:
+    table: vtiger_projecttype_seq
+    fillable:
+      - '*'
+  VtigerProjecttype:
+    table: vtiger_projecttype
+    fillable:
+      - '*'
+  VtigerPurchaseorder:
+    table: vtiger_purchaseorder
+    fillable:
+      - '*'
+  VtigerPurchaseordercf:
+    table: vtiger_purchaseordercf
+    fillable:
+      - '*'
+  VtigerQuote:
+    table: vtiger_quotes
+    fillable:
+      - '*'
+  VtigerQuotesbillad:
+    table: vtiger_quotesbillads
+    fillable:
+      - '*'
+  VtigerQuotescf:
+    table: vtiger_quotescf
+    fillable:
+      - '*'
+  VtigerQuotesshipad:
+    table: vtiger_quotesshipads
+    fillable:
+      - '*'
+  VtigerQuotestageSeq:
+    table: vtiger_quotestage_seq
+    fillable:
+      - '*'
+  VtigerQuotestage:
+    table: vtiger_quotestage
+    fillable:
+      - '*'
+  VtigerQuotestagehistory:
+    table: vtiger_quotestagehistory
+    fillable:
+      - '*'
+  VtigerRatingSeq:
+    table: vtiger_rating_seq
+    fillable:
+      - '*'
+  VtigerRating:
+    table: vtiger_rating
+    fillable:
+      - '*'
+  VtigerRecurringFrequencySeq:
+    table: vtiger_recurring_frequency_seq
+    fillable:
+      - '*'
+  VtigerRecurringFrequency:
+    table: vtiger_recurring_frequency
+    fillable:
+      - '*'
+  VtigerRecurringevent:
+    table: vtiger_recurringevents
+    fillable:
+      - '*'
+  VtigerRecurringtypeSeq:
+    table: vtiger_recurringtype_seq
+    fillable:
+      - '*'
+  VtigerRecurringtype:
+    table: vtiger_recurringtype
+    fillable:
+      - '*'
+  VtigerRelatedlistsRb:
+    table: vtiger_relatedlists_rb
+    fillable:
+      - '*'
+  VtigerRelatedlistsSeq:
+    table: vtiger_relatedlists_seq
+    fillable:
+      - '*'
+  VtigerRelatedlist:
+    table: vtiger_relatedlists
+    fillable:
+      - '*'
+  VtigerRelcriteriaGrouping:
+    table: vtiger_relcriteria_grouping
+    fillable:
+      - '*'
+  VtigerRelcriterion:
+    table: vtiger_relcriteria
+    fillable:
+      - '*'
+  VtigerReminderIntervalSeq:
+    table: vtiger_reminder_interval_seq
+    fillable:
+      - '*'
+  VtigerReminderInterval:
+    table: vtiger_reminder_interval
+    fillable:
+      - '*'
+  VtigerReportSharegroup:
+    table: vtiger_report_sharegroups
+    fillable:
+      - '*'
+  VtigerReportSharerole:
+    table: vtiger_report_sharerole
+    fillable:
+      - '*'
+  VtigerReportSharer:
+    table: vtiger_report_sharers
+    fillable:
+      - '*'
+  VtigerReportShareuser:
+    table: vtiger_report_shareusers
+    fillable:
+      - '*'
+  VtigerReport:
+    table: vtiger_report
+    fillable:
+      - '*'
+  VtigerReportdatefilter:
+    table: vtiger_reportdatefilter
+    fillable:
+      - '*'
+  VtigerReportfilter:
+    table: vtiger_reportfilters
+    fillable:
+      - '*'
+  VtigerReportfolder:
+    table: vtiger_reportfolder
+    fillable:
+      - '*'
+  VtigerReportgroupbycolumn:
+    table: vtiger_reportgroupbycolumn
+    fillable:
+      - '*'
+  VtigerReportmodule:
+    table: vtiger_reportmodules
+    fillable:
+      - '*'
+  VtigerReportsharing:
+    table: vtiger_reportsharing
+    fillable:
+      - '*'
+  VtigerReportsortcol:
+    table: vtiger_reportsortcol
+    fillable:
+      - '*'
+  VtigerReportsummary:
+    table: vtiger_reportsummary
+    fillable:
+      - '*'
+  VtigerReporttype:
+    table: vtiger_reporttype
+    fillable:
+      - '*'
+  VtigerRole2picklist:
+    table: vtiger_role2picklist
+    fillable:
+      - '*'
+  VtigerRole2profile:
+    table: vtiger_role2profile
+    fillable:
+      - '*'
+  VtigerRoleSeq:
+    table: vtiger_role_seq
+    fillable:
+      - '*'
+  VtigerRole:
+    table: vtiger_role
+    fillable:
+      - '*'
+  VtigerRollupcommentsSetting:
+    table: vtiger_rollupcomments_settings
+    fillable:
+      - '*'
+  VtigerRowheightSeq:
+    table: vtiger_rowheight_seq
+    fillable:
+      - '*'
+  VtigerRowheight:
+    table: vtiger_rowheight
+    fillable:
+      - '*'
+  VtigerRss:
+    table: vtiger_rss
+    fillable:
+      - '*'
+  VtigerSalesStageSeq:
+    table: vtiger_sales_stage_seq
+    fillable:
+      - '*'
+  VtigerSalesStage:
+    table: vtiger_sales_stage
+    fillable:
+      - '*'
+  VtigerSalesmanactivityrel:
+    table: vtiger_salesmanactivityrel
+    fillable:
+      - '*'
+  VtigerSalesmanattachmentsrel:
+    table: vtiger_salesmanattachmentsrel
+    fillable:
+      - '*'
+  VtigerSalesmanticketrel:
+    table: vtiger_salesmanticketrel
+    fillable:
+      - '*'
+  VtigerSalesorder:
+    table: vtiger_salesorder
+    fillable:
+      - '*'
+  VtigerSalesordercf:
+    table: vtiger_salesordercf
+    fillable:
+      - '*'
+  VtigerSalutationtypeSeq:
+    table: vtiger_salutationtype_seq
+    fillable:
+      - '*'
+  VtigerSalutationtype:
+    table: vtiger_salutationtype
+    fillable:
+      - '*'
+  VtigerScheduledReport:
+    table: vtiger_scheduled_reports
+    fillable:
+      - '*'
+  VtigerSchedulereport:
+    table: vtiger_schedulereports
+    fillable:
+      - '*'
+  VtigerSeactivityrelSeq:
+    table: vtiger_seactivityrel_seq
+    fillable:
+      - '*'
+  VtigerSeactivityrel:
+    table: vtiger_seactivityrel
+    fillable:
+      - '*'
+  VtigerSeattachmentsrel:
+    table: vtiger_seattachmentsrel
+    fillable:
+      - '*'
+  VtigerSelectcolumn:
+    table: vtiger_selectcolumn
+    fillable:
+      - '*'
+  VtigerSelectquerySeq:
+    table: vtiger_selectquery_seq
+    fillable:
+      - '*'
+  VtigerSelectquery:
+    table: vtiger_selectquery
+    fillable:
+      - '*'
+  VtigerSenotesrel:
+    table: vtiger_senotesrel
+    fillable:
+      - '*'
+  VtigerSeproductsrel:
+    table: vtiger_seproductsrel
+    fillable:
+      - '*'
+  VtigerService:
+    table: vtiger_service
+    fillable:
+      - '*'
+  VtigerServiceUsageunitSeq:
+    table: vtiger_service_usageunit_seq
+    fillable:
+      - '*'
+  VtigerServiceUsageunit:
+    table: vtiger_service_usageunit
+    fillable:
+      - '*'
+  VtigerServicecategorySeq:
+    table: vtiger_servicecategory_seq
+    fillable:
+      - '*'
+  VtigerServicecategory:
+    table: vtiger_servicecategory
+    fillable:
+      - '*'
+  VtigerServicecf:
+    table: vtiger_servicecf
+    fillable:
+      - '*'
+  VtigerServicecontract:
+    table: vtiger_servicecontracts
+    fillable:
+      - '*'
+  VtigerServicecontractscf:
+    table: vtiger_servicecontractscf
+    fillable:
+      - '*'
+  VtigerSeticketsrel:
+    table: vtiger_seticketsrel
+    fillable:
+      - '*'
+  VtigerSettingsBlocksSeq:
+    table: vtiger_settings_blocks_seq
+    fillable:
+      - '*'
+  VtigerSettingsBlock:
+    table: vtiger_settings_blocks
+    fillable:
+      - '*'
+  VtigerSettingsFieldSeq:
+    table: vtiger_settings_field_seq
+    fillable:
+      - '*'
+  VtigerSettingsField:
+    table: vtiger_settings_field
+    fillable:
+      - '*'
+  VtigerSharedcalendar:
+    table: vtiger_sharedcalendar
+    fillable:
+      - '*'
+  VtigerShareduserinfo:
+    table: vtiger_shareduserinfo
+    fillable:
+      - '*'
+  VtigerShippingtaxinfoSeq:
+    table: vtiger_shippingtaxinfo_seq
+    fillable:
+      - '*'
+  VtigerShippingtaxinfo:
+    table: vtiger_shippingtaxinfo
+    fillable:
+      - '*'
+  VtigerShorturl:
+    table: vtiger_shorturls
+    fillable:
+      - '*'
+  VtigerSmsnotifierServer:
+    table: vtiger_smsnotifier_servers
+    fillable:
+      - '*'
+  VtigerSmsnotifierStatus:
+    table: vtiger_smsnotifier_status
+    fillable:
+      - '*'
+  VtigerSmsnotifier:
+    table: vtiger_smsnotifier
+    fillable:
+      - '*'
+  VtigerSmsnotifiercf:
+    table: vtiger_smsnotifiercf
+    fillable:
+      - '*'
+  VtigerSoapservice:
+    table: vtiger_soapservice
+    fillable:
+      - '*'
+  VtigerSobillad:
+    table: vtiger_sobillads
+    fillable:
+      - '*'
+  VtigerSoshipad:
+    table: vtiger_soshipads
+    fillable:
+      - '*'
+  VtigerSostatusSeq:
+    table: vtiger_sostatus_seq
+    fillable:
+      - '*'
+  VtigerSostatus:
+    table: vtiger_sostatus
+    fillable:
+      - '*'
+  VtigerSostatushistory:
+    table: vtiger_sostatushistory
+    fillable:
+      - '*'
+  VtigerSqltimelog:
+    table: vtiger_sqltimelog
+    fillable:
+      - '*'
+  VtigerStartHourSeq:
+    table: vtiger_start_hour_seq
+    fillable:
+      - '*'
+  VtigerStartHour:
+    table: vtiger_start_hour
+    fillable:
+      - '*'
+  VtigerStatusSeq:
+    table: vtiger_status_seq
+    fillable:
+      - '*'
+  VtigerStatus:
+    table: vtiger_status
+    fillable:
+      - '*'
+  VtigerSystem:
+    table: vtiger_systems
+    fillable:
+      - '*'
+  VtigerTabInfo:
+    table: vtiger_tab_info
+    fillable:
+      - '*'
+  VtigerTab:
+    table: vtiger_tab
+    fillable:
+      - '*'
+  VtigerTaskprioritySeq:
+    table: vtiger_taskpriority_seq
+    fillable:
+      - '*'
+  VtigerTaskpriority:
+    table: vtiger_taskpriority
+    fillable:
+      - '*'
+  VtigerTaskstatusSeq:
+    table: vtiger_taskstatus_seq
+    fillable:
+      - '*'
+  VtigerTaskstatus:
+    table: vtiger_taskstatus
+    fillable:
+      - '*'
+  VtigerTaxclassSeq:
+    table: vtiger_taxclass_seq
+    fillable:
+      - '*'
+  VtigerTaxclass:
+    table: vtiger_taxclass
+    fillable:
+      - '*'
+  VtigerTaxregion:
+    table: vtiger_taxregions
+    fillable:
+      - '*'
+  VtigerTicketcategoriesSeq:
+    table: vtiger_ticketcategories_seq
+    fillable:
+      - '*'
+  VtigerTicketcategory:
+    table: vtiger_ticketcategories
+    fillable:
+      - '*'
+  VtigerTicketcf:
+    table: vtiger_ticketcf
+    fillable:
+      - '*'
+  VtigerTicketcomment:
+    table: vtiger_ticketcomments
+    fillable:
+      - '*'
+  VtigerTicketprioritiesSeq:
+    table: vtiger_ticketpriorities_seq
+    fillable:
+      - '*'
+  VtigerTicketpriority:
+    table: vtiger_ticketpriorities
+    fillable:
+      - '*'
+  VtigerTicketseveritiesSeq:
+    table: vtiger_ticketseverities_seq
+    fillable:
+      - '*'
+  VtigerTicketseverity:
+    table: vtiger_ticketseverities
+    fillable:
+      - '*'
+  VtigerTicketstatusSeq:
+    table: vtiger_ticketstatus_seq
+    fillable:
+      - '*'
+  VtigerTicketstatus:
+    table: vtiger_ticketstatus
+    fillable:
+      - '*'
+  VtigerTimeZoneSeq:
+    table: vtiger_time_zone_seq
+    fillable:
+      - '*'
+  VtigerTimeZone:
+    table: vtiger_time_zone
+    fillable:
+      - '*'
+  VtigerTmpReadGroupRelSharingPer:
+    table: vtiger_tmp_read_group_rel_sharing_per
+    fillable:
+      - '*'
+  VtigerTmpReadGroupSharingPer:
+    table: vtiger_tmp_read_group_sharing_per
+    fillable:
+      - '*'
+  VtigerTmpReadUserRelSharingPer:
+    table: vtiger_tmp_read_user_rel_sharing_per
+    fillable:
+      - '*'
+  VtigerTmpReadUserSharingPer:
+    table: vtiger_tmp_read_user_sharing_per
+    fillable:
+      - '*'
+  VtigerTmpWriteGroupRelSharingPer:
+    table: vtiger_tmp_write_group_rel_sharing_per
+    fillable:
+      - '*'
+  VtigerTmpWriteGroupSharingPer:
+    table: vtiger_tmp_write_group_sharing_per
+    fillable:
+      - '*'
+  VtigerTmpWriteUserRelSharingPer:
+    table: vtiger_tmp_write_user_rel_sharing_per
+    fillable:
+      - '*'
+  VtigerTmpWriteUserSharingPer:
+    table: vtiger_tmp_write_user_sharing_per
+    fillable:
+      - '*'
+  VtigerTracker:
+    table: vtiger_tracker
+    fillable:
+      - '*'
+  VtigerTrackingUnitSeq:
+    table: vtiger_tracking_unit_seq
+    fillable:
+      - '*'
+  VtigerTrackingUnit:
+    table: vtiger_tracking_unit
+    fillable:
+      - '*'
+  VtigerTroubleticket:
+    table: vtiger_troubletickets
+    fillable:
+      - '*'
+  VtigerUsageunitSeq:
+    table: vtiger_usageunit_seq
+    fillable:
+      - '*'
+  VtigerUsageunit:
+    table: vtiger_usageunit
+    fillable:
+      - '*'
+  VtigerUser2mergefield:
+    table: vtiger_user2mergefields
+    fillable:
+      - '*'
+  VtigerUser2role:
+    table: vtiger_user2role
+    fillable:
+      - '*'
+  VtigerUserModulePreference:
+    table: vtiger_user_module_preferences
+    fillable:
+      - '*'
+  VtigerUsers2group:
+    table: vtiger_users2group
+    fillable:
+      - '*'
+  VtigerUsersLastImport:
+    table: vtiger_users_last_import
+    fillable:
+      - '*'
+  VtigerUsersSeq:
+    table: vtiger_users_seq
+    fillable:
+      - '*'
+  VtigerUser:
+    table: vtiger_users
+    fillable:
+      - '*'
+  VtigerVendor:
+    table: vtiger_vendor
+    fillable:
+      - '*'
+  VtigerVendorcf:
+    table: vtiger_vendorcf
+    fillable:
+      - '*'
+  VtigerVendorcontactrel:
+    table: vtiger_vendorcontactrel
+    fillable:
+      - '*'
+  VtigerVersionSeq:
+    table: vtiger_version_seq
+    fillable:
+      - '*'
+  VtigerVersion:
+    table: vtiger_version
+    fillable:
+      - '*'
+  VtigerVisibilitySeq:
+    table: vtiger_visibility_seq
+    fillable:
+      - '*'
+  VtigerVisibility:
+    table: vtiger_visibility
+    fillable:
+      - '*'
+  VtigerWebformFileField:
+    table: vtiger_webform_file_fields
+    fillable:
+      - '*'
+  VtigerWebformsField:
+    table: vtiger_webforms_field
+    fillable:
+      - '*'
+  VtigerWebform:
+    table: vtiger_webforms
+    fillable:
+      - '*'
+  VtigerWordtemplate:
+    table: vtiger_wordtemplates
+    fillable:
+      - '*'
+  VtigerWsEntityFieldtypeSeq:
+    table: vtiger_ws_entity_fieldtype_seq
+    fillable:
+      - '*'
+  VtigerWsEntityFieldtype:
+    table: vtiger_ws_entity_fieldtype
+    fillable:
+      - '*'
+  VtigerWsEntityName:
+    table: vtiger_ws_entity_name
+    fillable:
+      - '*'
+  VtigerWsEntityReferencetype:
+    table: vtiger_ws_entity_referencetype
+    fillable:
+      - '*'
+  VtigerWsEntitySeq:
+    table: vtiger_ws_entity_seq
+    fillable:
+      - '*'
+  VtigerWsEntity:
+    table: vtiger_ws_entity
+    fillable:
+      - '*'
+  VtigerWsEntityTable:
+    table: vtiger_ws_entity_tables
+    fillable:
+      - '*'
+  VtigerWsFieldinfo:
+    table: vtiger_ws_fieldinfo
+    fillable:
+      - '*'
+  VtigerWsFieldtype:
+    table: vtiger_ws_fieldtype
+    fillable:
+      - '*'
+  VtigerWsOperationParameter:
+    table: vtiger_ws_operation_parameters
+    fillable:
+      - '*'
+  VtigerWsOperationSeq:
+    table: vtiger_ws_operation_seq
+    fillable:
+      - '*'
+  VtigerWsOperation:
+    table: vtiger_ws_operation
+    fillable:
+      - '*'
+  VtigerWsReferencetype:
+    table: vtiger_ws_referencetype
+    fillable:
+      - '*'
+  VtigerWsUserauthtoken:
+    table: vtiger_ws_userauthtoken
+    fillable:
+      - '*'
+  VtigerWsappHandlerdetail:
+    table: vtiger_wsapp_handlerdetails
+    fillable:
+      - '*'
+  VtigerWsappLogsBasic:
+    table: vtiger_wsapp_logs_basic
+    fillable:
+      - '*'
+  VtigerWsappLogsDetail:
+    table: vtiger_wsapp_logs_details
+    fillable:
+      - '*'
+  VtigerWsappQueuerecord:
+    table: vtiger_wsapp_queuerecords
+    fillable:
+      - '*'
+  VtigerWsappRecordmapping:
+    table: vtiger_wsapp_recordmapping
+    fillable:
+      - '*'
+  VtigerWsappSyncState:
+    table: vtiger_wsapp_sync_state
+    fillable:
+      - '*'
+  VtigerWsapp:
+    table: vtiger_wsapp
+    fillable:
+      - '*'
