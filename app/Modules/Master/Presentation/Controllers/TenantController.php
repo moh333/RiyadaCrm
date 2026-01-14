@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Modules\Master\Application\UseCases\GetAllTenants;
 use App\Modules\Master\Application\UseCases\CreateTenant;
 use App\Modules\Master\Application\UseCases\DeleteTenant;
+use App\Modules\Master\Application\UseCases\GetTenantById;
+use App\Modules\Master\Application\UseCases\UpdateTenant;
 use Illuminate\Http\Request;
 
 class TenantController extends Controller
@@ -50,6 +52,38 @@ class TenantController extends Controller
                     'message' => 'Error creating tenant: ' . $e->getMessage()
                 ], 500);
             }
+            return back()->withErrors(['domain' => $e->getMessage()])->withInput();
+        }
+    }
+
+    public function show(string $id, GetTenantById $getTenantById)
+    {
+        $tenant = $getTenantById->execute($id);
+        if (!$tenant) {
+            abort(404);
+        }
+        return view('master::tenants.show', compact('tenant'));
+    }
+
+    public function edit(string $id, GetTenantById $getTenantById)
+    {
+        $tenant = $getTenantById->execute($id);
+        if (!$tenant) {
+            abort(404);
+        }
+        return view('master::tenants.edit', compact('tenant'));
+    }
+
+    public function update(Request $request, string $id, UpdateTenant $updateTenant)
+    {
+        $request->validate([
+            'domain' => 'required|string|unique:domains,domain,' . $id . ',tenant_id',
+        ]);
+
+        try {
+            $updateTenant->execute($id, $request->domain);
+            return redirect()->route('master.tenants.index')->with('success', 'Tenant updated successfully.');
+        } catch (\Exception $e) {
             return back()->withErrors(['domain' => $e->getMessage()])->withInput();
         }
     }

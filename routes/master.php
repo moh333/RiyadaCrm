@@ -40,6 +40,9 @@ Route::prefix('admin')->name('master.')->group(function () {
         Route::get('tenants', [TenantController::class, 'index'])->name('tenants.index');
         Route::get('tenants/create', [TenantController::class, 'create'])->name('tenants.create');
         Route::post('tenants', [TenantController::class, 'store'])->name('tenants.store');
+        Route::get('tenants/{id}', [TenantController::class, 'show'])->name('tenants.show');
+        Route::get('tenants/{id}/edit', [TenantController::class, 'edit'])->name('tenants.edit');
+        Route::put('tenants/{id}', [TenantController::class, 'update'])->name('tenants.update');
         Route::delete('tenants/{id}', [TenantController::class, 'destroy'])->name('tenants.destroy');
     });
 });

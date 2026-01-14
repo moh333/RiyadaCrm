@@ -50,26 +50,24 @@
                                 </td>
                                 <td class="text-muted small">{{ $tenant->created_at }}</td>
                                 <td class="text-end pe-4">
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown">
-                                            <i class="bi bi-three-dots-vertical"></i>
-                                        </button>
-                                        <ul class="dropdown-menu border-0 shadow-lg dropdown-menu-end">
-                                            <li><a class="dropdown-item" href="#"><i
-                                                        class="bi bi-pencil me-2 text-warning"></i>Edit</a></li>
-                                            <li>
-                                                <hr class="dropdown-divider">
-                                            </li>
-                                            <li>
-                                                <form action="{{ route('master.tenants.destroy', $tenant->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this tenant? This cannot be undone.');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="dropdown-item text-danger">
-                                                        <i class="bi bi-trash me-2"></i>Delete
-                                                    </button>
-                                                </form>
-                                            </li>
-                                        </ul>
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a href="{{ route('master.tenants.show', $tenant->id) }}"
+                                            class="btn btn-sm btn-outline-info border-0" title="View">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ route('master.tenants.edit', $tenant->id) }}"
+                                            class="btn btn-sm btn-outline-primary border-0" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form action="{{ route('master.tenants.destroy', $tenant->id) }}" method="POST"
+                                            onsubmit="return confirm('Are you sure you want to delete this tenant? This cannot be undone.');"
+                                            class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger border-0" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
