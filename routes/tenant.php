@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Http\Middleware\InitializeTenancyOrRedirect;
 use Illuminate\Support\Facades\Route;
-use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 /*
 |--------------------------------------------------------------------------
