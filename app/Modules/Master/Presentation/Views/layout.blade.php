@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}">
 
 <head>
     <meta charset="UTF-8">
@@ -12,7 +12,9 @@
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family={{ app()->getLocale() == 'ar' ? 'Cairo:wght@400;600;700' : 'Outfit:wght@300;400;500;600;700' }}&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --sidebar-width: 260px;
@@ -23,9 +25,36 @@
         }
 
         body {
-            font-family: 'Outfit', sans-serif;
+            font-family: '{{ app()->getLocale() == 'ar' ? 'Cairo' : 'Outfit' }}', sans-serif;
             background-color: var(--bg-light);
             color: var(--text-dark);
+        }
+
+        [dir="rtl"] .sidebar {
+            left: auto;
+            right: 0;
+            border-right: none;
+            border-left: 1px solid #e5e7eb;
+        }
+
+        [dir="rtl"] .main-content {
+            margin-left: 0;
+            margin-right: var(--sidebar-width);
+        }
+
+        [dir="rtl"] .nav-link i {
+            margin-right: 0;
+            margin-left: 0.75rem;
+        }
+
+        [dir="rtl"] .avatar-initials {
+            margin-right: 0 !important;
+            margin-left: 0.5rem !important;
+        }
+
+        [dir="rtl"] .ms-auto {
+            margin-left: 0 !important;
+            margin-right: auto !important;
         }
 
         .sidebar {
@@ -108,6 +137,27 @@
             font-size: 0.75rem;
             letter-spacing: 0.05em;
         }
+
+        .form-label {
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            padding: 0.625rem 0.875rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .card-header {
+            border-bottom: 1px solid #f3f4f6;
+            background-color: transparent !important;
+        }
     </style>
 </head>
 
@@ -125,44 +175,60 @@
                 <a href="{{ route('master.dashboard') }}"
                     class="nav-link {{ request()->routeIs('master.dashboard') ? 'active' : '' }}">
                     <i class="bi bi-grid"></i>
-                    Dashboard
+                    {{ __('master::master.dashboard') }}
                 </a>
             </li>
             <li class="nav-item">
                 <a href="{{ route('master.tenants.index') }}"
                     class="nav-link {{ request()->routeIs('master.tenants.*') ? 'active' : '' }}">
                     <i class="bi bi-people"></i>
-                    Tenants
+                    {{ __('master::master.tenants') }}
                 </a>
             </li>
             <li class="nav-item">
                 <a href="#" class="nav-link">
                     <i class="bi bi-gear"></i>
-                    Settings
+                    {{ __('master::master.settings') }}
                 </a>
             </li>
         </ul>
+
+        <div class="mb-4">
+            <label class="form-label text-muted small text-uppercase fw-bold px-3">Language / اللغة</label>
+            <div class="d-flex px-3">
+                <a href="{{ route('lang.switch', 'en') }}"
+                    class="btn btn-sm {{ app()->getLocale() == 'en' ? 'btn-primary' : 'btn-outline-secondary' }} me-2">EN</a>
+                <a href="{{ route('lang.switch', 'ar') }}"
+                    class="btn btn-sm {{ app()->getLocale() == 'ar' ? 'btn-primary' : 'btn-outline-secondary' }}">AR</a>
+            </div>
+        </div>
+
 
         <hr>
 
         <div class="dropdown">
             <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
                 id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                <div class="avatar-initials me-2">MA</div>
-                <strong>Admin</strong>
+                <div class="avatar-initials me-2">
+                    {{ substr(auth('master')->user()->name, 0, 1) }}{{ str_contains(auth('master')->user()->name, ' ') ? substr(explode(' ', auth('master')->user()->name)[1], 0, 1) : '' }}
+                </div>
+                <strong>{{ auth('master')->user()->name }}</strong>
             </a>
             <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser1">
-                <li><a class="dropdown-item" href="#">Profile</a></li>
+                <li><a class="dropdown-item"
+                        href="{{ route('master.profile.show') }}">{{ __('master::master.profile') }}</a></li>
                 <li>
                     <hr class="dropdown-divider">
                 </li>
                 <li>
                     <form action="{{ route('master.logout') }}" method="POST">
                         @csrf
-                        <button type="submit" class="dropdown-item text-danger">Sign out</button>
+                        <button type="submit"
+                            class="dropdown-item text-danger">{{ __('master::master.sign_out') }}</button>
                     </form>
                 </li>
             </ul>
+
         </div>
     </div>
 

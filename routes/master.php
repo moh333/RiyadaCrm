@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Modules\Master\Presentation\Controllers\LoginController;
 use App\Modules\Master\Presentation\Controllers\TenantController;
+use App\Modules\Master\Presentation\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +37,11 @@ Route::prefix('admin')->name('master.')->group(function () {
     Route::middleware('auth:master')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
+        // Profile Management
+        Route::get('profile', [ProfileController::class, 'show'])->name('profile.show');
+        Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::put('profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+
         // Tenant Management
         Route::get('tenants', [TenantController::class, 'index'])->name('tenants.index');
         Route::get('tenants/create', [TenantController::class, 'create'])->name('tenants.create');
@@ -46,3 +52,4 @@ Route::prefix('admin')->name('master.')->group(function () {
         Route::delete('tenants/{id}', [TenantController::class, 'destroy'])->name('tenants.destroy');
     });
 });
+

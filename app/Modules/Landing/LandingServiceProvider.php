@@ -9,10 +9,11 @@ class LandingServiceProvider extends ServiceProvider
     public function register()
     {
         // Bindings
-    }   
+    }
 
     public function boot()
     {
-        // $this->loadViewsFrom(__DIR__ . '/Presentation/Views', 'landing');
+        $this->loadViewsFrom(__DIR__ . '/Presentation/Views', 'landing');
     }
+
 }

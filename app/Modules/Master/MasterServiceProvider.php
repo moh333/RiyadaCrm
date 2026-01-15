@@ -26,5 +26,7 @@ class MasterServiceProvider extends ServiceProvider
     {
         // Load module specific migrations or views if needed
         $this->loadViewsFrom(__DIR__ . '/Presentation/Views', 'master');
+        $this->loadTranslationsFrom(__DIR__ . '/Resources/Lang', 'master');
     }
+
 }

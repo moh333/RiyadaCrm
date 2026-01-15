@@ -8,7 +8,7 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <p class="mb-1 opacity-75 fw-medium">Total Revenue</p>
+                            <p class="mb-1 opacity-75 fw-medium">{{ __('master::master.total_revenue') }}</p>
                             <h2 class="fw-bold mb-0">
                                 @if(is_array($stats) && isset($stats['revenue']))
                                     {{ $stats['revenue'] }}
@@ -30,7 +30,7 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <p class="text-muted mb-1 fw-medium text-uppercase small">Active Tenants</p>
+                            <p class="text-muted mb-1 fw-medium text-uppercase small">{{ __('master::master.active_tenants') }}</p>
                             <h2 class="fw-bold text-dark mb-0">{{ $stats['tenants'] ?? 0 }}</h2>
                         </div>
                         <div class="bg-indigo-50 text-primary p-2 rounded-3" style="background-color: #eef2ff;">
@@ -46,7 +46,7 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <p class="text-muted mb-1 fw-medium text-uppercase small">Total Users</p>
+                            <p class="text-muted mb-1 fw-medium text-uppercase small">{{ __('master::master.total_users') }}</p>
                             <h2 class="fw-bold text-dark mb-0">{{ $stats['users'] ?? 0 }}</h2>
                         </div>
                         <div class="bg-green-50 text-success p-2 rounded-3" style="background-color: #ecfdf5;">
