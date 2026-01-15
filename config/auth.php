@@ -48,7 +48,7 @@ return [
 
         'tenant' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'tenant_users',
         ],
     ],
 
@@ -73,6 +73,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\Central\User::class),
+        ],
+
+        'tenant_users' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Tenant\VtigerUser::class,
         ],
 
         // 'users' => [

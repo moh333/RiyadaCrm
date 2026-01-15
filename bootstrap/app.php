@@ -23,7 +23,13 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->is('admin') || $request->is('admin/*')) {
                 return route('master.login');
             }
-            return route('login'); // Needs a named route 'login' generally
+
+            // If it's a tenant context (not central domain)
+            if (app()->bound(\Stancl\Tenancy\Contracts\Tenant::class)) {
+                return route('tenant.login');
+            }
+
+            return route('login');
         });
 
         $middleware->redirectUsersTo(function (Request $request) {

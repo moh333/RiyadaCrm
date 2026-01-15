@@ -19,5 +19,6 @@ class TenantServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->loadViewsFrom(__DIR__ . '/Presentation/Views', 'tenant');
+        $this->loadTranslationsFrom(__DIR__ . '/Resources/Lang', 'tenant');
     }
 }

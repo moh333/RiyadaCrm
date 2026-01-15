@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ __('landing.title') }}</title>
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ global_asset('favicon.svg') }}">
     <!-- Bootstrap 5 CSS -->
     @if(app()->getLocale() == 'ar')
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
@@ -273,8 +273,7 @@
                         {{ __('landing.hero.subtitle') }}
                     </p>
                     <div class="d-flex gap-3">
-                        <a href="#"
-                            class="btn btn-primary btn-lg px-4">{{ __('landing.hero.trial_btn') }}</a>
+                        <a href="#" class="btn btn-primary btn-lg px-4">{{ __('landing.hero.trial_btn') }}</a>
                         <a href="#features"
                             class="btn btn-outline-primary btn-lg px-4">{{ __('landing.hero.features_btn') }}</a>
                     </div>
@@ -429,8 +428,8 @@
                             <div class="mb-4">
                                 <span
                                     class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-2 mb-3">{{ __('landing.pricing.starter.title') }}</span>
-                                <h3 class="fw-bold display-5 mb-0">$29<small
-                                        class="text-muted fs-6 fw-normal">/ {{ __('landing.pricing.monthly') }}</small></h3>
+                                <h3 class="fw-bold display-5 mb-0">$29<small class="text-muted fs-6 fw-normal">/
+                                        {{ __('landing.pricing.monthly') }}</small></h3>
                                 <p class="text-muted mt-2">{{ __('landing.pricing.starter.desc') }}</p>
                             </div>
                             <ul class="list-unstyled mb-4 d-grid gap-3">
@@ -458,7 +457,8 @@
                                 <span
                                     class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 mb-3">{{ __('landing.pricing.pro.title') }}</span>
                                 <h3 class="fw-bold display-5 mb-0">$79<small
-                                        class="text-muted fs-6 fw-normal">/{{ __('landing.pricing.monthly') }}</small></h3>
+                                        class="text-muted fs-6 fw-normal">/{{ __('landing.pricing.monthly') }}</small>
+                                </h3>
                                 <p class="text-muted mt-2">{{ __('landing.pricing.pro.desc') }}</p>
                             </div>
                             <ul class="list-unstyled mb-4 d-grid gap-3">

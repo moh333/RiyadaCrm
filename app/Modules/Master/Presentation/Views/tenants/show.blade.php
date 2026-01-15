@@ -103,9 +103,12 @@
                     <p class="text-muted small">{{ __('master::master.subscription_plan') }}: <span
                             class="text-primary fw-bold">{{ __('master::master.enterprise') }}</span></p>
                     <hr>
-                    <div class="d-grid">
-                        <a href="http://{{ $tenant->domains[0] ?? '#' }}" target="_blank" class="btn btn-primary">
-                            <i class="bi bi-speedometer2 me-2"></i>{{ __('master::master.login_as_admin') }}
+                    <div class="d-grid gap-2">
+                        <a href="{{ route('master.tenants.impersonate', $tenant->id) }}" target="_blank" class="btn btn-primary d-flex align-items-center justify-content-center py-2 shadow-sm">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>{{ __('master::master.login_as_admin') }}
+                        </a>
+                        <a href="http://{{ $tenant->domains[0] ?? '#' }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center justify-content-center py-2">
+                            <i class="bi bi-speedometer2 me-2"></i>{{ __('master::master.visit_dashboard') }}
                         </a>
                     </div>
                 </div>

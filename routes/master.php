@@ -49,6 +49,7 @@ Route::prefix('admin')->name('master.')->group(function () {
         Route::get('tenants/{id}', [TenantController::class, 'show'])->name('tenants.show');
         Route::get('tenants/{id}/edit', [TenantController::class, 'edit'])->name('tenants.edit');
         Route::put('tenants/{id}', [TenantController::class, 'update'])->name('tenants.update');
+        Route::get('tenants/{id}/impersonate', [TenantController::class, 'impersonate'])->name('tenants.impersonate');
         Route::delete('tenants/{id}', [TenantController::class, 'destroy'])->name('tenants.destroy');
     });
 });

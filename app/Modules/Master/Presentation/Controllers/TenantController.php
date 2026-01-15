@@ -8,6 +8,8 @@ use App\Modules\Master\Application\UseCases\CreateTenant;
 use App\Modules\Master\Application\UseCases\DeleteTenant;
 use App\Modules\Master\Application\UseCases\GetTenantById;
 use App\Modules\Master\Application\UseCases\UpdateTenant;
+use App\Models\Central\Tenant;
+use App\Models\Tenant\VtigerUser;
 use Illuminate\Http\Request;
 
 class TenantController extends Controller
@@ -86,6 +88,35 @@ class TenantController extends Controller
         } catch (\Exception $e) {
             return back()->withErrors(['domain' => $e->getMessage()])->withInput();
         }
+    }
+
+    public function impersonate(string $id)
+    {
+        $tenantModel = Tenant::with('domains')->find($id);
+        if (!$tenantModel) {
+            abort(404);
+        }
+
+        $domain = $tenantModel->domains->first()->domain;
+        // Construct the absolute URL for the tenant dashboard
+        $redirectUrl = route('tenant.dashboard', [], false); // Use relative path for redirect after login
+
+        $token = $tenantModel->run(function ($tenant) use ($redirectUrl) {
+            $user = VtigerUser::where('is_admin', 'on')->first()
+                ?? VtigerUser::first();
+
+            if (!$user) {
+                return null;
+            }
+
+            return tenancy()->impersonate($tenant, (string) $user->id, $redirectUrl, 'tenant');
+        });
+
+        if (!$token) {
+            return redirect()->back()->with('error', 'No users found in this tenant.');
+        }
+
+        return redirect("http://{$domain}/impersonate/{$token->token}");
     }
 
     public function destroy(string $id, DeleteTenant $deleteTenant)

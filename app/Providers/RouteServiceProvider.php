@@ -49,13 +49,12 @@ class RouteServiceProvider extends ServiceProvider
                 ->domain($centralDomain)
                 ->group(base_path('routes/master.php'));
 
-            // Tenant Routes - {tenant}.APP_DOMAIN
+            // Tenant Routes
             Route::middleware([
                 'web',
                 InitializeTenancyByDomain::class,
                 PreventAccessFromCentralDomains::class,
             ])
-                ->domain('{tenant}.' . $centralDomain)
                 ->group(base_path('routes/tenant.php'));
         });
     }

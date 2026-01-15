@@ -72,4 +72,10 @@ return [
     'done' => 'Done!',
     'correct_errors' => 'Please correct the errors below.',
     'unexpected_error' => 'An unexpected error occurred.',
+    'master_login' => 'Login - Master Admin',
+    'master_title' => 'Riyada Master',
+    'master_subtitle' => 'Sign in to manage tenants',
+    'login' => 'Sign In',
+    'password' => 'Password',
+    'visit_dashboard' => 'Visit Dashboard',
 ];
