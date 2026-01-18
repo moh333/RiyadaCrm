@@ -51,7 +51,7 @@ return [
             ]) : [],
         ],
 
-        'tenantdb' => [
+        'tenant' => [
             'driver' => 'mysql',
             'url' => env('DATABASE_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
@@ -66,6 +66,7 @@ return [
             'strict' => false,
             'engine' => null,
         ],
+
 
         'sqlite' => [
             'driver' => 'sqlite',

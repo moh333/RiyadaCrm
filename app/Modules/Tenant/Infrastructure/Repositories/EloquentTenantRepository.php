@@ -10,12 +10,15 @@ class EloquentTenantRepository implements TenantRepositoryInterface
 {
     public function getDashboardData(): TenantDashboardDTO
     {
-        // Isolated logic. interacting with tenantdb or vtiger tables
-        // Example: DB::connection('tenantdb')->table('leads')->count();
+        $contractsCount = DB::connection('tenant')->table('vtiger_servicecontracts')
+            ->join('vtiger_crmentity', 'vtiger_crmentity.crmid', '=', 'vtiger_servicecontracts.servicecontractsid')
+            ->where('vtiger_crmentity.deleted', 0)
+            ->count();
 
         return new TenantDashboardDTO(
             25,
             12,
+            $contractsCount,
             'Active'
         );
     }

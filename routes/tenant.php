@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\InitializeTenancyOrRedirect;
+use App\Modules\Tenant\Contacts\Presentation\Controllers\ContactsController;
 use App\Modules\Tenant\Presentation\Controllers\DashboardController;
 use App\Modules\Tenant\Presentation\Controllers\LoginController;
 use App\Modules\Tenant\Presentation\Controllers\ProfileController;
 use App\Modules\Tenant\Presentation\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
+use Stancl\Tenancy\Features\UserImpersonation;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
 /*
@@ -34,7 +36,7 @@ Route::middleware([
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
     Route::get('/impersonate/{token}', function ($token) {
-        return \Stancl\Tenancy\Features\UserImpersonation::makeResponse($token);
+        return UserImpersonation::makeResponse($token);
     })->name('impersonate');
 
     // Protected Routes
@@ -49,6 +51,18 @@ Route::middleware([
         // Settings Routes
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
         Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
+
+        // Contacts Routes
+        Route::prefix('contacts')->name('contacts.')->group(function () {
+            Route::get('/', [ContactsController::class, 'index'])->name('index');
+            Route::get('/create', [ContactsController::class, 'create'])->name('create');
+            Route::post('/', [ContactsController::class, 'store'])->name('store');
+            Route::get('/{id}', [ContactsController::class, 'show'])->name('show');
+            Route::get('/{id}/edit', [ContactsController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [ContactsController::class, 'update'])->name('update');
+            Route::delete('/{id}', [ContactsController::class, 'destroy'])->name('destroy');
+        });
     });
+
 
 });

@@ -7,11 +7,11 @@
             <div class="card h-100">
                 <div class="stats-card">
                     <div class="icon-box bg-soft-primary">
-                        <i class="bi bi-people-fill"></i>
+                        <i class="bi bi-file-earmark-text-fill"></i>
                     </div>
                     <div>
-                        <h3 class="fw-bold mb-0">1,280</h3>
-                        <p class="text-muted small mb-0">{{ __('tenant::tenant.total_contacts') }}</p>
+                        <h3 class="fw-bold mb-0">{{ $data['contracts'] }}</h3>
+                        <p class="text-muted small mb-0">{{ __('tenant::tenant.contracts') }}</p>
                     </div>
                 </div>
             </div>
@@ -36,8 +36,8 @@
                         <i class="bi bi-briefcase-fill"></i>
                     </div>
                     <div>
-                        <h3 class="fw-bold mb-0">24</h3>
-                        <p class="text-muted small mb-0">{{ __('tenant::tenant.active_deals') }}</p>
+                        <h3 class="fw-bold mb-0">{{ $data['opportunities'] }}</h3>
+                        <p class="text-muted small mb-0">{{ __('tenant::tenant.opportunities') }}</p>
                     </div>
                 </div>
             </div>
@@ -49,7 +49,7 @@
                         <i class="bi bi-clock-fill"></i>
                     </div>
                     <div>
-                        <h3 class="fw-bold mb-0">12</h3>
+                        <h3 class="fw-bold mb-0">{{ $data['leads'] }}</h3>
                         <p class="text-muted small mb-0">{{ __('tenant::tenant.pending_tasks') }}</p>
                     </div>
                 </div>
@@ -72,7 +72,8 @@
                                     <th>{{ __('tenant::tenant.status') }}</th>
                                     <th>{{ __('tenant::tenant.date') }}</th>
                                     <th class="{{ app()->getLocale() == 'ar' ? 'text-start ps-4' : 'text-end pe-4' }}">
-                                        {{ __('tenant::tenant.action') }}</th>
+                                        {{ __('tenant::tenant.action') }}
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>

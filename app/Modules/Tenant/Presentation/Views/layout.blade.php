@@ -244,17 +244,21 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="{{ route('tenant.contacts.index') }}"
+                    class="nav-link {{ request()->routeIs('tenant.contacts.*') ? 'active' : '' }}">
                     <i class="bi bi-people-fill"></i>
-                    {{ __('tenant::tenant.contacts') }}
+                    {{ __('contacts::contacts.contacts') }}
                 </a>
             </li>
+
+
             <li class="nav-item">
                 <a href="#" class="nav-link">
                     <i class="bi bi-briefcase-fill"></i>
                     {{ __('tenant::tenant.opportunities') }}
                 </a>
             </li>
+
             <li class="nav-item">
                 <a href="#" class="nav-link">
                     <i class="bi bi-file-earmark-bar-graph-fill"></i>

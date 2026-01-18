@@ -7,4 +7,6 @@ return [
     App\Modules\Landing\LandingServiceProvider::class,
     App\Modules\Master\MasterServiceProvider::class,
     App\Modules\Tenant\TenantServiceProvider::class,
+    App\Modules\Tenant\Contacts\ContactsModuleServiceProvider::class,
 ];
+
