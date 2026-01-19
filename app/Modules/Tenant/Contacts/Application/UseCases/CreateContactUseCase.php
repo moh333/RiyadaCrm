@@ -82,6 +82,11 @@ class CreateContactUseCase
             $contact->setDepartment($dto->department);
         }
 
+        // Set custom fields
+        if (!empty($dto->customFields)) {
+            $contact->setCustomFields($dto->customFields);
+        }
+
 
         // Save contact
         $this->contactRepository->save($contact);
@@ -113,6 +118,7 @@ class CreateContactDTO
     public ?string $mobile;
     public ?string $title;
     public ?string $department;
+    public array $customFields = [];
 
     // Address fields
     public ?string $mailingStreet;
@@ -139,6 +145,7 @@ class CreateContactDTO
         $this->mailingState = $data['mailingState'] ?? null;
         $this->mailingZip = $data['mailingZip'] ?? null;
         $this->mailingCountry = $data['mailingCountry'] ?? null;
+        $this->customFields = $data['customFields'] ?? [];
     }
 }
 

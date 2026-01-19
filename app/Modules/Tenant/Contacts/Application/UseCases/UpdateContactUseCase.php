@@ -94,6 +94,12 @@ class UpdateContactUseCase
             $changedFields[] = 'department';
         }
 
+        // Update custom fields
+        if (!empty($dto->customFields)) {
+            $contact->setCustomFields($dto->customFields);
+            $changedFields[] = 'customFields';
+        }
+
 
         // Save contact
         $this->contactRepository->save($contact);
@@ -123,6 +129,7 @@ class UpdateContactDTO
     public ?string $mobile;
     public ?string $title;
     public ?string $department;
+    public array $customFields = [];
 
 
     public function __construct(array $data)
@@ -137,6 +144,7 @@ class UpdateContactDTO
         $this->mobile = $data['mobile'] ?? null;
         $this->title = $data['title'] ?? null;
         $this->department = $data['department'] ?? null;
+        $this->customFields = $data['customFields'] ?? [];
     }
 }
 

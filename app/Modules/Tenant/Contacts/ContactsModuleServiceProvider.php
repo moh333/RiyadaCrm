@@ -29,6 +29,12 @@ class ContactsModuleServiceProvider extends ServiceProvider
             EloquentContactRepository::class
         );
 
+        // Bind custom field repository
+        $this->app->bind(
+            \App\Modules\Tenant\Contacts\Domain\Repositories\CustomFieldRepositoryInterface::class,
+            \App\Modules\Tenant\Contacts\Infrastructure\EloquentCustomFieldRepository::class
+        );
+
         // Register use cases as singletons
         $this->app->singleton(CreateContactUseCase::class);
         $this->app->singleton(UpdateContactUseCase::class);
@@ -40,6 +46,12 @@ class ContactsModuleServiceProvider extends ServiceProvider
         $this->app->singleton(TransferContactOwnershipUseCase::class);
         $this->app->singleton(UploadContactImageUseCase::class);
         $this->app->singleton(ConvertLeadToContactUseCase::class);
+
+        // Register custom field use cases
+        $this->app->singleton(\App\Modules\Tenant\Contacts\Application\UseCases\CreateCustomFieldUseCase::class);
+        $this->app->singleton(\App\Modules\Tenant\Contacts\Application\UseCases\DeleteCustomFieldUseCase::class);
+        $this->app->singleton(\App\Modules\Tenant\Contacts\Application\UseCases\GetModuleCustomFieldsUseCase::class);
+        $this->app->singleton(\App\Modules\Tenant\Contacts\Application\UseCases\UpdateCustomFieldUseCase::class);
     }
 
     /**

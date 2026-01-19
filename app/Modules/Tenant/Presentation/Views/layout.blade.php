@@ -269,6 +269,13 @@
                 <small class="text-muted fw-bold text-uppercase px-3">{{ __('tenant::tenant.administration') }}</small>
             </li>
             <li class="nav-item">
+                <a href="{{ route('tenant.custom-fields.index', ['module' => 'Contacts']) }}"
+                    class="nav-link {{ request()->routeIs('tenant.custom-fields.*') ? 'active' : '' }}">
+                    <i class="bi bi-ui-checks"></i>
+                    {{ __('tenant::tenant.custom_fields') }}
+                </a>
+            </li>
+            <li class="nav-item">
                 <a href="{{ route('tenant.settings') }}"
                     class="nav-link {{ request()->routeIs('tenant.settings') ? 'active' : '' }}">
                     <i class="bi bi-gear-fill"></i>

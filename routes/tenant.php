@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Middleware\InitializeTenancyOrRedirect;
 use App\Modules\Tenant\Contacts\Presentation\Controllers\ContactsController;
+use App\Modules\Tenant\Contacts\Presentation\Controllers\CustomFieldsController;
 use App\Modules\Tenant\Presentation\Controllers\DashboardController;
 use App\Modules\Tenant\Presentation\Controllers\LoginController;
 use App\Modules\Tenant\Presentation\Controllers\ProfileController;
@@ -57,10 +58,22 @@ Route::middleware([
             Route::get('/', [ContactsController::class, 'index'])->name('index');
             Route::get('/create', [ContactsController::class, 'create'])->name('create');
             Route::post('/', [ContactsController::class, 'store'])->name('store');
+
+            // Contact CRUD routes with {id} parameter
             Route::get('/{id}', [ContactsController::class, 'show'])->name('show');
             Route::get('/{id}/edit', [ContactsController::class, 'edit'])->name('edit');
             Route::put('/{id}', [ContactsController::class, 'update'])->name('update');
             Route::delete('/{id}', [ContactsController::class, 'destroy'])->name('destroy');
+        });
+
+        // Custom Fields Management (Generic for all modules)
+        Route::prefix('settings/custom-fields')->name('custom-fields.')->group(function () {
+            Route::get('/{module}', [CustomFieldsController::class, 'index'])->name('index');
+            Route::get('/{module}/create', [CustomFieldsController::class, 'create'])->name('create');
+            Route::post('/{module}', [CustomFieldsController::class, 'store'])->name('store');
+            Route::get('/{module}/{id}/edit', [CustomFieldsController::class, 'edit'])->name('edit');
+            Route::put('/{module}/{id}', [CustomFieldsController::class, 'update'])->name('update');
+            Route::delete('/{module}/{id}', [CustomFieldsController::class, 'destroy'])->name('destroy');
         });
     });
 

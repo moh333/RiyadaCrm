@@ -69,6 +69,34 @@
             </div>
 
             <div class="col-lg-4">
+                <div class="card shadow-sm border-0 rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3">{{ __('tenant::tenant.custom_fields') }}</h6>
+                        <p class="text-muted small mb-4">Manage custom fields and dynamic layouts for each module.</p>
+
+                        <div class="list-group list-group-flush">
+                            <a href="{{ route('tenant.custom-fields.index', ['module' => 'Contacts']) }}"
+                                class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-people me-2"></i> {{ __('tenant::tenant.contacts') }}</span>
+                                <i
+                                    class="bi bi-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }} small text-muted"></i>
+                            </a>
+                            <a href="{{ route('tenant.custom-fields.index', ['module' => 'Accounts']) }}"
+                                class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-building me-2"></i> {{ __('tenant::tenant.account') }}</span>
+                                <i
+                                    class="bi bi-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }} small text-muted"></i>
+                            </a>
+                            <a href="{{ route('tenant.custom-fields.index', ['module' => 'Leads']) }}"
+                                class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-person-badge me-2"></i> Leads</span>
+                                <i
+                                    class="bi bi-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }} small text-muted"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-body p-4">
                         <h6 class="fw-bold mb-3">System Information</h6>

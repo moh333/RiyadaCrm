@@ -5,7 +5,8 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h3 class="fw-bold mb-0">{{ __('contacts::contacts.edit_contact') }}:
-                    {{ $contact->getFullName()->getDisplayName() }}</h3>
+                    {{ $contact->getFullName()->getDisplayName() }}
+                </h3>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a
@@ -148,6 +149,8 @@
                             </div>
                         </div>
                     </div>
+
+                    @include('contacts_module::contacts.partials.custom_fields')
 
                     <!-- Additional Details -->
                     <div class="card border-0 shadow-sm rounded-4 mb-4">

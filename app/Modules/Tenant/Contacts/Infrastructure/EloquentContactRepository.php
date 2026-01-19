@@ -308,10 +308,14 @@ class EloquentContactRepository implements ContactRepositoryInterface
         ]);
 
         // 5. Insert into vtiger_contactscf (custom fields)
-        DB::connection('tenant')->table('vtiger_contactscf')->insert([
-            'contactid' => $contact->getId(),
-            // Custom fields added dynamically
-        ]);
+        $customFieldsData = ['contactid' => $contact->getId()];
+
+        // Add all custom fields
+        foreach ($contact->getAllCustomFields() as $fieldName => $value) {
+            $customFieldsData[$fieldName] = $value;
+        }
+
+        DB::connection('tenant')->table('vtiger_contactscf')->insert($customFieldsData);
 
         // 6. Insert into vtiger_customerdetails
         DB::connection('tenant')->table('vtiger_customerdetails')->insert([
@@ -358,8 +362,13 @@ class EloquentContactRepository implements ContactRepositoryInterface
             ]);
 
 
-        // Update other tables as needed
-        // vtiger_contactsubdetails, vtiger_contactaddress, vtiger_contactscf, vtiger_customerdetails
+        // Update vtiger_contactscf (custom fields)
+        $customFieldsData = $contact->getAllCustomFields();
+        if (!empty($customFieldsData)) {
+            DB::connection('tenant')->table('vtiger_contactscf')
+                ->where('contactid', $contact->getId())
+                ->update($customFieldsData);
+        }
     }
 
     /**
@@ -708,6 +717,18 @@ class EloquentContactRepository implements ContactRepositoryInterface
             $property = $reflection->getProperty('portalEnabled');
             $property->setAccessible(true);
             $property->setValue($contact, (bool) $data->portal);
+        }
+
+        // Map Custom Fields (from vtiger_contactscf)
+        // Extract all cf_* columns from the data
+        $customFields = [];
+        foreach ((array) $data as $key => $value) {
+            if (str_starts_with($key, 'cf_') && $value !== null) {
+                $customFields[$key] = $value;
+            }
+        }
+        if (!empty($customFields)) {
+            $contact->setCustomFields($customFields);
         }
 
         return $contact;

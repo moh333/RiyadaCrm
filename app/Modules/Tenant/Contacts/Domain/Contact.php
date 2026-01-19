@@ -349,4 +349,14 @@ class Contact
     {
         return $this->customFields[$fieldName] ?? null;
     }
+
+    public function getAllCustomFields(): array
+    {
+        return $this->customFields;
+    }
+
+    public function setCustomFields(array $fields): void
+    {
+        $this->customFields = $fields;
+    }
 }

@@ -17,17 +17,20 @@ class ContactsController extends Controller
     private CreateContactUseCase $createContactUseCase;
     private UpdateContactUseCase $updateContactUseCase;
     private DeleteContactUseCase $deleteContactUseCase;
+    private \App\Modules\Tenant\Contacts\Application\UseCases\GetModuleCustomFieldsUseCase $getModuleCustomFieldsUseCase;
 
     public function __construct(
         ContactRepositoryInterface $contactRepository,
         CreateContactUseCase $createContactUseCase,
         UpdateContactUseCase $updateContactUseCase,
-        DeleteContactUseCase $deleteContactUseCase
+        DeleteContactUseCase $deleteContactUseCase,
+        \App\Modules\Tenant\Contacts\Application\UseCases\GetModuleCustomFieldsUseCase $getModuleCustomFieldsUseCase
     ) {
         $this->contactRepository = $contactRepository;
         $this->createContactUseCase = $createContactUseCase;
         $this->updateContactUseCase = $updateContactUseCase;
         $this->deleteContactUseCase = $deleteContactUseCase;
+        $this->getModuleCustomFieldsUseCase = $getModuleCustomFieldsUseCase;
     }
 
     public function index(Request $request)
@@ -54,8 +57,8 @@ class ContactsController extends Controller
 
     public function create()
     {
-        return view('contacts_module::contacts.create');
-
+        $customFields = $this->getModuleCustomFieldsUseCase->execute(4); // 4 = Contacts
+        return view('contacts_module::contacts.create', compact('customFields'));
     }
 
     public function store(Request $request)
@@ -72,6 +75,14 @@ class ContactsController extends Controller
             'department' => 'nullable|string|max:30',
         ]);
 
+        // Extract custom fields (cf_*)
+        $customFields = [];
+        foreach ($request->all() as $key => $value) {
+            if (str_starts_with($key, 'cf_')) {
+                $customFields[$key] = $value;
+            }
+        }
+
         $dto = new CreateContactDTO([
             'lastName' => $validated['lastname'],
             'firstName' => $validated['firstname'] ?? null,
@@ -84,6 +95,7 @@ class ContactsController extends Controller
             'mobile' => $validated['mobile'] ?? null,
             'title' => $validated['title'] ?? null,
             'department' => $validated['department'] ?? null,
+            'customFields' => $customFields,
         ]);
 
         $contact = $this->createContactUseCase->execute($dto);
@@ -101,8 +113,9 @@ class ContactsController extends Controller
             abort(404);
         }
 
-        return view('contacts_module::contacts.edit', compact('contact'));
+        $customFields = $this->getModuleCustomFieldsUseCase->execute(4); // 4 = Contacts
 
+        return view('contacts_module::contacts.edit', compact('contact', 'customFields'));
     }
 
     public function update(Request $request, $id)
@@ -119,6 +132,14 @@ class ContactsController extends Controller
             'department' => 'nullable|string|max:30',
         ]);
 
+        // Extract custom fields (cf_*)
+        $customFields = [];
+        foreach ($request->all() as $key => $value) {
+            if (str_starts_with($key, 'cf_')) {
+                $customFields[$key] = $value;
+            }
+        }
+
         $dto = new UpdateContactDTO([
             'lastName' => $validated['lastname'],
             'firstName' => $validated['firstname'] ?? null,
@@ -130,6 +151,7 @@ class ContactsController extends Controller
             'mobile' => $validated['mobile'] ?? null,
             'title' => $validated['title'] ?? null,
             'department' => $validated['department'] ?? null,
+            'customFields' => $customFields,
         ]);
 
         $contact = $this->updateContactUseCase->execute((int) $id, $dto);
