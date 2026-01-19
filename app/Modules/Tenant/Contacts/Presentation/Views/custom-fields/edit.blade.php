@@ -11,7 +11,7 @@
                                 href="{{ route('tenant.dashboard') }}">{{ __('contacts::contacts.dashboard') }}</a></li>
                         <li class="breadcrumb-item active">{{ $module }}</li>
                         <li class="breadcrumb-item"><a
-                                href="{{ route('tenant.custom-fields.index', ['module' => $module]) }}">{{ __('contacts::contacts.custom_fields') }}</a>
+                                href="{{ route('tenant.settings.modules.layout', $module) }}">{{ __('contacts::contacts.custom_fields') }}</a>
                         </li>
                         <li class="breadcrumb-item active" aria-current="page">
                             {{ __('contacts::contacts.edit_custom_field') }}
@@ -20,7 +20,7 @@
                 </nav>
             </div>
             <div>
-                <a href="{{ route('tenant.custom-fields.index', ['module' => $module]) }}"
+                <a href="{{ route('tenant.settings.modules.layout', $module) }}"
                     class="btn btn-outline-secondary px-4 py-2 rounded-3 shadow-sm">
                     {{ __('contacts::contacts.cancel') }}
                 </a>
@@ -141,7 +141,7 @@
                                 <button type="submit" class="btn btn-primary btn-lg rounded-3 py-2">
                                     <i class="bi bi-save me-2"></i> {{ __('contacts::contacts.update_field') }}
                                 </button>
-                                <a href="{{ route('tenant.custom-fields.index', ['module' => $module]) }}"
+                                <a href="{{ route('tenant.settings.modules.layout', $module) }}"
                                     class="btn btn-light btn-lg rounded-3 py-2">
                                     {{ __('contacts::contacts.cancel') }}
                                 </a>

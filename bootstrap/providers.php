@@ -8,5 +8,6 @@ return [
     App\Modules\Master\MasterServiceProvider::class,
     App\Modules\Tenant\TenantServiceProvider::class,
     App\Modules\Tenant\Contacts\ContactsModuleServiceProvider::class,
+    App\Modules\Core\VtigerModules\VtigerModulesServiceProvider::class,
 ];
 

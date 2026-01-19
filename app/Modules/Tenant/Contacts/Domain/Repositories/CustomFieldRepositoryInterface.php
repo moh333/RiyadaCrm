@@ -61,6 +61,11 @@ interface CustomFieldRepositoryInterface
     public function createPicklist(string $fieldName, array $values): void;
 
     /**
+     * Delete picklist structure
+     */
+    public function deletePicklist(string $fieldName): void;
+
+    /**
      * Create custom fields table for module if it doesn't exist
      */
     public function ensureCustomTableExists(string $tableName): void;

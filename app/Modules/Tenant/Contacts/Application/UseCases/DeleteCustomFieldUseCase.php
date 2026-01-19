@@ -29,16 +29,18 @@ class DeleteCustomFieldUseCase
             throw new \DomainException("Custom field not found");
         }
 
-        // Soft delete the field definition
+        // 1. Delete the field definition (metadata)
         DB::connection('tenant')->transaction(function () use ($fieldId) {
             $this->customFieldRepository->delete($fieldId);
         });
 
-        // IMPORTANT: We do NOT drop the column from the table for data safety
-        // If you want to physically remove the column, you MUST do it OUTSIDE the transaction
-        // because DDL operations (ALTER TABLE) auto-commit in MySQL
-        // Example:
-        // $this->dropColumnFromTable($customField->getTableName(), $customField->getColumnName());
+        // 2. Cleanup picklist if applicable (MUST be outside transaction for drop table)
+        if ($customField->getUitype()->hasPicklistValues()) {
+            $this->customFieldRepository->deletePicklist($customField->getFieldName());
+        }
+
+        // 3. Drop column from custom fields table (MUST be outside transaction for drop column)
+        $this->dropColumnFromTable($customField->getTableName(), $customField->getColumnName());
     }
 
     /**

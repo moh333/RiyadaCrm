@@ -11,7 +11,7 @@
                                 href="{{ route('tenant.dashboard') }}">{{ __('contacts::contacts.dashboard') }}</a></li>
                         <li class="breadcrumb-item active">{{ $module }}</li>
                         <li class="breadcrumb-item"><a
-                                href="{{ route('tenant.custom-fields.index', ['module' => $module]) }}">{{ __('contacts::contacts.custom_fields') }}</a>
+                                href="{{ route('tenant.settings.modules.layout', $module) }}">{{ __('contacts::contacts.custom_fields') }}</a>
                         </li>
                         <li class="breadcrumb-item active" aria-current="page">
                             {{ __('contacts::contacts.add_custom_field') }}
@@ -20,7 +20,7 @@
                 </nav>
             </div>
             <div>
-                <a href="{{ route('tenant.custom-fields.index', ['module' => $module]) }}"
+                <a href="{{ route('tenant.settings.modules.layout', $module) }}"
                     class="btn btn-outline-secondary px-4 py-2 rounded-3 shadow-sm">
                     {{ __('contacts::contacts.cancel') }}
                 </a>
@@ -87,7 +87,8 @@
                                     <select name="block" class="form-select rounded-3" required>
                                         <option value="">{{ __('contacts::contacts.select_block') }}</option>
                                         @foreach($blocks as $block)
-                                            <option value="{{ $block['id'] }}" @if(old('block') == $block['id']) selected @endif>
+                                            <option value="{{ $block['id'] }}" @if(old('block', $selectedBlockId) == $block['id'])
+                                            selected @endif>
                                                 {{ $block['label'] }}
                                             </option>
                                         @endforeach
@@ -145,7 +146,7 @@
                                 <button type="submit" class="btn btn-primary btn-lg rounded-3 py-2">
                                     <i class="bi bi-save me-2"></i> {{ __('contacts::contacts.create_field') }}
                                 </button>
-                                <a href="{{ route('tenant.custom-fields.index', ['module' => $module]) }}"
+                                <a href="{{ route('tenant.settings.modules.layout', $module) }}"
                                     class="btn btn-light btn-lg rounded-3 py-2">
                                     {{ __('contacts::contacts.cancel') }}
                                 </a>

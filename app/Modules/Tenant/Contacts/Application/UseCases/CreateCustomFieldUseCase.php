@@ -34,7 +34,21 @@ class CreateCustomFieldUseCase
         // Validate column name doesn't exist
         $columnName = $dto->getColumnName();
         if ($this->customFieldRepository->columnExists($columnName, $dto->getTableName())) {
-            throw new \DomainException("Column '{$columnName}' already exists in table");
+            // Check if it's a "ghost" column (exists in DB but not in vtiger_field metadata)
+            $hasMetadata = DB::connection('tenant')
+                ->table('vtiger_field')
+                ->where('tablename', $dto->getTableName())
+                ->where('columnname', $columnName)
+                ->exists();
+
+            if ($hasMetadata) {
+                throw new \DomainException("Column '{$columnName}' already exists and is in use.");
+            }
+
+            // It's a ghost column from a previous failed deletion/creation - drop it to start fresh
+            Schema::connection('tenant')->table($dto->getTableName(), function ($table) use ($columnName) {
+                $table->dropColumn($columnName);
+            });
         }
 
         // Create field definition in a transaction

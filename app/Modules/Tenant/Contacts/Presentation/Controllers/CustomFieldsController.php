@@ -22,6 +22,7 @@ class CustomFieldsController extends Controller
         private CreateCustomFieldUseCase $createCustomFieldUseCase,
         private DeleteCustomFieldUseCase $deleteCustomFieldUseCase,
         private \App\Modules\Tenant\Contacts\Application\UseCases\UpdateCustomFieldUseCase $updateCustomFieldUseCase,
+        private \App\Modules\Core\VtigerModules\Services\ModuleRegistry $moduleRegistry,
     ) {
     }
 
@@ -47,7 +48,7 @@ class CustomFieldsController extends Controller
     /**
      * Show form to create new custom field
      */
-    public function create(string $module)
+    public function create(string $module, Request $request)
     {
         $moduleInfo = $this->getModuleInfo($module);
         if (!$moduleInfo) {
@@ -64,6 +65,7 @@ class CustomFieldsController extends Controller
             'blocks' => $blocks,
             'module' => $module,
             'moduleInfo' => $moduleInfo,
+            'selectedBlockId' => $request->query('block_id'),
         ]);
     }
 
@@ -96,9 +98,10 @@ class CustomFieldsController extends Controller
             ]));
 
             $this->createCustomFieldUseCase->execute($dto);
+            $this->moduleRegistry->refresh();
 
             return redirect()
-                ->route('tenant.custom-fields.index', ['module' => $module])
+                ->route('tenant.settings.modules.layout', $module)
                 ->with('success', __('contacts::contacts.custom_field_created'));
         } catch (\DomainException $e) {
             return back()
@@ -114,9 +117,10 @@ class CustomFieldsController extends Controller
     {
         try {
             $this->deleteCustomFieldUseCase->execute($id);
+            $this->moduleRegistry->refresh();
 
             return redirect()
-                ->route('tenant.custom-fields.index', ['module' => $module])
+                ->route('tenant.settings.modules.layout', $module)
                 ->with('success', __('contacts::contacts.custom_field_deleted'));
         } catch (\DomainException $e) {
             return back()->withErrors(['error' => $e->getMessage()]);
@@ -173,9 +177,10 @@ class CustomFieldsController extends Controller
             $dto = \App\Modules\Tenant\Contacts\Application\DTOs\UpdateCustomFieldDTO::fromRequest($id, $validated);
 
             $this->updateCustomFieldUseCase->execute($dto);
+            $this->moduleRegistry->refresh();
 
             return redirect()
-                ->route('tenant.custom-fields.index', ['module' => $module])
+                ->route('tenant.settings.modules.layout', $module)
                 ->with('success', __('contacts::contacts.custom_field_updated'));
         } catch (\DomainException $e) {
             return back()

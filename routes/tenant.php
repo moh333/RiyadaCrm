@@ -9,6 +9,7 @@ use App\Modules\Tenant\Presentation\Controllers\DashboardController;
 use App\Modules\Tenant\Presentation\Controllers\LoginController;
 use App\Modules\Tenant\Presentation\Controllers\ProfileController;
 use App\Modules\Tenant\Presentation\Controllers\SettingsController;
+use App\Modules\Tenant\Settings\Presentation\Controllers\ModuleManagementController;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Features\UserImpersonation;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
@@ -74,6 +75,28 @@ Route::middleware([
             Route::get('/{module}/{id}/edit', [CustomFieldsController::class, 'edit'])->name('edit');
             Route::put('/{module}/{id}', [CustomFieldsController::class, 'update'])->name('update');
             Route::delete('/{module}/{id}', [CustomFieldsController::class, 'destroy'])->name('destroy');
+        });
+
+        // Module Management
+        Route::prefix('settings/modules')->name('settings.modules.')->group(function () {
+            Route::get('/', [ModuleManagementController::class, 'index'])->name('index');
+            Route::get('/list', [ModuleManagementController::class, 'listModules'])->name('list');
+
+            // Layout Management
+            Route::get('/layouts', [ModuleManagementController::class, 'layouts'])->name('layouts');
+            Route::get('/{module}/layout', [ModuleManagementController::class, 'editLayout'])->name('layout');
+            Route::post('/{module}/layout', [ModuleManagementController::class, 'updateLayout'])->name('layout.update');
+            Route::post('/{module}/block', [ModuleManagementController::class, 'addBlock'])->name('block.add');
+            Route::put('/{module}/block/{blockId}', [ModuleManagementController::class, 'updateBlock'])->name('block.update');
+            Route::delete('/{module}/block/{blockId}', [ModuleManagementController::class, 'deleteBlock'])->name('block.delete');
+
+            // Numbering Configuration
+            Route::get('/numbering', [ModuleManagementController::class, 'numbering'])->name('numbering.selection');
+            Route::get('/{module}/numbering', [ModuleManagementController::class, 'editNumbering'])->name('numbering');
+            Route::post('/{module}/numbering', [ModuleManagementController::class, 'updateNumbering'])->name('numbering.update');
+
+            // Toggle Module Status
+            Route::post('/{module}/toggle', [ModuleManagementController::class, 'toggleStatus'])->name('toggle');
         });
     });
 

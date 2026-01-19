@@ -70,11 +70,16 @@ class EloquentCustomFieldRepository implements CustomFieldRepositoryInterface
 
     public function delete(int $fieldId): void
     {
-        // Soft delete by setting presence = 1
-        DB::connection('tenant')
-            ->table('vtiger_field')
-            ->where('fieldid', $fieldId)
-            ->update(['presence' => 1]);
+        // 1. Get field info first for cleanup
+        $field = DB::connection('tenant')->table('vtiger_field')->where('fieldid', $fieldId)->first();
+        if (!$field)
+            return;
+
+        // 2. Physical delete from vtiger_field
+        DB::connection('tenant')->table('vtiger_field')->where('fieldid', $fieldId)->delete();
+
+        // 3. Cleanup from vtiger_def_org_field
+        DB::connection('tenant')->table('vtiger_def_org_field')->where('fieldid', $fieldId)->delete();
     }
 
     public function getNextSequence(int $blockId): int
@@ -158,6 +163,24 @@ class EloquentCustomFieldRepository implements CustomFieldRepositoryInterface
                 ]);
             }
         }
+    }
+
+    public function deletePicklist(string $fieldName): void
+    {
+        $tableName = "vtiger_{$fieldName}";
+
+        // 1. Get picklist ID
+        $picklist = DB::connection('tenant')->table('vtiger_picklist')->where('name', $fieldName)->first();
+        if ($picklist) {
+            // 2. Cleanup role associations
+            DB::connection('tenant')->table('vtiger_role2picklist')->where('picklistid', $picklist->picklistid)->delete();
+
+            // 3. Delete from vtiger_picklist
+            DB::connection('tenant')->table('vtiger_picklist')->where('picklistid', $picklist->picklistid)->delete();
+        }
+
+        // 4. Drop the picklist table
+        Schema::connection('tenant')->dropIfExists($tableName);
     }
 
     public function ensureCustomTableExists(string $tableName): void
