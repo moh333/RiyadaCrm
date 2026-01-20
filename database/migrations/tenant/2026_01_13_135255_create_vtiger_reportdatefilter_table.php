@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_reportdatefilter')) {
+            return;
+        }
         Schema::create('vtiger_reportdatefilter', function (Blueprint $table) {
             $table->integer('datefilterid')->primary();
             $table->string('datecolumnname', 250)->nullable()->default('');

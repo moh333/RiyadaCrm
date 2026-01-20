@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_user2mergefields')) {
+            return;
+        }
         Schema::create('vtiger_user2mergefields', function (Blueprint $table) {
             $table->integer('userid')->nullable();
             $table->integer('tabid')->nullable();

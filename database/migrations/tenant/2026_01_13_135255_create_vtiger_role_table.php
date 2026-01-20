@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_role')) {
+            return;
+        }
         Schema::create('vtiger_role', function (Blueprint $table) {
             $table->string('roleid')->primary();
             $table->string('rolename', 200)->nullable();

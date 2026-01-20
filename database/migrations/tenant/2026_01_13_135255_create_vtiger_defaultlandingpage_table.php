@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_defaultlandingpage')) {
+            return;
+        }
         Schema::create('vtiger_defaultlandingpage', function (Blueprint $table) {
             $table->integer('defaultlandingpageid', true);
             $table->string('defaultlandingpage', 200);

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_modtracker_detail')) {
+            return;
+        }
         Schema::create('vtiger_modtracker_detail', function (Blueprint $table) {
             $table->integer('id')->nullable()->index('idx');
             $table->string('fieldname', 100)->nullable();

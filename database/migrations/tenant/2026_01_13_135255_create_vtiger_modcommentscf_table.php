@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_modcommentscf')) {
+            return;
+        }
         Schema::create('vtiger_modcommentscf', function (Blueprint $table) {
             $table->integer('modcommentsid')->primary();
         });

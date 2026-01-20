@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_defaultcv')) {
+            return;
+        }
         Schema::create('vtiger_defaultcv', function (Blueprint $table) {
             $table->integer('tabid')->primary();
             $table->string('defaultviewname', 50);

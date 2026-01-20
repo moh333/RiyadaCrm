@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_rss')) {
+            return;
+        }
         Schema::create('vtiger_rss', function (Blueprint $table) {
             $table->integer('rssid')->primary();
             $table->string('rssurl', 200)->default('');

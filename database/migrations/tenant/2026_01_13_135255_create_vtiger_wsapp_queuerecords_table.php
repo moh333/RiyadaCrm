@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_wsapp_queuerecords')) {
+            return;
+        }
         Schema::create('vtiger_wsapp_queuerecords', function (Blueprint $table) {
             $table->integer('syncserverid')->nullable();
             $table->string('details', 300)->nullable();

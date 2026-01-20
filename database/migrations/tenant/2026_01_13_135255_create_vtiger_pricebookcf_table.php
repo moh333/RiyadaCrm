@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_pricebookcf')) {
+            return;
+        }
         Schema::create('vtiger_pricebookcf', function (Blueprint $table) {
             $table->integer('pricebookid')->default(0)->primary();
         });

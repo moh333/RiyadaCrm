@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_dashboard_tabs')) {
+            return;
+        }
         Schema::create('vtiger_dashboard_tabs', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('tabname', 50)->nullable();

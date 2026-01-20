@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_ws_entity_tables')) {
+            return;
+        }
         Schema::table('vtiger_ws_entity_tables', function (Blueprint $table) {
             $table->foreign(['webservice_entity_id'], 'fk_1_vtiger_ws_actor_tables')->references(['id'])->on('vtiger_ws_entity')->onUpdate('no action')->onDelete('cascade');
         });

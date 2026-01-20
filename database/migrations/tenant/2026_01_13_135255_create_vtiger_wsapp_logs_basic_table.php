@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_wsapp_logs_basic')) {
+            return;
+        }
         Schema::create('vtiger_wsapp_logs_basic', function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('extensiontabid')->nullable();

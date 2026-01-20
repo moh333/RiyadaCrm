@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_modtracker_tabs')) {
+            return;
+        }
         Schema::create('vtiger_modtracker_tabs', function (Blueprint $table) {
             $table->integer('tabid')->primary();
             $table->integer('visible')->nullable()->default(0);

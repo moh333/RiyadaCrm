@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_modcomments')) {
+            return;
+        }
         Schema::create('vtiger_modcomments', function (Blueprint $table) {
             $table->integer('modcommentsid')->nullable()->index('fk_crmid_vtiger_modcomments');
             $table->text('commentcontent')->nullable();

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_parenttab')) {
+            return;
+        }
         Schema::create('vtiger_parenttab', function (Blueprint $table) {
             $table->integer('parenttabid')->primary();
             $table->string('parenttab_label', 100);

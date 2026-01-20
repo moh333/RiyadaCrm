@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_convertleadmapping')) {
+            return;
+        }
         Schema::create('vtiger_convertleadmapping', function (Blueprint $table) {
             $table->integer('cfmid', true);
             $table->integer('leadfid');

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_selectcolumn')) {
+            return;
+        }
         Schema::table('vtiger_selectcolumn', function (Blueprint $table) {
             $table->foreign(['queryid'], 'fk_1_vtiger_selectcolumn')->references(['queryid'])->on('vtiger_selectquery')->onUpdate('no action')->onDelete('cascade');
         });

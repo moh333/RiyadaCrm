@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_profile2globalpermissions')) {
+            return;
+        }
         Schema::create('vtiger_profile2globalpermissions', function (Blueprint $table) {
             $table->integer('profileid');
             $table->integer('globalactionid');

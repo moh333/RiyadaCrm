@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_modtracker_relations')) {
+            return;
+        }
         Schema::create('vtiger_modtracker_relations', function (Blueprint $table) {
             $table->integer('id')->primary();
             $table->string('targetmodule', 100);

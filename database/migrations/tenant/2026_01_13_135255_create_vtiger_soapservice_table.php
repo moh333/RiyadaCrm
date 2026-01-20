@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_soapservice')) {
+            return;
+        }
         Schema::create('vtiger_soapservice', function (Blueprint $table) {
             $table->integer('id')->nullable();
             $table->string('type', 25)->nullable();

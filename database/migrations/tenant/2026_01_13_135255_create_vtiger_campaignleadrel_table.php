@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_campaignleadrel')) {
+            return;
+        }
         Schema::create('vtiger_campaignleadrel', function (Blueprint $table) {
             $table->integer('campaignid')->default(0);
             $table->integer('leadid')->default(0);

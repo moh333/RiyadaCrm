@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_inventorytaxinfo')) {
+            return;
+        }
         Schema::create('vtiger_inventorytaxinfo', function (Blueprint $table) {
             $table->integer('taxid')->primary();
             $table->string('taxname', 50)->nullable()->index('inventorytaxinfo_taxname_idx');

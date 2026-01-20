@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_selectcolumn')) {
+            return;
+        }
         Schema::create('vtiger_selectcolumn', function (Blueprint $table) {
             $table->integer('queryid')->index('selectcolumn_queryid_idx');
             $table->integer('columnindex')->default(0);

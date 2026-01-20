@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_settings_blocks')) {
+            return;
+        }
         Schema::create('vtiger_settings_blocks', function (Blueprint $table) {
             $table->integer('blockid')->primary();
             $table->string('label', 250)->nullable();

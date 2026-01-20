@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_activity_recurring_info')) {
+            return;
+        }
         Schema::create('vtiger_activity_recurring_info', function (Blueprint $table) {
             $table->integer('activityid');
             $table->integer('recurrenceid');

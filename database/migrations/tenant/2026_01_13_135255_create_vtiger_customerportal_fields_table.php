@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_customerportal_fields')) {
+            return;
+        }
         Schema::create('vtiger_customerportal_fields', function (Blueprint $table) {
             $table->integer('tabid')->primary();
             $table->text('fieldinfo')->nullable();

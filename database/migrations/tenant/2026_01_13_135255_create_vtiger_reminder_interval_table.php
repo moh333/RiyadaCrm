@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_reminder_interval')) {
+            return;
+        }
         Schema::create('vtiger_reminder_interval', function (Blueprint $table) {
             $table->integer('reminder_intervalid', true);
             $table->string('reminder_interval', 200);

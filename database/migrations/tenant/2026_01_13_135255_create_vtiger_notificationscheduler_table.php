@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_notificationscheduler')) {
+            return;
+        }
         Schema::create('vtiger_notificationscheduler', function (Blueprint $table) {
             $table->integer('schedulednotificationid', true);
             $table->string('schedulednotificationname', 200)->nullable()->unique('notificationscheduler_schedulednotificationname_idx');

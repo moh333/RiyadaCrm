@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_defaulteventstatus')) {
+            return;
+        }
         Schema::create('vtiger_defaulteventstatus', function (Blueprint $table) {
             $table->integer('defaulteventstatusid', true);
             $table->string('defaulteventstatus', 200);

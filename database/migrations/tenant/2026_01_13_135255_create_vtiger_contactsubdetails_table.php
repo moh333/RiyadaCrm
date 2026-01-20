@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_contactsubdetails')) {
+            return;
+        }
         Schema::create('vtiger_contactsubdetails', function (Blueprint $table) {
             $table->integer('contactsubscriptionid')->default(0)->primary();
             $table->string('homephone', 50)->nullable();

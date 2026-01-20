@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_account')) {
+            return;
+        }
         Schema::table('vtiger_account', function (Blueprint $table) {
             $table->foreign(['accountid'], 'fk_1_vtiger_account')->references(['crmid'])->on('vtiger_crmentity')->onUpdate('no action')->onDelete('cascade');
         });

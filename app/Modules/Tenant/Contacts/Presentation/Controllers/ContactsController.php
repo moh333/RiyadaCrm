@@ -35,12 +35,72 @@ class ContactsController extends Controller
 
     public function index(Request $request)
     {
-        $contacts = $this->contactRepository->paginate(20, [
-            'search' => $request->query('search')
-        ]);
+        return view('contacts_module::contacts.index');
+    }
 
-        return view('contacts_module::contacts.index', compact('contacts'));
+    public function data()
+    {
+        $query = $this->contactRepository->getDataTableQuery();
 
+        return \Yajra\DataTables\Facades\DataTables::query($query)
+            ->addColumn('full_name', function ($row) {
+                $displayName = trim(($row->salutation ? $row->salutation . ' ' : '') . $row->firstname . ' ' . $row->lastname);
+                $viewUrl = route('tenant.contacts.show', $row->contactid);
+                $avatar = "https://ui-avatars.com/api/?name=" . urlencode($displayName) . "&background=6366f1&color=fff";
+
+                return '
+                    <div class="d-flex align-items-center">
+                        <img src="' . $avatar . '" class="rounded-circle me-3" width="36" height="36" alt="">
+                        <div>
+                            <a href="' . $viewUrl . '" class="text-decoration-none fw-bold text-main d-block">
+                                ' . $displayName . '
+                            </a>
+                            ' . ($row->title ? '<small class="text-muted">' . e($row->title) . '</small>' : '') . '
+                        </div>
+                    </div>';
+            })
+            ->editColumn('contact_no', function ($row) {
+                return '<span class="badge bg-soft-primary text-primary rounded-pill px-3">' . $row->contact_no . '</span>';
+            })
+            ->editColumn('email', function ($row) {
+                if ($row->email) {
+                    return '<a href="mailto:' . e($row->email) . '" class="text-muted text-decoration-none">
+                                <i class="bi bi-envelope me-1"></i> ' . e($row->email) . '
+                            </a>';
+                }
+                return '<span class="text-muted">-</span>';
+            })
+            ->editColumn('account_name', function ($row) {
+                if ($row->account_name) {
+                    return '<span class="text-main"><i class="bi bi-building me-1"></i> ' . e($row->account_name) . '</span>';
+                }
+                return '<span class="text-muted">-</span>';
+            })
+            ->addColumn('actions', function ($row) {
+                $viewUrl = route('tenant.contacts.show', $row->contactid);
+                $editUrl = route('tenant.contacts.edit', $row->contactid);
+                $deleteUrl = route('tenant.contacts.destroy', $row->contactid);
+                $confirmMsg = __('contacts::contacts.are_you_sure');
+
+                return '
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="' . $viewUrl . '" class="btn btn-sm btn-soft-info rounded-2" title="' . __('contacts::contacts.view') . '">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="' . $editUrl . '" class="btn btn-sm btn-soft-primary rounded-2" title="' . __('contacts::contacts.edit') . '">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form action="' . $deleteUrl . '" method="POST" onsubmit="return confirm(\'' . $confirmMsg . '\')" class="d-inline">
+                            ' . csrf_field() . '
+                            ' . method_field('DELETE') . '
+                            <button type="submit" class="btn btn-sm btn-soft-danger rounded-2" title="' . __('contacts::contacts.delete') . '">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>';
+            })
+            ->rawColumns(['full_name', 'contact_no', 'email', 'account_name', 'actions'])
+            ->make(true);
     }
 
     public function show($id)

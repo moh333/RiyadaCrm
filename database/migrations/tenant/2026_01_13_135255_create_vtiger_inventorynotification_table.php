@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_inventorynotification')) {
+            return;
+        }
         Schema::create('vtiger_inventorynotification', function (Blueprint $table) {
             $table->integer('notificationid', true);
             $table->string('notificationname', 200)->nullable();

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_pobillads')) {
+            return;
+        }
         Schema::create('vtiger_pobillads', function (Blueprint $table) {
             $table->integer('pobilladdressid')->default(0)->primary();
             $table->string('bill_city', 30)->nullable();

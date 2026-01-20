@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_tmp_read_user_sharing_per')) {
+            return;
+        }
         Schema::create('vtiger_tmp_read_user_sharing_per', function (Blueprint $table) {
             $table->integer('userid');
             $table->integer('tabid');

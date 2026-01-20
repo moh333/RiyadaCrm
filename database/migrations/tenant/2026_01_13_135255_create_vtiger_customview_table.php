@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_customview')) {
+            return;
+        }
         Schema::create('vtiger_customview', function (Blueprint $table) {
             $table->integer('cvid')->primary();
             $table->string('viewname', 100);

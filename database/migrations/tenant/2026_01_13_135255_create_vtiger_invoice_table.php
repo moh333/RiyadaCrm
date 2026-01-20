@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_invoice')) {
+            return;
+        }
         Schema::create('vtiger_invoice', function (Blueprint $table) {
             $table->integer('invoiceid')->default(0)->index('invoice_purchaseorderid_idx');
             $table->string('subject', 100)->nullable();

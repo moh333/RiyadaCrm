@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_mailer_queue')) {
+            return;
+        }
         Schema::create('vtiger_mailer_queue', function (Blueprint $table) {
             $table->integer('id')->primary();
             $table->string('fromname', 100)->nullable();

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_contpotentialrel')) {
+            return;
+        }
         Schema::create('vtiger_contpotentialrel', function (Blueprint $table) {
             $table->integer('contactid')->default(0)->index('contpotentialrel_contactid_idx');
             $table->integer('potentialid')->default(0)->index('contpotentialrel_potentialid_idx');

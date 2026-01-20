@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_invoice_recurring_info')) {
+            return;
+        }
         Schema::create('vtiger_invoice_recurring_info', function (Blueprint $table) {
             $table->integer('salesorderid')->primary();
             $table->string('recurring_frequency', 200)->nullable();

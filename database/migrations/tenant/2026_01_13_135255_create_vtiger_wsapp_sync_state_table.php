@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_wsapp_sync_state')) {
+            return;
+        }
         Schema::create('vtiger_wsapp_sync_state', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name', 200)->nullable();

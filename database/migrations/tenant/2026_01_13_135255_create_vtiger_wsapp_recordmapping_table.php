@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_wsapp_recordmapping')) {
+            return;
+        }
         Schema::create('vtiger_wsapp_recordmapping', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('serverid', 10)->nullable();

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_defaultcalendarview')) {
+            return;
+        }
         Schema::create('vtiger_defaultcalendarview', function (Blueprint $table) {
             $table->integer('defaultcalendarviewid', true);
             $table->string('defaultcalendarview', 200);

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_invoicebillads')) {
+            return;
+        }
         Schema::create('vtiger_invoicebillads', function (Blueprint $table) {
             $table->integer('invoicebilladdressid')->default(0)->primary();
             $table->string('bill_city', 30)->nullable();

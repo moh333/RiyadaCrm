@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_inventorysubproductrel')) {
+            return;
+        }
         Schema::create('vtiger_inventorysubproductrel', function (Blueprint $table) {
             $table->integer('id');
             $table->integer('sequence_no');

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_inventoryproductrel')) {
+            return;
+        }
         Schema::create('vtiger_inventoryproductrel', function (Blueprint $table) {
             $table->integer('id')->nullable()->index('inventoryproductrel_id_idx');
             $table->integer('productid')->nullable()->index('inventoryproductrel_productid_idx');

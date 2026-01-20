@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_group2role')) {
+            return;
+        }
         Schema::create('vtiger_group2role', function (Blueprint $table) {
             $table->integer('groupid');
             $table->string('roleid')->index('fk_2_vtiger_group2role');

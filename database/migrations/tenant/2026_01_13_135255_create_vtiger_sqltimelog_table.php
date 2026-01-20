@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_sqltimelog')) {
+            return;
+        }
         Schema::create('vtiger_sqltimelog', function (Blueprint $table) {
             $table->integer('id')->nullable();
             $table->string('type', 10)->nullable();

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_wordtemplates')) {
+            return;
+        }
         Schema::create('vtiger_wordtemplates', function (Blueprint $table) {
             $table->integer('templateid')->primary();
             $table->string('filename', 100);

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_mailscanner_folders')) {
+            return;
+        }
         Schema::create('vtiger_mailscanner_folders', function (Blueprint $table) {
             $table->integer('folderid', true)->index('folderid_idx');
             $table->integer('scannerid')->nullable();

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_relcriteria_grouping')) {
+            return;
+        }
         Schema::create('vtiger_relcriteria_grouping', function (Blueprint $table) {
             $table->integer('groupid');
             $table->integer('queryid');

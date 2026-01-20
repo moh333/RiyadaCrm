@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_ws_entity_tables')) {
+            return;
+        }
         Schema::create('vtiger_ws_entity_tables', function (Blueprint $table) {
             $table->integer('webservice_entity_id');
             $table->string('table_name', 50);

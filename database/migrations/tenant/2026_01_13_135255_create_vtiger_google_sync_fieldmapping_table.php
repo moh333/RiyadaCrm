@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_google_sync_fieldmapping')) {
+            return;
+        }
         Schema::create('vtiger_google_sync_fieldmapping', function (Blueprint $table) {
             $table->string('vtiger_field')->nullable();
             $table->string('google_field')->nullable();

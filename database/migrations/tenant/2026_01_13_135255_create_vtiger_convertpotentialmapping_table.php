@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_convertpotentialmapping')) {
+            return;
+        }
         Schema::create('vtiger_convertpotentialmapping', function (Blueprint $table) {
             $table->integer('cfmid', true);
             $table->integer('potentialfid');

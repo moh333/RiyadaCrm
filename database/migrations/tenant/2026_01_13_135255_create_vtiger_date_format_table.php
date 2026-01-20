@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_date_format')) {
+            return;
+        }
         Schema::create('vtiger_date_format', function (Blueprint $table) {
             $table->integer('date_formatid', true);
             $table->string('date_format', 200);

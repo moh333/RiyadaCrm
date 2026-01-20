@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_no_of_currency_decimals')) {
+            return;
+        }
         Schema::create('vtiger_no_of_currency_decimals', function (Blueprint $table) {
             $table->integer('no_of_currency_decimalsid', true);
             $table->string('no_of_currency_decimals', 200);

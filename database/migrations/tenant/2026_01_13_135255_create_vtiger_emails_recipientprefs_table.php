@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_emails_recipientprefs')) {
+            return;
+        }
         Schema::create('vtiger_emails_recipientprefs', function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('tabid');

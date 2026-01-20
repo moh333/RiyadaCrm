@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_users2group')) {
+            return;
+        }
         Schema::create('vtiger_users2group', function (Blueprint $table) {
             $table->integer('groupid');
             $table->integer('userid')->index('fk_2_vtiger_users2group');

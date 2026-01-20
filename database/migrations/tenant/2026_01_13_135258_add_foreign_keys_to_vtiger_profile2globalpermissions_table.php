@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_profile2globalpermissions')) {
+            return;
+        }
         Schema::table('vtiger_profile2globalpermissions', function (Blueprint $table) {
             $table->foreign(['profileid'], 'fk_1_vtiger_profile2globalpermissions')->references(['profileid'])->on('vtiger_profile')->onUpdate('no action')->onDelete('cascade');
         });

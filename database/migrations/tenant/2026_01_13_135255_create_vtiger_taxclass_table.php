@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_taxclass')) {
+            return;
+        }
         Schema::create('vtiger_taxclass', function (Blueprint $table) {
             $table->integer('taxclassid', true);
             $table->string('taxclass', 200)->unique('taxclass_carrier_idx');

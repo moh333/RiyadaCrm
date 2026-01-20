@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_version')) {
+            return;
+        }
         Schema::create('vtiger_version', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('old_version', 30)->nullable();

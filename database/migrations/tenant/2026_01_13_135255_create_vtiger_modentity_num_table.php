@@ -10,6 +10,9 @@ return new class extends Migration {
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_modentity_num')) {
+            return;
+        }
         Schema::create('vtiger_modentity_num', function (Blueprint $table) {
             $table->id('num_id');
             $table->string('semodule', 100)->nullable();

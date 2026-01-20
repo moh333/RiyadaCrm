@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_relatedlists')) {
+            return;
+        }
         Schema::create('vtiger_relatedlists', function (Blueprint $table) {
             $table->integer('relation_id')->primary();
             $table->integer('tabid')->nullable();

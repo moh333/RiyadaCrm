@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_fieldmodulerel')) {
+            return;
+        }
         Schema::create('vtiger_fieldmodulerel', function (Blueprint $table) {
             $table->integer('fieldid');
             $table->string('module', 100);

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_leadsubdetails')) {
+            return;
+        }
         Schema::create('vtiger_leadsubdetails', function (Blueprint $table) {
             $table->integer('leadsubscriptionid')->default(0)->primary();
             $table->string('website')->nullable();

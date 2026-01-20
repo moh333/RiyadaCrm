@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_report_sharers')) {
+            return;
+        }
         Schema::create('vtiger_report_sharers', function (Blueprint $table) {
             $table->integer('reportid')->index('vtiger_report_sharers_ibfk_1');
             $table->string('rsid')->index('vtiger_rolesd_rsid_ibfk_1');

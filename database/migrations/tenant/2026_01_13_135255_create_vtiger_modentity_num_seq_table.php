@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_modentity_num_seq')) {
+            return;
+        }
         Schema::create('vtiger_modentity_num_seq', function (Blueprint $table) {
             $table->integer('id');
         });

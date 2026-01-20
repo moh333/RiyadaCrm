@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_picklist_transitions')) {
+            return;
+        }
         Schema::create('vtiger_picklist_transitions', function (Blueprint $table) {
             $table->string('fieldname')->primary();
             $table->string('module', 100);

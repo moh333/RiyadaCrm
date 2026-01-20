@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_links')) {
+            return;
+        }
         Schema::create('vtiger_links', function (Blueprint $table) {
             $table->integer('linkid')->primary();
             $table->integer('tabid')->nullable();

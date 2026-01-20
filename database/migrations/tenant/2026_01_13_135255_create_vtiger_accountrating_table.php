@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_accountrating')) {
+            return;
+        }
         Schema::create('vtiger_accountrating', function (Blueprint $table) {
             $table->integer('accountratingid', true);
             $table->string('rating', 200)->unique('accountrating_rating_idx');

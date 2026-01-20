@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_calendarsharedtype')) {
+            return;
+        }
         Schema::create('vtiger_calendarsharedtype', function (Blueprint $table) {
             $table->integer('calendarsharedtypeid', true);
             $table->string('calendarsharedtype', 200);

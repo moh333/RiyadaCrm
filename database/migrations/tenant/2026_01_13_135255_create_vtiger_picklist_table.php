@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_picklist')) {
+            return;
+        }
         Schema::create('vtiger_picklist', function (Blueprint $table) {
             $table->integer('picklistid', true);
             $table->string('name', 200)->unique('picklist_name_idx');

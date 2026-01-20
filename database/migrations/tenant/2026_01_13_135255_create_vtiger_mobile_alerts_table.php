@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_mobile_alerts')) {
+            return;
+        }
         Schema::create('vtiger_mobile_alerts', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('handler_path', 500)->nullable();

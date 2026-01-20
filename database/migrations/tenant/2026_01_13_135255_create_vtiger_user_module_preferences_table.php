@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_user_module_preferences')) {
+            return;
+        }
         Schema::create('vtiger_user_module_preferences', function (Blueprint $table) {
             $table->integer('userid');
             $table->integer('tabid')->index('fk_2_vtiger_user_module_preferences');

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_currency_grouping_pattern')) {
+            return;
+        }
         Schema::create('vtiger_currency_grouping_pattern', function (Blueprint $table) {
             $table->integer('currency_grouping_patternid', true);
             $table->string('currency_grouping_pattern', 200);

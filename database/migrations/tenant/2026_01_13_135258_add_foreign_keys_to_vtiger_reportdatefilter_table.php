@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_reportdatefilter')) {
+            return;
+        }
         Schema::table('vtiger_reportdatefilter', function (Blueprint $table) {
             $table->foreign(['datefilterid'], 'fk_1_vtiger_reportdatefilter')->references(['reportid'])->on('vtiger_report')->onUpdate('no action')->onDelete('cascade');
         });

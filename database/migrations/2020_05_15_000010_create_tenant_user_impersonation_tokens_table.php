@@ -15,6 +15,9 @@ class CreateTenantUserImpersonationTokensTable extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('tenant_user_impersonation_tokens')) {
+            return;
+        }
         Schema::create('tenant_user_impersonation_tokens', function (Blueprint $table) {
             $table->string('token', 128)->primary();
             $table->string('tenant_id');

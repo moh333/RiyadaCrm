@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_projectmilestonecf')) {
+            return;
+        }
         Schema::table('vtiger_projectmilestonecf', function (Blueprint $table) {
             $table->foreign(['projectmilestoneid'], 'fk_projectmilestoneid_vtiger_projectmilestonecf')->references(['projectmilestoneid'])->on('vtiger_projectmilestone')->onUpdate('no action')->onDelete('cascade');
         });

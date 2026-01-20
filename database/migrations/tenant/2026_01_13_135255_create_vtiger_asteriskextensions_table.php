@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_asteriskextensions')) {
+            return;
+        }
         Schema::create('vtiger_asteriskextensions', function (Blueprint $table) {
             $table->integer('userid')->nullable();
             $table->string('asterisk_extension', 50)->nullable();

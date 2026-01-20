@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_calendar_default_activitytypes')) {
+            return;
+        }
         Schema::create('vtiger_calendar_default_activitytypes', function (Blueprint $table) {
             $table->integer('id')->primary();
             $table->string('module', 50)->nullable();

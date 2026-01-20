@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_invoicestatushistory')) {
+            return;
+        }
         Schema::create('vtiger_invoicestatushistory', function (Blueprint $table) {
             $table->integer('historyid', true);
             $table->integer('invoiceid')->index('invoicestatushistory_invoiceid_idx');

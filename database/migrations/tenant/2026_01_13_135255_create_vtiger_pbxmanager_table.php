@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_pbxmanager')) {
+            return;
+        }
         Schema::create('vtiger_pbxmanager', function (Blueprint $table) {
             $table->integer('pbxmanagerid', true)->index('index_pbxmanager_id');
             $table->string('direction', 10)->nullable();

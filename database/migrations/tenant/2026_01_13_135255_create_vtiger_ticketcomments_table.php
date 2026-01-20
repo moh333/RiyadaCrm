@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_ticketcomments')) {
+            return;
+        }
         Schema::create('vtiger_ticketcomments', function (Blueprint $table) {
             $table->integer('commentid', true);
             $table->integer('ticketid')->nullable()->index('ticketcomments_ticketid_idx');

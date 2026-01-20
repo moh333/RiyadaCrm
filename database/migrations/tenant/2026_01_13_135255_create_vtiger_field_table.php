@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_field')) {
+            return;
+        }
         Schema::create('vtiger_field', function (Blueprint $table) {
             $table->integer('tabid')->index('field_tabid_idx');
             $table->integer('fieldid', true);

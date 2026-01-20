@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_inventory_tandc')) {
+            return;
+        }
         Schema::create('vtiger_inventory_tandc', function (Blueprint $table) {
             $table->integer('id')->primary();
             $table->string('type', 30);

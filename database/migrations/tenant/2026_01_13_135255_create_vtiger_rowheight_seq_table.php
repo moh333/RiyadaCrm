@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_rowheight_seq')) {
+            return;
+        }
         Schema::create('vtiger_rowheight_seq', function (Blueprint $table) {
             $table->integer('id');
         });

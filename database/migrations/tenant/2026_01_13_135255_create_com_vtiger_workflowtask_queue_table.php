@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('com_vtiger_workflowtask_queue')) {
+            return;
+        }
         Schema::create('com_vtiger_workflowtask_queue', function (Blueprint $table) {
             $table->integer('task_id')->nullable();
             $table->string('entity_id', 100)->nullable();

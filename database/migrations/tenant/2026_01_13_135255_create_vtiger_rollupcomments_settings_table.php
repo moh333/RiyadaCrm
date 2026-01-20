@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_rollupcomments_settings')) {
+            return;
+        }
         Schema::create('vtiger_rollupcomments_settings', function (Blueprint $table) {
             $table->integer('rollupid', true);
             $table->integer('userid');

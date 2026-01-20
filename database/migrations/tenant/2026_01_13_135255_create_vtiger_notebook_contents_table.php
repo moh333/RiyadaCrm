@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_notebook_contents')) {
+            return;
+        }
         Schema::create('vtiger_notebook_contents', function (Blueprint $table) {
             $table->integer('userid');
             $table->integer('notebookid');

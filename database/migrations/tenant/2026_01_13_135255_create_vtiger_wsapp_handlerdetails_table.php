@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_wsapp_handlerdetails')) {
+            return;
+        }
         Schema::create('vtiger_wsapp_handlerdetails', function (Blueprint $table) {
             $table->string('type', 200);
             $table->string('handlerclass', 100)->nullable();

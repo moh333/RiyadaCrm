@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_relcriteria')) {
+            return;
+        }
         Schema::create('vtiger_relcriteria', function (Blueprint $table) {
             $table->integer('queryid')->index('relcriteria_queryid_idx');
             $table->integer('columnindex');

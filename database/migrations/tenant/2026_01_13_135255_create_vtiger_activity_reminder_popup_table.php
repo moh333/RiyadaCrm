@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_activity_reminder_popup')) {
+            return;
+        }
         Schema::create('vtiger_activity_reminder_popup', function (Blueprint $table) {
             $table->integer('reminderid', true);
             $table->string('semodule', 100);

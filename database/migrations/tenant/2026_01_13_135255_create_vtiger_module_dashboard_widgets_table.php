@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_module_dashboard_widgets')) {
+            return;
+        }
         Schema::create('vtiger_module_dashboard_widgets', function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('linkid')->nullable();

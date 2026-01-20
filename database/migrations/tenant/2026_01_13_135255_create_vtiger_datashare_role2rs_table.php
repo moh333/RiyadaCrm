@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_datashare_role2rs')) {
+            return;
+        }
         Schema::create('vtiger_datashare_role2rs', function (Blueprint $table) {
             $table->integer('shareid')->primary();
             $table->string('share_roleid')->nullable()->index('datashare_role2s_share_roleid_idx');

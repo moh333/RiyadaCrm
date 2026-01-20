@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_modcomments')) {
+            return;
+        }
         Schema::table('vtiger_modcomments', function (Blueprint $table) {
             $table->foreign(['modcommentsid'], 'fk_crmid_vtiger_modcomments')->references(['crmid'])->on('vtiger_crmentity')->onUpdate('no action')->onDelete('cascade');
         });

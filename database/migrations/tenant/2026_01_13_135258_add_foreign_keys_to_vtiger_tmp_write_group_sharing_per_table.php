@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_tmp_write_group_sharing_per')) {
+            return;
+        }
         Schema::table('vtiger_tmp_write_group_sharing_per', function (Blueprint $table) {
             $table->foreign(['userid'], 'fk_3_vtiger_tmp_write_group_sharing_per')->references(['id'])->on('vtiger_users')->onUpdate('no action')->onDelete('cascade');
         });

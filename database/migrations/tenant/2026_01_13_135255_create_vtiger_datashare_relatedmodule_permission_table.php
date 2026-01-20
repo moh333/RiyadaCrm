@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_datashare_relatedmodule_permission')) {
+            return;
+        }
         Schema::create('vtiger_datashare_relatedmodule_permission', function (Blueprint $table) {
             $table->integer('shareid');
             $table->integer('datashare_relatedmodule_id');

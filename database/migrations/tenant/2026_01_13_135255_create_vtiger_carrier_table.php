@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_carrier')) {
+            return;
+        }
         Schema::create('vtiger_carrier', function (Blueprint $table) {
             $table->integer('carrierid', true);
             $table->string('carrier', 200)->unique('carrier_carrier_idx');

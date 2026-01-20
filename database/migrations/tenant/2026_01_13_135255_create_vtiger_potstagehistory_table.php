@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_potstagehistory')) {
+            return;
+        }
         Schema::create('vtiger_potstagehistory', function (Blueprint $table) {
             $table->integer('historyid', true);
             $table->integer('potentialid')->index('potstagehistory_potentialid_idx');

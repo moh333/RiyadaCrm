@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_extnstore_users')) {
+            return;
+        }
         Schema::create('vtiger_extnstore_users', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('username', 50)->nullable();

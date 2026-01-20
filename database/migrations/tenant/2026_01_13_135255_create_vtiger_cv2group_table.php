@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_cv2group')) {
+            return;
+        }
         Schema::create('vtiger_cv2group', function (Blueprint $table) {
             $table->integer('cvid')->index('vtiger_cv2group_ibfk_1');
             $table->integer('groupid')->index('vtiger_groups_ibfk_1');

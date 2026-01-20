@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('com_vtiger_workflowtasks_entitymethod_seq')) {
+            return;
+        }
         Schema::create('com_vtiger_workflowtasks_entitymethod_seq', function (Blueprint $table) {
             $table->integer('id');
         });

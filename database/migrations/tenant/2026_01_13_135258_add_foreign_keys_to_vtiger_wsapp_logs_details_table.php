@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_wsapp_logs_details')) {
+            return;
+        }
         Schema::table('vtiger_wsapp_logs_details', function (Blueprint $table) {
             $table->foreign(['id'], 'vtiger_wsapp_logs_basic_ibfk_1')->references(['id'])->on('vtiger_wsapp_logs_basic')->onUpdate('no action')->onDelete('cascade');
         });

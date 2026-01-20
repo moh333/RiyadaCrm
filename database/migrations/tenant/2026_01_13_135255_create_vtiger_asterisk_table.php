@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_asterisk')) {
+            return;
+        }
         Schema::create('vtiger_asterisk', function (Blueprint $table) {
             $table->string('server', 30)->nullable();
             $table->string('port', 30)->nullable();

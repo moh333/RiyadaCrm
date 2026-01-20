@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_mailscanner')) {
+            return;
+        }
         Schema::create('vtiger_mailscanner', function (Blueprint $table) {
             $table->integer('scannerid', true);
             $table->string('scannername', 30)->nullable();

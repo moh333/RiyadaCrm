@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_taxregions')) {
+            return;
+        }
         Schema::create('vtiger_taxregions', function (Blueprint $table) {
             $table->integer('regionid', true);
             $table->string('name', 100);

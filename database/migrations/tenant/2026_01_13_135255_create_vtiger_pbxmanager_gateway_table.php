@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_pbxmanager_gateway')) {
+            return;
+        }
         Schema::create('vtiger_pbxmanager_gateway', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('gateway', 20)->nullable();

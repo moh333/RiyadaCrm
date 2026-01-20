@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_settings_field')) {
+            return;
+        }
         Schema::table('vtiger_settings_field', function (Blueprint $table) {
             $table->foreign(['blockid'], 'fk_1_vtiger_settings_field')->references(['blockid'])->on('vtiger_settings_blocks')->onUpdate('no action')->onDelete('cascade');
         });

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_homemodule')) {
+            return;
+        }
         Schema::create('vtiger_homemodule', function (Blueprint $table) {
             $table->integer('stuffid')->primary();
             $table->string('modulename', 100)->nullable();

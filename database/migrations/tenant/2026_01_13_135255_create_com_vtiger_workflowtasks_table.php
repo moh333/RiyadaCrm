@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('com_vtiger_workflowtasks')) {
+            return;
+        }
         Schema::create('com_vtiger_workflowtasks', function (Blueprint $table) {
             $table->integer('task_id', true)->unique('com_vtiger_workflowtasks_idx');
             $table->integer('workflow_id')->nullable();

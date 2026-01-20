@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_campaigntype')) {
+            return;
+        }
         Schema::create('vtiger_campaigntype', function (Blueprint $table) {
             $table->integer('campaigntypeid', true);
             $table->string('campaigntype', 200)->unique('campaigntype_campaigntype_idx');

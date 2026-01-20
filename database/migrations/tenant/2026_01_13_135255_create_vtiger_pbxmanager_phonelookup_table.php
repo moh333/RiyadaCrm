@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_pbxmanager_phonelookup')) {
+            return;
+        }
         Schema::create('vtiger_pbxmanager_phonelookup', function (Blueprint $table) {
             $table->integer('crmid')->nullable();
             $table->string('setype', 30)->nullable();

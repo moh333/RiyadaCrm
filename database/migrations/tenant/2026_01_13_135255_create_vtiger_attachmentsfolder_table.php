@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_attachmentsfolder')) {
+            return;
+        }
         Schema::create('vtiger_attachmentsfolder', function (Blueprint $table) {
             $table->integer('folderid', true);
             $table->string('foldername', 200);

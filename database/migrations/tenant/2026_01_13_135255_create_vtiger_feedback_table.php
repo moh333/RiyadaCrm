@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_feedback')) {
+            return;
+        }
         Schema::create('vtiger_feedback', function (Blueprint $table) {
             $table->integer('userid')->nullable();
             $table->string('dontshow', 19)->nullable()->default('false');

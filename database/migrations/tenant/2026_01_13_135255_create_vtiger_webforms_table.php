@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_webforms')) {
+            return;
+        }
         Schema::create('vtiger_webforms', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name', 100)->unique('webformname');

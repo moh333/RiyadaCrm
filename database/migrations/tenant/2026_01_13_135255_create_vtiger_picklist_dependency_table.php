@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_picklist_dependency')) {
+            return;
+        }
         Schema::create('vtiger_picklist_dependency', function (Blueprint $table) {
             $table->integer('id')->primary();
             $table->integer('tabid');

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_module_dashboard_widgets')) {
+            return;
+        }
         Schema::table('vtiger_module_dashboard_widgets', function (Blueprint $table) {
             $table->foreign(['dashboardtabid'], 'vtiger_module_dashboard_widgets_ibfk_1')->references(['id'])->on('vtiger_dashboard_tabs')->onUpdate('no action')->onDelete('cascade');
         });

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_currency_symbol_placement')) {
+            return;
+        }
         Schema::create('vtiger_currency_symbol_placement', function (Blueprint $table) {
             $table->integer('currency_symbol_placementid', true);
             $table->string('currency_symbol_placement', 30);

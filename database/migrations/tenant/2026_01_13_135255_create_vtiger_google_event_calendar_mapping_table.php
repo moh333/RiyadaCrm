@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_google_event_calendar_mapping')) {
+            return;
+        }
         Schema::create('vtiger_google_event_calendar_mapping', function (Blueprint $table) {
             $table->string('event_id')->nullable();
             $table->string('calendar_id')->nullable();

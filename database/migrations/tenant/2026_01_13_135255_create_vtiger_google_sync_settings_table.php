@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_google_sync_settings')) {
+            return;
+        }
         Schema::create('vtiger_google_sync_settings', function (Blueprint $table) {
             $table->integer('user')->nullable();
             $table->string('module', 50)->nullable();

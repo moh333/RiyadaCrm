@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_import_queue')) {
+            return;
+        }
         Schema::create('vtiger_import_queue', function (Blueprint $table) {
             $table->integer('importid')->primary();
             $table->integer('userid');

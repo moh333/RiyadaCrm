@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_rating')) {
+            return;
+        }
         Schema::create('vtiger_rating', function (Blueprint $table) {
             $table->integer('rating_id', true);
             $table->string('rating', 200)->nullable();

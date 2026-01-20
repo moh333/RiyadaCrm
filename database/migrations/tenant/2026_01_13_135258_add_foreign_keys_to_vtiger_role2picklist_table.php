@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_role2picklist')) {
+            return;
+        }
         Schema::table('vtiger_role2picklist', function (Blueprint $table) {
             $table->foreign(['roleid'], 'fk_1_vtiger_role2picklist')->references(['roleid'])->on('vtiger_role')->onUpdate('no action')->onDelete('cascade');
             $table->foreign(['picklistid'], 'fk_2_vtiger_role2picklist')->references(['picklistid'])->on('vtiger_picklist')->onUpdate('no action')->onDelete('cascade');

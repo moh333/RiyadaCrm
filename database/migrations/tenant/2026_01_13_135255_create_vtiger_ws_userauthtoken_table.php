@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_ws_userauthtoken')) {
+            return;
+        }
         Schema::create('vtiger_ws_userauthtoken', function (Blueprint $table) {
             $table->integer('userid')->unique('userid_idx');
             $table->string('token', 36);

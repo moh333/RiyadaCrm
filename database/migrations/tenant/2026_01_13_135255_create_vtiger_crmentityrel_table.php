@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_crmentityrel')) {
+            return;
+        }
         Schema::create('vtiger_crmentityrel', function (Blueprint $table) {
             $table->integer('crmid')->index('crmid_idx');
             $table->string('module', 100);

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_reportgroupbycolumn')) {
+            return;
+        }
         Schema::create('vtiger_reportgroupbycolumn', function (Blueprint $table) {
             $table->integer('reportid')->nullable()->index('fk_1_vtiger_reportgroupbycolumn');
             $table->integer('sortid')->nullable();

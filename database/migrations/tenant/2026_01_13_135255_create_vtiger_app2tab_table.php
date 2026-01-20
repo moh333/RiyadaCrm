@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_app2tab')) {
+            return;
+        }
         Schema::create('vtiger_app2tab', function (Blueprint $table) {
             $table->integer('tabid')->nullable()->index('vtiger_app2tab_fk_tab');
             $table->string('appname', 20)->nullable();

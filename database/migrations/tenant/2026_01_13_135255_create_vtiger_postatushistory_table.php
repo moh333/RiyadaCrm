@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_postatushistory')) {
+            return;
+        }
         Schema::create('vtiger_postatushistory', function (Blueprint $table) {
             $table->integer('historyid', true);
             $table->integer('purchaseorderid')->index('postatushistory_purchaseorderid_idx');

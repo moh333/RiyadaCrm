@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_taskpriority')) {
+            return;
+        }
         Schema::create('vtiger_taskpriority', function (Blueprint $table) {
             $table->integer('taskpriorityid', true);
             $table->string('taskpriority', 200)->nullable();

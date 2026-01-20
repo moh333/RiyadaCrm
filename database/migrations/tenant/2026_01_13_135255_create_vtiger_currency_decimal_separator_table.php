@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_currency_decimal_separator')) {
+            return;
+        }
         Schema::create('vtiger_currency_decimal_separator', function (Blueprint $table) {
             $table->integer('currency_decimal_separatorid', true);
             $table->string('currency_decimal_separator', 2);

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_cvstdfilter')) {
+            return;
+        }
         Schema::create('vtiger_cvstdfilter', function (Blueprint $table) {
             $table->integer('cvid')->index('cvstdfilter_cvid_idx');
             $table->string('columnname', 250)->nullable()->default('');

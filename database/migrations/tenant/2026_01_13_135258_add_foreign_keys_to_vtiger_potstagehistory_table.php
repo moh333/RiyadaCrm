@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_potstagehistory')) {
+            return;
+        }
         Schema::table('vtiger_potstagehistory', function (Blueprint $table) {
             $table->foreign(['potentialid'], 'fk_1_vtiger_potstagehistory')->references(['potentialid'])->on('vtiger_potential')->onUpdate('no action')->onDelete('cascade');
         });

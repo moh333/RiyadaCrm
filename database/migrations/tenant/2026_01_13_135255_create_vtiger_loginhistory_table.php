@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_loginhistory')) {
+            return;
+        }
         Schema::create('vtiger_loginhistory', function (Blueprint $table) {
             $table->integer('login_id', true);
             $table->string('user_name')->nullable();

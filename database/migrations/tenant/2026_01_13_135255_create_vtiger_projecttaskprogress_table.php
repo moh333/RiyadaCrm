@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_projecttaskprogress')) {
+            return;
+        }
         Schema::create('vtiger_projecttaskprogress', function (Blueprint $table) {
             $table->integer('projecttaskprogressid', true);
             $table->string('projecttaskprogress', 200);

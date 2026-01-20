@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_servicecontracts')) {
+            return;
+        }
         Schema::create('vtiger_servicecontracts', function (Blueprint $table) {
             $table->integer('servicecontractsid')->nullable()->index('fk_crmid_vtiger_servicecontracts');
             $table->date('start_date')->nullable();

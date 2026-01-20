@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_usageunit')) {
+            return;
+        }
         Schema::create('vtiger_usageunit', function (Blueprint $table) {
             $table->integer('usageunitid', true);
             $table->string('usageunit', 200)->unique('usageunit_usageunit_idx');

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_customerportal_prefs')) {
+            return;
+        }
         Schema::create('vtiger_customerportal_prefs', function (Blueprint $table) {
             $table->integer('tabid');
             $table->string('prefkey', 100);

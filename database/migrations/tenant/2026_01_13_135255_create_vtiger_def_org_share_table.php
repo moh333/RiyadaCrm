@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_def_org_share')) {
+            return;
+        }
         Schema::create('vtiger_def_org_share', function (Blueprint $table) {
             $table->integer('ruleid', true);
             $table->integer('tabid');

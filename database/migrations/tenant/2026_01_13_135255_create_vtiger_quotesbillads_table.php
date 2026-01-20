@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_quotesbillads')) {
+            return;
+        }
         Schema::create('vtiger_quotesbillads', function (Blueprint $table) {
             $table->integer('quotebilladdressid')->default(0)->primary();
             $table->string('bill_city', 30)->nullable();

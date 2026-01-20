@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_cron_task')) {
+            return;
+        }
         Schema::create('vtiger_cron_task', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name', 100)->nullable()->unique('name');

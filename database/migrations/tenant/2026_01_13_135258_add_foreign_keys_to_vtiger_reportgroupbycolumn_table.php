@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_reportgroupbycolumn')) {
+            return;
+        }
         Schema::table('vtiger_reportgroupbycolumn', function (Blueprint $table) {
             $table->foreign(['reportid'], 'fk_1_vtiger_reportgroupbycolumn')->references(['reportid'])->on('vtiger_report')->onUpdate('no action')->onDelete('cascade');
         });

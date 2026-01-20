@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_quotescf')) {
+            return;
+        }
         Schema::create('vtiger_quotescf', function (Blueprint $table) {
             $table->integer('quoteid')->default(0)->primary();
         });

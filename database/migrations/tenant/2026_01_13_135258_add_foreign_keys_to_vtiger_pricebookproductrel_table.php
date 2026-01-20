@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_pricebookproductrel')) {
+            return;
+        }
         Schema::table('vtiger_pricebookproductrel', function (Blueprint $table) {
             $table->foreign(['pricebookid'], 'fk_1_vtiger_pricebookproductrel')->references(['pricebookid'])->on('vtiger_pricebook')->onUpdate('no action')->onDelete('cascade');
         });

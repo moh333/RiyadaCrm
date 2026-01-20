@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_smsnotifier_status')) {
+            return;
+        }
         Schema::create('vtiger_smsnotifier_status', function (Blueprint $table) {
             $table->integer('smsnotifierid')->nullable();
             $table->string('tonumber', 20)->nullable();

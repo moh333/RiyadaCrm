@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_start_hour')) {
+            return;
+        }
         Schema::create('vtiger_start_hour', function (Blueprint $table) {
             $table->integer('start_hourid', true);
             $table->string('start_hour', 200);

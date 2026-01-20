@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_users_last_import')) {
+            return;
+        }
         Schema::create('vtiger_users_last_import', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('assigned_user_id', 36)->nullable()->index('idx_user_id');

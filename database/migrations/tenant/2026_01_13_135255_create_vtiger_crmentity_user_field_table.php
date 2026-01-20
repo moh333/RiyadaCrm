@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_crmentity_user_field')) {
+            return;
+        }
         Schema::create('vtiger_crmentity_user_field', function (Blueprint $table) {
             $table->integer('recordid');
             $table->integer('userid');

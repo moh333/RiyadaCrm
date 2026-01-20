@@ -207,5 +207,10 @@ interface ContactRepositoryInterface
      * Get paginated contacts
      */
     public function paginate(int $perPage = 20, array $filters = []): \Illuminate\Pagination\LengthAwarePaginator;
+
+    /**
+     * Get Query Builder for DataTables
+     */
+    public function getDataTableQuery(): \Illuminate\Database\Query\Builder;
 }
 

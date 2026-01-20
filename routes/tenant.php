@@ -57,6 +57,7 @@ Route::middleware([
         // Contacts Routes
         Route::prefix('contacts')->name('contacts.')->group(function () {
             Route::get('/', [ContactsController::class, 'index'])->name('index');
+            Route::get('/data', [ContactsController::class, 'data'])->name('data');
             Route::get('/create', [ContactsController::class, 'create'])->name('create');
             Route::post('/', [ContactsController::class, 'store'])->name('store');
 

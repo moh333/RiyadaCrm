@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_google_oauth2')) {
+            return;
+        }
         Schema::create('vtiger_google_oauth2', function (Blueprint $table) {
             $table->string('service', 20)->nullable();
             $table->string('access_token', 500)->nullable();

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_mailmanager_mailattachments')) {
+            return;
+        }
         Schema::create('vtiger_mailmanager_mailattachments', function (Blueprint $table) {
             $table->integer('userid')->nullable();
             $table->integer('muid')->nullable();

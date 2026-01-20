@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_shorturls')) {
+            return;
+        }
         Schema::create('vtiger_shorturls', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('uid', 50)->nullable()->index('uid');

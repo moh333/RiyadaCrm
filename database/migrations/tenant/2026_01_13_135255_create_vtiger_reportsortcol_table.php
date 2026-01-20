@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_reportsortcol')) {
+            return;
+        }
         Schema::create('vtiger_reportsortcol', function (Blueprint $table) {
             $table->integer('sortcolid');
             $table->integer('reportid')->index('fk_1_vtiger_reportsortcol');

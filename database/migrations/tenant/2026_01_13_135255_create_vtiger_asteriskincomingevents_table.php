@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_asteriskincomingevents')) {
+            return;
+        }
         Schema::create('vtiger_asteriskincomingevents', function (Blueprint $table) {
             $table->string('uid')->primary();
             $table->string('channel', 100)->nullable();

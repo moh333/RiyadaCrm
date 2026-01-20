@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_import_locks')) {
+            return;
+        }
         Schema::create('vtiger_import_locks', function (Blueprint $table) {
             $table->integer('vtiger_import_lock_id')->primary();
             $table->integer('userid');

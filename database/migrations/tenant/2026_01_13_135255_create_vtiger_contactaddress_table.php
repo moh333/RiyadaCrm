@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_contactaddress')) {
+            return;
+        }
         Schema::create('vtiger_contactaddress', function (Blueprint $table) {
             $table->integer('contactaddressid')->default(0)->primary();
             $table->string('mailingcity', 40)->nullable();

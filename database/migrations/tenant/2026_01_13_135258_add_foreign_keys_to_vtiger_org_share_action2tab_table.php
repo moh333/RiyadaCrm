@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_org_share_action2tab')) {
+            return;
+        }
         Schema::table('vtiger_org_share_action2tab', function (Blueprint $table) {
             $table->foreign(['tabid'], 'fk_2_vtiger_org_share_action2tab')->references(['tabid'])->on('vtiger_tab')->onUpdate('no action')->onDelete('cascade');
         });

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_smsnotifier_servers')) {
+            return;
+        }
         Schema::create('vtiger_smsnotifier_servers', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('password')->nullable();

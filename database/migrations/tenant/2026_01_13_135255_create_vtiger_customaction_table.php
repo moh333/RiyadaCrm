@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_customaction')) {
+            return;
+        }
         Schema::create('vtiger_customaction', function (Blueprint $table) {
             $table->integer('cvid')->index('customaction_cvid_idx');
             $table->string('subject', 250);

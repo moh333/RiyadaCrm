@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_projecttask_status_color')) {
+            return;
+        }
         Schema::create('vtiger_projecttask_status_color', function (Blueprint $table) {
             $table->string('status')->nullable()->unique('status');
             $table->string('defaultcolor', 50)->nullable();

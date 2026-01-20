@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_email_track')) {
+            return;
+        }
         Schema::create('vtiger_email_track', function (Blueprint $table) {
             $table->integer('crmid')->nullable();
             $table->integer('mailid')->nullable();

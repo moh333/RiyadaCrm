@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_webforms_field')) {
+            return;
+        }
         Schema::table('vtiger_webforms_field', function (Blueprint $table) {
             $table->foreign(['webformid'], 'fk_1_vtiger_webforms_field')->references(['id'])->on('vtiger_webforms')->onUpdate('no action')->onDelete('cascade');
             $table->foreign(['fieldid'], 'fk_4_vtiger_webforms_field')->references(['fieldid'])->on('vtiger_field')->onUpdate('no action')->onDelete('cascade');

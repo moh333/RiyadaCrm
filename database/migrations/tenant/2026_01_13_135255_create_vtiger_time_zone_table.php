@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_time_zone')) {
+            return;
+        }
         Schema::create('vtiger_time_zone', function (Blueprint $table) {
             $table->integer('time_zoneid', true);
             $table->string('time_zone', 200);

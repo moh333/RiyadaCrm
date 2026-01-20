@@ -14,6 +14,7 @@ enum CustomFieldType: int
     case EMAIL = 13;            // Email address
     case PHONE = 11;            // Phone number
     case PICKLIST = 15;         // Dropdown/Select
+    case PICKLIST_READONLY = 16; // Read-only Picklist (System)
     case TEXTAREA = 21;         // Multi-line text
     case DATE = 5;              // Date picker
     case DATETIME = 50;         // Date and time
@@ -36,7 +37,7 @@ enum CustomFieldType: int
             self::TEXT => 'Text',
             self::EMAIL => 'Email',
             self::PHONE => 'Phone',
-            self::PICKLIST => 'Picklist',
+            self::PICKLIST, self::PICKLIST_READONLY => 'Picklist',
             self::TEXTAREA => 'Text Area',
             self::DATE => 'Date',
             self::DATETIME => 'Date & Time',
@@ -59,7 +60,7 @@ enum CustomFieldType: int
     {
         return match ($this) {
             self::TEXT, self::EMAIL, self::PHONE, self::URL, self::SKYPE => 'string',
-            self::PICKLIST => 'string',
+            self::PICKLIST, self::PICKLIST_READONLY => 'string',
             self::TEXTAREA => 'text',
             self::DATE => 'date',
             self::DATETIME => 'datetime',
@@ -78,7 +79,7 @@ enum CustomFieldType: int
     {
         return match ($this) {
             self::TEXT, self::EMAIL, self::PHONE, self::URL, self::SKYPE => 255,
-            self::PICKLIST => 100,
+            self::PICKLIST, self::PICKLIST_READONLY => 100,
             self::MULTIPICKLIST => 65535,
             default => null,
         };
@@ -89,6 +90,6 @@ enum CustomFieldType: int
      */
     public function hasPicklistValues(): bool
     {
-        return in_array($this, [self::PICKLIST, self::MULTIPICKLIST]);
+        return in_array($this, [self::PICKLIST, self::PICKLIST_READONLY, self::MULTIPICKLIST]);
     }
 }

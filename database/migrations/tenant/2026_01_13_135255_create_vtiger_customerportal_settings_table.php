@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_customerportal_settings')) {
+            return;
+        }
         Schema::create('vtiger_customerportal_settings', function (Blueprint $table) {
             $table->integer('id')->nullable();
             $table->string('url', 250)->nullable();

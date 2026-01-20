@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('com_vtiger_workflow_activatedonce')) {
+            return;
+        }
         Schema::create('com_vtiger_workflow_activatedonce', function (Blueprint $table) {
             $table->integer('workflow_id');
             $table->integer('entity_id');

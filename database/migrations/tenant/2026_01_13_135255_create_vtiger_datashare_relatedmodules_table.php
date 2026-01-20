@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_datashare_relatedmodules')) {
+            return;
+        }
         Schema::create('vtiger_datashare_relatedmodules', function (Blueprint $table) {
             $table->integer('datashare_relatedmodule_id')->primary();
             $table->integer('tabid')->nullable()->index('datashare_relatedmodules_tabid_idx');

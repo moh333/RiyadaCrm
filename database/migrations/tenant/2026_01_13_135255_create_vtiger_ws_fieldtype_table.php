@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_ws_fieldtype')) {
+            return;
+        }
         Schema::create('vtiger_ws_fieldtype', function (Blueprint $table) {
             $table->integer('fieldtypeid', true);
             $table->string('uitype', 30)->unique('uitype_idx');

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_leadstage')) {
+            return;
+        }
         Schema::create('vtiger_leadstage', function (Blueprint $table) {
             $table->integer('leadstageid', true);
             $table->string('stage', 200)->unique('leadstage_stage_idx');

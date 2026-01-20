@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_smsnotifier')) {
+            return;
+        }
         Schema::table('vtiger_smsnotifier', function (Blueprint $table) {
             $table->foreign(['smsnotifierid'], 'fk_crmid_vtiger_smsnotifier')->references(['crmid'])->on('vtiger_crmentity')->onUpdate('no action')->onDelete('cascade');
         });

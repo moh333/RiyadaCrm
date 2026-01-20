@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_pbxmanager')) {
+            return;
+        }
         Schema::table('vtiger_pbxmanager', function (Blueprint $table) {
             $table->foreign(['pbxmanagerid'], 'fk_crmid_vtiger_pbxmanager')->references(['crmid'])->on('vtiger_crmentity')->onUpdate('no action')->onDelete('cascade');
         });

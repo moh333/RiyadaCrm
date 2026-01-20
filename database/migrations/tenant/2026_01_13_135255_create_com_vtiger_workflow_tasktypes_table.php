@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('com_vtiger_workflow_tasktypes')) {
+            return;
+        }
         Schema::create('com_vtiger_workflow_tasktypes', function (Blueprint $table) {
             $table->integer('id');
             $table->string('tasktypename');

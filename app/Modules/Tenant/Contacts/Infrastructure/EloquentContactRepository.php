@@ -616,11 +616,7 @@ class EloquentContactRepository implements ContactRepositoryInterface
      */
     public function paginate(int $perPage = 20, array $filters = []): \Illuminate\Pagination\LengthAwarePaginator
     {
-        $query = DB::connection('tenant')
-            ->table('vtiger_contactdetails as cd')
-            ->join('vtiger_crmentity as ce', 'ce.crmid', '=', 'cd.contactid')
-            ->leftJoin('vtiger_account as acc', 'acc.accountid', '=', 'cd.accountid')
-            ->where('ce.deleted', 0);
+        $query = $this->getDataTableQuery();
 
         if (!empty($filters['search'])) {
             $search = '%' . $filters['search'] . '%';
@@ -732,6 +728,28 @@ class EloquentContactRepository implements ContactRepositoryInterface
         }
 
         return $contact;
+    }
+
+    public function getDataTableQuery(): \Illuminate\Database\Query\Builder
+    {
+        return DB::connection('tenant')
+            ->table('vtiger_contactdetails as cd')
+            ->join('vtiger_crmentity as ce', 'ce.crmid', '=', 'cd.contactid')
+            ->leftJoin('vtiger_account as acc', 'acc.accountid', '=', 'cd.accountid')
+            ->where('ce.deleted', 0)
+            ->select([
+                'cd.contactid',
+                'cd.contact_no',
+                'cd.firstname',
+                'cd.lastname',
+                'cd.salutation',
+                'cd.email',
+                'cd.title',
+                'cd.accountid',
+                'ce.smownerid',
+                'ce.modifiedtime',
+                'acc.accountname as account_name'
+            ]);
     }
 }
 

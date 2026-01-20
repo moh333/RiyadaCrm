@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_freetags')) {
+            return;
+        }
         Schema::create('vtiger_freetags', function (Blueprint $table) {
             $table->integer('id')->primary();
             $table->string('tag', 50)->default('');

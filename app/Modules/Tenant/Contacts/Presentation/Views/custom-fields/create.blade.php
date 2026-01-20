@@ -165,8 +165,8 @@
 
             function togglePicklist() {
                 const val = uitypeSelector.value;
-                // 15 = Picklist, 33 = MultiPicklist
-                if (val === '15' || val === '33') {
+                // 15 = Picklist, 16 = System Picklist, 33 = MultiPicklist
+                if (val === '15' || val === '16' || val === '33') {
                     picklistContainer.classList.remove('d-none');
                 } else {
                     picklistContainer.classList.add('d-none');

@@ -18,10 +18,6 @@ final class FullName
 
     private function __construct(?string $salutation, ?string $firstName, string $lastName)
     {
-        if (empty(trim($lastName))) {
-            throw new \InvalidArgumentException('Last name is mandatory');
-        }
-
         $this->salutation = $salutation;
         $this->firstName = $firstName;
         $this->lastName = $lastName;

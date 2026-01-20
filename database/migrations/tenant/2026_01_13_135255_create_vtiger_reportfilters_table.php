@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_reportfilters')) {
+            return;
+        }
         Schema::create('vtiger_reportfilters', function (Blueprint $table) {
             $table->integer('filterid');
             $table->string('name', 200);

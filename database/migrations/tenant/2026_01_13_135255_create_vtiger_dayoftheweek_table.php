@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_dayoftheweek')) {
+            return;
+        }
         Schema::create('vtiger_dayoftheweek', function (Blueprint $table) {
             $table->integer('dayoftheweekid', true);
             $table->string('dayoftheweek', 200);

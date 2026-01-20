@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_campaignaccountrel')) {
+            return;
+        }
         Schema::create('vtiger_campaignaccountrel', function (Blueprint $table) {
             $table->integer('campaignid')->nullable();
             $table->integer('accountid')->nullable();

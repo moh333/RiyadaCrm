@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_entityname')) {
+            return;
+        }
         Schema::create('vtiger_entityname', function (Blueprint $table) {
             $table->integer('tabid')->default(0)->index('entityname_tabid_idx');
             $table->string('modulename', 100)->nullable();

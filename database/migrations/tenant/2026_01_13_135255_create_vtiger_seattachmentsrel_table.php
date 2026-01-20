@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_seattachmentsrel')) {
+            return;
+        }
         Schema::create('vtiger_seattachmentsrel', function (Blueprint $table) {
             $table->integer('crmid')->default(0)->index('seattachmentsrel_crmid_idx');
             $table->integer('attachmentsid')->default(0)->index('seattachmentsrel_attachmentsid_idx');

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_default_record_view')) {
+            return;
+        }
         Schema::create('vtiger_default_record_view', function (Blueprint $table) {
             $table->integer('default_record_viewid', true);
             $table->string('default_record_view', 200);

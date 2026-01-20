@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('vtiger_emailtemplates')) {
+            return;
+        }
         Schema::create('vtiger_emailtemplates', function (Blueprint $table) {
             $table->string('foldername', 100)->nullable();
             $table->string('templatename', 100)->nullable();
