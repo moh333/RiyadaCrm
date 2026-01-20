@@ -233,6 +233,11 @@ class CustomField
         $this->typeOfData = $typeOfData;
     }
 
+    public function setUitype(CustomFieldType $uitype): void
+    {
+        $this->uitype = $uitype;
+    }
+
     public function setDefaultValue(?string $defaultValue): void
     {
         $this->defaultValue = $defaultValue;

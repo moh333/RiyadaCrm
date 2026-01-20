@@ -82,13 +82,15 @@ class CreateCustomFieldUseCase
             // Save field definition
             $this->customFieldRepository->save($customField);
 
-            // If picklist, create the picklist structure
-            if ($dto->uitype->hasPicklistValues() && !empty($dto->picklistValues)) {
-                $this->customFieldRepository->createPicklist($dto->fieldName, $dto->picklistValues);
-            }
-
             return $customField;
         });
+
+        // If picklist, create the picklist structure
+        // This is done outside the transaction above because it contains DDL (Schema::create)
+        // which causes an implicit commit in MySQL.
+        if ($dto->uitype->hasPicklistValues() && !empty($dto->picklistValues)) {
+            $this->customFieldRepository->createPicklist($dto->fieldName, $dto->picklistValues);
+        }
 
         // Add column to custom fields table AFTER transaction
         try {
@@ -131,7 +133,8 @@ class CreateCustomFieldUseCase
                     $table->integer($columnName)->nullable();
                     break;
                 case 'decimal':
-                    $table->decimal($columnName, 10, 2)->nullable();
+                    [$precision, $scale] = $uitype->decimalPrecision();
+                    $table->decimal($columnName, $precision, $scale)->nullable();
                     break;
                 case 'date':
                     $table->date($columnName)->nullable();

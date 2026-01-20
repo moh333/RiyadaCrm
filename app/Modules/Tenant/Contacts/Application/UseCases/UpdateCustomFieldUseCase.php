@@ -32,10 +32,20 @@ class UpdateCustomFieldUseCase
             helpInfo: $dto->helpInfo
         );
 
+        if ($dto->uitype !== null) {
+            $field->setUitype(\App\Modules\Tenant\Contacts\Domain\Enums\CustomFieldType::from($dto->uitype));
+        }
+
         $field->setBlock($dto->block);
         $field->setTypeOfData($dto->typeOfData);
         $field->setDefaultValue($dto->defaultValue);
 
         $this->customFieldRepository->save($field);
+
+        // Sync picklist values if applicable
+        if ($field->getUitype()->hasPicklistValues() && !empty($dto->picklistValues)) {
+            $this->customFieldRepository->deletePicklist($field->getFieldName());
+            $this->customFieldRepository->createPicklist($field->getFieldName(), $dto->picklistValues);
+        }
     }
 }

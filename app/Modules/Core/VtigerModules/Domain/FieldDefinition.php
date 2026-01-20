@@ -139,6 +139,11 @@ class FieldDefinition
         return $this->uitype;
     }
 
+    public function getUitypeEnum(): \App\Modules\Tenant\Contacts\Domain\Enums\CustomFieldType
+    {
+        return \App\Modules\Tenant\Contacts\Domain\Enums\CustomFieldType::from($this->uitype);
+    }
+
     public function getTypeofdata(): string
     {
         return $this->typeofdata;

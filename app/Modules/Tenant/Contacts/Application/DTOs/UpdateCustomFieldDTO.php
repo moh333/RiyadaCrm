@@ -17,6 +17,8 @@ class UpdateCustomFieldDTO
         public readonly bool $quickCreate = false,
         public readonly ?string $helpInfo = null,
         public readonly ?string $defaultValue = null,
+        public readonly array $picklistValues = [],
+        public readonly ?int $uitype = null,
     ) {
     }
 
@@ -33,6 +35,10 @@ class UpdateCustomFieldDTO
             quickCreate: (bool) ($data['quickcreate'] ?? false),
             helpInfo: $data['helpinfo'] ?? null,
             defaultValue: $data['defaultvalue'] ?? null,
+            picklistValues: isset($data['picklist_values'])
+            ? array_filter(array_map('trim', explode("\n", $data['picklist_values'])))
+            : [],
+            uitype: isset($data['uitype']) ? (int) $data['uitype'] : null,
         );
     }
 }

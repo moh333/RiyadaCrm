@@ -55,7 +55,10 @@ class ModuleManagementController extends Controller
     public function editLayout(string $module)
     {
         $moduleDefinition = $this->moduleRegistry->get($module);
-        $fieldTypes       = CustomFieldType::cases();
+        $fieldTypes = array_map(
+            fn($type) => $type,
+            CustomFieldType::getCustomFieldTypes()
+        );
         return view('tenant::module_mgmt.layout', compact('moduleDefinition', 'fieldTypes'));
     }
 

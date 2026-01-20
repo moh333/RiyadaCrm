@@ -1,6 +1,23 @@
 @extends('tenant::layout')
 
 @section('content')
+    <!-- Tagify CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
+    <style>
+        .tagify {
+            --tags-border-color: #dee2e6;
+            --tags-hover-border-color: #6366f1;
+            --tags-focus-border-color: #6366f1;
+            border-radius: 0.5rem;
+        }
+        .tagify__tag {
+            --tag-bg: #eef2ff;
+            --tag-text-color: #6366f1;
+            --tag-remove-bg: #6366f1;
+            --tag-remove-btn-color: #fff;
+            border-radius: 4px;
+        }
+    </style>
     <div class="container-fluid p-0">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
@@ -157,10 +174,24 @@
                                                                 data-uitype="{{ $field->getUitype() }}"
                                                                 data-block-id="{{ $field->getBlockId() }}"
                                                                 data-block-label="{{ app()->getLocale() == 'ar' ? ($block->getLabelAr() ?? $block->getLabel()) : ($block->getLabelEn() ?? $block->getLabel()) }}"
-                                                                data-typeofdata="{{ $field->getTypeofdata() }}"
-                                                                data-quickcreate="{{ $field->isQuickCreate() ? 1 : 0 }}"
+                                                                 data-typeofdata="{{ $field->getTypeofdata() }}"
+                                                                   data-quickcreate="{{ $field->isQuickCreate() ? 1 : 0 }}"
                                                                 data-helpinfo="{{ $field->getHelpInfo() }}"
                                                                 data-defaultvalue="{{ $field->getDefaultValue() }}"
+                                                                data-maximumlength="{{ $field->getMaximumLength() }}"
+                                                                data-uitype-label="{{ $field->getUitypeEnum()->label() }}"
+                                                                @php
+                                                                    $picklistValues = '';
+                                                                    if (in_array((int)$field->getUitype(), [15, 16, 33, 55])) {
+                                                                        try {
+                                                                            $picklistValues = \DB::connection('tenant')
+                                                                                ->table('vtiger_' . $field->getFieldName())
+                                                                                ->pluck($field->getFieldName())
+                                                                                ->implode('\n');
+                                                                        } catch (\Exception $e) {}
+                                                                    }
+                                                                @endphp
+                                                                data-picklist-values="{{ $picklistValues }}"
                                                                 data-bs-toggle="modal" 
                                                                 data-bs-target="#editFieldModal">
                                                             <i class="bi bi-pencil-square"></i>
@@ -300,7 +331,7 @@
                                     <input type="hidden" name="block" id="add_field_block_id_hidden">
                                 </div>
                                 <div class="col-md-6 text-start">
-                                    <label class="form-label fw-bold">Internal Name</label>
+                                    <label class="form-label fw-bold">Name</label>
                                     <input type="text" name="fieldname" class="form-control rounded-3" placeholder="e.g., linkedin_url" required pattern="^[a-zA-Z0-9_]+$">
                                 </div>
                                 <div class="col-md-6 text-start">
@@ -315,13 +346,31 @@
                                         @endforeach
                                     </select>
                                 </div>
+                                <div class="col-md-6 config-field config-length d-none text-start">
+                                    <label class="form-label fw-bold">Length</label>
+                                    <input type="number" name="length" class="form-control rounded-3" value="255">
+                                </div>
+                                <div class="col-md-6 config-field config-decimals d-none text-start">
+                                    <label class="form-label fw-bold">Decimal Places</label>
+                                    <input type="number" name="decimal_places" class="form-control rounded-3" value="2">
+                                </div>
                                 <div class="col-md-12 picklist-container d-none text-start">
-                                    <label class="form-label fw-bold">Picklist Values (One per line)</label>
-                                    <textarea name="picklist_values" class="form-control rounded-3" rows="3" placeholder="Option 1\nOption 2"></textarea>
+                                    <label class="form-label fw-bold">Picklist Values</label>
+                                    <textarea name="picklist_values" class="form-control rounded-3" rows="3"></textarea>
+                                </div>
+                                <div class="col-md-12 role-based-container d-none text-start">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="role_based_picklist" value="1" id="add_role_based_picklist">
+                                        <label class="form-check-label fw-bold" for="add_role_based_picklist">
+                                            Role-Based Picklist
+                                        </label>
+                                    </div>
                                 </div>
                                 <div class="col-md-6 text-start">
                                     <label class="form-label fw-bold">Default Value</label>
-                                    <input type="text" name="defaultvalue" class="form-control rounded-3" placeholder="Optional">
+                                    <div class="default-value-wrapper">
+                                        <input type="text" name="defaultvalue" class="form-control rounded-3" placeholder="Optional">
+                                    </div>
                                 </div>
                                 <div class="col-md-6 text-start d-flex align-items-center mt-4 pt-2">
                                     <div class="form-check form-switch">
@@ -369,8 +418,35 @@
                                     <input type="text" name="fieldlabel" id="edit_f_label" class="form-control rounded-3" required>
                                 </div>
                                 <div class="col-md-6 text-start">
+                                    <label class="form-label fw-bold">Field Type</label>
+                                    <input type="text" id="edit_f_uitype_label" class="form-control rounded-3 bg-light" readonly>
+                                    <input type="hidden" name="uitype" id="edit_f_uitype" class="uitype-selector">
+                                </div>
+                                <div class="col-md-6 config-field config-length d-none text-start">
+                                    <label class="form-label fw-bold">Length</label>
+                                    <input type="number" name="length" id="edit_f_length" class="form-control rounded-3">
+                                </div>
+                                <div class="col-md-6 config-field config-decimals d-none text-start">
+                                    <label class="form-label fw-bold">Decimal Places</label>
+                                    <input type="number" name="decimal_places" id="edit_f_decimals" class="form-control rounded-3">
+                                </div>
+                                <div class="col-md-12 picklist-container d-none text-start">
+                                    <label class="form-label fw-bold">Picklist Values</label>
+                                    <textarea name="picklist_values" id="edit_f_picklist_values" class="form-control rounded-3" rows="3"></textarea>
+                                </div>
+                                <div class="col-md-12 role-based-container d-none text-start">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="role_based_picklist" value="1" id="edit_role_based_picklist">
+                                        <label class="form-check-label fw-bold" for="edit_role_based_picklist">
+                                            Role-Based Picklist
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 text-start">
                                     <label class="form-label fw-bold">Default Value</label>
-                                    <input type="text" name="defaultvalue" id="edit_f_default" class="form-control rounded-3">
+                                    <div class="default-value-wrapper">
+                                        <input type="text" name="defaultvalue" id="edit_f_default" class="form-control rounded-3">
+                                    </div>
                                 </div>
                                 <div class="col-md-6 text-start d-flex align-items-center mt-4">
                                     <div class="form-check form-switch">
@@ -410,6 +486,7 @@
         }
     </style>
 
+    <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
     <script>
         // Global deletion handler attached to window
         window.confirmDelete = function(url, message) {
@@ -421,6 +498,118 @@
         };
 
         document.addEventListener('DOMContentLoaded', function() {
+            const tagifyInstances = new Map();
+
+            // Initialize Tagify for Picklist Values
+            document.querySelectorAll('textarea[name="picklist_values"]').forEach(el => {
+                const t = new Tagify(el, {
+                    originalInputValueFormat: valuesArr => valuesArr.map(item => item.value).join('\n'),
+                    placeholder: 'Type a value and press Enter'
+                });
+                tagifyInstances.set(el, t);
+
+                // Update default value dropdown when tags change
+                t.on('change', () => {
+                    const form = el.closest('form');
+                    const uitype = form.querySelector('.uitype-selector')?.value || '';
+                    // If current uitype is picklist/multiselect (15, 16, 33, 55), refresh the default value dropdown
+                    if (['15', '16', '33', '55'].includes(uitype)) {
+                        updateDefaultValueInput(form, uitype, { picklistValues: el.value }, form.querySelector('[name="defaultvalue"]')?.value);
+                    }
+                });
+            });
+
+            function updateDefaultValueInput(form, uitype, data = {}, currentValue = '') {
+                const wrapper = form.querySelector('.default-value-wrapper');
+                if (!wrapper) return;
+
+                let html = '';
+                const baseClass = "form-control rounded-3";
+                
+                // Field Types mapping
+                // 1=text, 7=integer, 71=decimal, 9=percent, 72=currency, 5=date, 13=email, 11=phone, 17=url, 56=checkbox, 21=textarea, 33=multiselect, 15=picklist, 85=skype, 14=time, 6=datetime
+                
+                if (uitype === '56') { // Checkbox
+                    html = `
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" name="defaultvalue" value="1" ${currentValue == '1' ? 'checked' : ''}>
+                            <label class="form-check-label">Checked by default</label>
+                        </div>
+                    `;
+                } else if (['15', '16', '33', '55'].includes(uitype)) { // Picklist or Multiselect
+                    const values = data.picklistValues ? data.picklistValues.split('\n').map(v => v.trim()).filter(v => v !== '') : [];
+                    const isMulti = uitype === '33';
+                    const currentValues = isMulti 
+                        ? (currentValue ? currentValue.split('|##|').filter(v => v.trim() !== '') : []) 
+                        : [currentValue];
+                    
+                    html = `<select name="defaultvalue${isMulti ? '[]' : ''}" class="form-select rounded-3" ${isMulti ? 'multiple' : ''}>
+                        <option value="">-- None --</option>
+                        ${values.map(v => `<option value="${v}" ${currentValues.includes(v) ? 'selected' : ''}>${v}</option>`).join('')}
+                    </select>`;
+                } else if (uitype === '21') { // Textarea
+                    html = `<textarea name="defaultvalue" class="${baseClass}" rows="2">${currentValue}</textarea>`;
+                } else {
+                    let typeAttr = 'text';
+                    if (['7', '71', '9', '72'].includes(uitype)) typeAttr = 'number';
+                    if (uitype === '5') typeAttr = 'date';
+                    if (uitype === '6') typeAttr = 'datetime-local';
+                    if (uitype === '13') typeAttr = 'email';
+                    if (uitype === '17') typeAttr = 'url';
+                    if (uitype === '14') typeAttr = 'time';
+                    
+                    let step = 'any';
+                    if (uitype === '7') step = '1';
+
+                    html = `<input type="${typeAttr}" name="defaultvalue" class="${baseClass}" value="${currentValue}" step="${step}">`;
+                }
+
+                wrapper.innerHTML = html;
+            }
+
+            function handleUitypeChange(select, extraData = {}) {
+                const form = select.closest('form');
+                const uitype = select.value;
+                
+                // Toggle sections
+                const lengthSec = form.querySelector('.config-length');
+                const decimalSec = form.querySelector('.config-decimals');
+                const picklistSec = form.querySelector('.picklist-container');
+                const roleBasedSec = form.querySelector('.role-based-container');
+
+                // Defaults
+                lengthSec?.classList.add('d-none');
+                decimalSec?.classList.add('d-none');
+                picklistSec?.classList.add('d-none');
+                roleBasedSec?.classList.add('d-none');
+
+                // text(1), integer(7), decimal(71), currency(72)
+                if (['1', '7', '71', '72'].includes(uitype)) {
+                    lengthSec?.classList.remove('d-none');
+                }
+                
+                // decimal(71)
+                if (uitype === '71') {
+                    decimalSec?.classList.remove('d-none');
+                }
+
+                // picklist(15/16/55), multiselect(33)
+                if (['15', '16', '33', '55'].includes(uitype)) {
+                    picklistSec?.classList.remove('d-none');
+                    if (uitype === '15') roleBasedSec?.classList.remove('d-none');
+                }
+
+                // Update Default Value Input Type
+                updateDefaultValueInput(form, uitype, extraData, extraData.defaultValue);
+            }
+
+            // Picklist visibility in creation/edit
+            document.querySelectorAll('.uitype-selector').forEach(select => {
+                select.addEventListener('change', function() {
+                    handleUitypeChange(this);
+                });
+            });
+
             // Block Editing
             const editBlockModal = document.getElementById('editBlockModal');
             if (editBlockModal) {
@@ -453,20 +642,6 @@
                 });
             }
 
-            // Picklist visibility in creation/edit
-            document.querySelectorAll('.uitype-selector').forEach(select => {
-                select.addEventListener('change', function() {
-                    const container = this.closest('form').querySelector('.picklist-container');
-                    if (container) {
-                        if (this.value === '15' || this.value === '33') {
-                            container.classList.remove('d-none');
-                        } else {
-                            container.classList.add('d-none');
-                        }
-                    }
-                });
-            });
-
             // Field Editing
             const editFieldModal = document.getElementById('editFieldModal');
             if (editFieldModal) {
@@ -480,6 +655,10 @@
                     const quick = button.getAttribute('data-quickcreate') === '1';
                     const help = button.getAttribute('data-helpinfo');
                     const def = button.getAttribute('data-defaultvalue');
+                    const maxLen = button.getAttribute('data-maximumlength');
+                    const typeOfData = button.getAttribute('data-typeofdata') || '';
+                    const picklistValues = button.getAttribute('data-picklist-values') || '';
+                    const uitype = button.getAttribute('data-uitype');
 
                     const form = document.getElementById('editFieldForm');
                     form.action = `{{ url('settings/custom-fields') }}/{{ $moduleDefinition->getName() }}/${id}`;
@@ -490,7 +669,44 @@
                     document.getElementById('edit_field_block_label_display').innerText = blockLabel;
                     document.getElementById('edit_f_quickcreate').checked = quick;
                     document.getElementById('edit_f_help').value = help || '';
-                    document.getElementById('edit_f_default').value = def || '';
+                    
+                    // Set Length and Decimals
+                    document.getElementById('edit_f_length').value = maxLen || '';
+                    
+                    // Parse TypeOfData for decimals only where appropriate
+                    const parts = typeOfData.split('~');
+                    if (parts.length >= 3 && parts[2].includes(',')) {
+                        const [, dec] = parts[2].split(',');
+                        document.getElementById('edit_f_decimals').value = dec;
+                    } else {
+                        document.getElementById('edit_f_decimals').value = '';
+                    }
+
+                    // Set picklist values in tagify
+                    const picklistArea = document.getElementById('edit_f_picklist_values');
+                    const tagify = tagifyInstances.get(picklistArea);
+                    if (tagify) {
+                        tagify.removeAllTags();
+                        if (picklistValues) {
+                            tagify.addTags(picklistValues.split('\\n'));
+                        }
+                    }
+
+                    // Set role-based check
+                    const roleCheck = document.getElementById('edit_role_based_picklist');
+                    if (roleCheck) {
+                        roleCheck.checked = (uitype === '15');
+                    }
+
+                    // Set uitype and label
+                    document.getElementById('edit_f_uitype_label').value = button.getAttribute('data-uitype-label');
+                    document.getElementById('edit_f_uitype').value = uitype;
+
+                    // Trigger uitype visibility
+                    handleUitypeChange(document.getElementById('edit_f_uitype'), { 
+                        defaultValue: def,
+                        picklistValues: picklistValues.replace(/\\n/g, '\n')
+                    });
                 });
             }
         });

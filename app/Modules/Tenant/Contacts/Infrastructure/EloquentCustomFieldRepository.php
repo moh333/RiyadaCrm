@@ -94,23 +94,38 @@ class EloquentCustomFieldRepository implements CustomFieldRepositoryInterface
 
     public function nextFieldId(): int
     {
-        return DB::connection('tenant')->transaction(function () {
-            $query = DB::connection('tenant')->table('vtiger_field_seq')->lockForUpdate();
+        return $this->getNextIdFromSeq('vtiger_field_seq', 'vtiger_field', 'fieldid');
+    }
+
+    private function getNextIdFromSeq(string $seqTable, string $dataTable, string $idColumn): int
+    {
+        return DB::connection('tenant')->transaction(function () use ($seqTable, $dataTable, $idColumn) {
+            $query = DB::connection('tenant')->table($seqTable)->lockForUpdate();
             $result = $query->first();
 
             if (!$result) {
                 // Initialize if empty
-                $maxId = DB::connection('tenant')->table('vtiger_field')->max('fieldid') ?? 1000;
+                $maxId = DB::connection('tenant')->table($dataTable)->max($idColumn) ?? 1000;
                 $nextId = $maxId + 1;
-                DB::connection('tenant')->table('vtiger_field_seq')->insert(['id' => $nextId]);
+                DB::connection('tenant')->table($seqTable)->insert(['id' => $nextId]);
                 return $nextId;
             }
 
-            $nextId = $result->id + 1;
-            DB::connection('tenant')->table('vtiger_field_seq')->update(['id' => $nextId]);
+            $nextId = (int) $result->id + 1;
+            DB::connection('tenant')->table($seqTable)->where('id', $result->id)->update(['id' => $nextId]);
 
             return $nextId;
         });
+    }
+
+    public function nextPicklistValueId(): int
+    {
+        return $this->getNextIdFromSeq('vtiger_picklistvalues_seq', 'vtiger_role2picklist', 'picklistvalueid');
+    }
+
+    public function nextPicklistId(): int
+    {
+        return $this->getNextIdFromSeq('vtiger_picklist_seq', 'vtiger_picklist', 'picklistid');
     }
 
     public function columnExists(string $columnName, string $tableName): bool
@@ -124,6 +139,7 @@ class EloquentCustomFieldRepository implements CustomFieldRepositoryInterface
         $idColumn = "{$fieldName}id";
 
         // 1. Create the picklist table if it doesn't exist
+        // DDL (Schema::create) causes an implicit commit in MySQL, so it MUST be done outside any transaction.
         if (!Schema::connection('tenant')->hasTable($tableName)) {
             Schema::connection('tenant')->create($tableName, function ($table) use ($fieldName, $idColumn) {
                 $table->increments($idColumn);
@@ -135,34 +151,39 @@ class EloquentCustomFieldRepository implements CustomFieldRepositoryInterface
             });
         }
 
-        // 2. Register in vtiger_picklist
-        $picklistId = DB::connection('tenant')->table('vtiger_picklist')->insertGetId([
-            'name' => $fieldName
-        ]);
-
-        // 3. Get all roles to associate values
-        $roles = DB::connection('tenant')->table('vtiger_role')->pluck('roleid');
-
-        // 4. Insert values
-        foreach ($values as $index => $value) {
-            $picklistValueId = DB::connection('tenant')->table('vtiger_picklistvalues_seq')->insertGetId(['id' => null]);
-
-            DB::connection('tenant')->table($tableName)->insert([
-                $fieldName => $value,
-                'presence' => 1,
-                'picklist_valueid' => $picklistValueId,
-                'sortid' => $index
+        // 2. Perform DML operations in a transaction
+        DB::connection('tenant')->transaction(function () use ($tableName, $fieldName, $values) {
+            // Register in vtiger_picklist
+            $picklistId = $this->nextPicklistId();
+            DB::connection('tenant')->table('vtiger_picklist')->insert([
+                'picklistid' => $picklistId,
+                'name' => $fieldName
             ]);
 
-            foreach ($roles as $roleId) {
-                DB::connection('tenant')->table('vtiger_role2picklist')->insert([
-                    'roleid' => $roleId,
-                    'picklistvalueid' => $picklistValueId,
-                    'picklistid' => $picklistId,
+            // Get all roles to associate values
+            $roles = DB::connection('tenant')->table('vtiger_role')->pluck('roleid');
+
+            // Insert values
+            foreach ($values as $index => $value) {
+                $picklistValueId = $this->nextPicklistValueId();
+
+                DB::connection('tenant')->table($tableName)->insert([
+                    $fieldName => $value,
+                    'presence' => 1,
+                    'picklist_valueid' => $picklistValueId,
                     'sortid' => $index
                 ]);
+
+                foreach ($roles as $roleId) {
+                    DB::connection('tenant')->table('vtiger_role2picklist')->insert([
+                        'roleid' => $roleId,
+                        'picklistvalueid' => $picklistValueId,
+                        'picklistid' => $picklistId,
+                        'sortid' => $index
+                    ]);
+                }
             }
-        }
+        });
     }
 
     public function deletePicklist(string $fieldName): void

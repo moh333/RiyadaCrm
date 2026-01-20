@@ -55,7 +55,11 @@ class CustomFieldsController extends Controller
             abort(404, "Module $module not found");
         }
 
-        $fieldTypes = CustomFieldType::cases();
+        // Get only field types suitable for custom field creation
+        $fieldTypes = array_map(
+            fn($type) => $type,
+            CustomFieldType::getCustomFieldTypes()
+        );
 
         // Get available blocks for this module
         $blocks = $this->getModuleBlocks((int) $moduleInfo->tabid);
@@ -69,9 +73,6 @@ class CustomFieldsController extends Controller
         ]);
     }
 
-    /**
-     * Store new custom field
-     */
     public function store(Request $request, string $module)
     {
         $moduleInfo = $this->getModuleInfo($module);
@@ -84,14 +85,44 @@ class CustomFieldsController extends Controller
             'fieldlabel' => 'required|string|max:100', // Acts as translation key
             'uitype' => 'required|integer',
             'block' => 'required|integer',
-            'typeofdata' => 'string|max:100',
             'quickcreate' => 'boolean',
             'helpinfo' => 'nullable|string',
-            'defaultvalue' => 'nullable|string',
+            'defaultvalue' => 'nullable', // Can be string or array
             'picklist_values' => 'nullable|string', // Comma or newline separated values
+            'role_based_picklist' => 'nullable|boolean',
+            'length' => 'nullable|integer',
+            'decimal_places' => 'nullable|integer',
         ]);
 
         try {
+            $uitypeValue = (int) $validated['uitype'];
+            $uitypeEnum = CustomFieldType::from($uitypeValue);
+
+            // If uitype is 15 (PICKLIST) and role_based_picklist is NOT checked,
+            // change it to 16 (PICKLIST_READONLY - non-role-based)
+            if ($uitypeValue == 15 && !($request->input('role_based_picklist', false))) {
+                $validated['uitype'] = 16;
+                $uitypeValue = 16;
+                $uitypeEnum = CustomFieldType::PICKLIST_READONLY;
+            }
+
+            // Generate typeofdata
+            $typeofdata = $uitypeEnum->getTypeOfData(); // e.g., "V~O"
+            $parts = explode('~', $typeofdata);
+            if (isset($validated['length'])) {
+                $config = $validated['length'];
+                if (isset($validated['decimal_places']) && $uitypeValue == 71) {
+                    $config .= ',' . $validated['decimal_places'];
+                }
+                $parts[2] = $config;
+            }
+            $validated['typeofdata'] = implode('~', $parts);
+
+            // Handle default value (could be array from multiselect)
+            if (isset($validated['defaultvalue']) && is_array($validated['defaultvalue'])) {
+                $validated['defaultvalue'] = implode('|##|', $validated['defaultvalue']);
+            }
+
             $dto = CreateCustomFieldDTO::fromRequest(array_merge($validated, [
                 'tabid' => $moduleInfo->tabid,
                 'module_name' => $module,
@@ -142,7 +173,11 @@ class CustomFieldsController extends Controller
             abort(404, "Custom field $id not found");
         }
 
-        $fieldTypes = CustomFieldType::cases();
+
+        $fieldTypes = array_map(
+            fn($type) => $type,
+            CustomFieldType::getCustomFieldTypes()
+        );
         $blocks = $this->getModuleBlocks((int) $moduleInfo->tabid);
 
         return view('contacts_module::custom-fields.edit', [
@@ -154,9 +189,6 @@ class CustomFieldsController extends Controller
         ]);
     }
 
-    /**
-     * Update custom field
-     */
     public function update(Request $request, string $module, int $id)
     {
         $moduleInfo = $this->getModuleInfo($module);
@@ -167,13 +199,49 @@ class CustomFieldsController extends Controller
         $validated = $request->validate([
             'fieldlabel' => 'required|string|max:100',
             'block' => 'required|integer',
-            'typeofdata' => 'string|max:100',
             'quickcreate' => 'boolean',
             'helpinfo' => 'nullable|string',
-            'defaultvalue' => 'nullable|string',
+            'defaultvalue' => 'nullable',
+            'length' => 'nullable|integer',
+            'decimal_places' => 'nullable|integer',
+            'picklist_values' => 'nullable|string',
+            'role_based_picklist' => 'nullable|boolean',
         ]);
 
         try {
+            $field = $this->customFieldRepository->findById($id);
+            if (!$field) {
+                abort(404, "Field not found");
+            }
+
+            $currentUitype = $field->getUitype();
+            $uitypeValue = $currentUitype->value;
+
+            // Handle Picklist type toggle (15 vs 16)
+            if (in_array($uitypeValue, [15, 16])) {
+                $isRoleBased = $request->input('role_based_picklist', false);
+                $uitypeValue = $isRoleBased ? 15 : 16;
+                $validated['uitype'] = $uitypeValue;
+                $currentUitype = CustomFieldType::from($uitypeValue);
+            }
+
+            // Generate typeofdata based on current/new uitype
+            $typeofdata = $currentUitype->getTypeOfData();
+            $parts = explode('~', $typeofdata);
+            if (isset($validated['length'])) {
+                $config = $validated['length'];
+                if (isset($validated['decimal_places']) && $currentUitype->value == 71) {
+                    $config .= ',' . $validated['decimal_places'];
+                }
+                $parts[2] = $config;
+            }
+            $validated['typeofdata'] = implode('~', $parts);
+
+            // Handle default value (could be array from multiselect)
+            if (isset($validated['defaultvalue']) && is_array($validated['defaultvalue'])) {
+                $validated['defaultvalue'] = implode('|##|', $validated['defaultvalue']);
+            }
+
             $dto = \App\Modules\Tenant\Contacts\Application\DTOs\UpdateCustomFieldDTO::fromRequest($id, $validated);
 
             $this->updateCustomFieldUseCase->execute($dto);
