@@ -142,7 +142,7 @@ class CustomFieldsController extends Controller
             abort(404, "Custom field $id not found");
         }
 
-        $fieldTypes = \App\Modules\Tenant\Contacts\Domain\Enums\CustomFieldType::cases();
+        $fieldTypes = CustomFieldType::cases();
         $blocks = $this->getModuleBlocks((int) $moduleInfo->tabid);
 
         return view('contacts_module::custom-fields.edit', [

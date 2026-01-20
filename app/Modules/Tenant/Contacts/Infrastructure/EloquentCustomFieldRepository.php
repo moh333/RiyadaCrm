@@ -145,7 +145,7 @@ class EloquentCustomFieldRepository implements CustomFieldRepositoryInterface
 
         // 4. Insert values
         foreach ($values as $index => $value) {
-            $picklistValueId = DB::connection('tenant')->table('vtiger_picklist_values_seq')->insertGetId(['id' => null]);
+            $picklistValueId = DB::connection('tenant')->table('vtiger_picklistvalues_seq')->insertGetId(['id' => null]);
 
             DB::connection('tenant')->table($tableName)->insert([
                 $fieldName => $value,

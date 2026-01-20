@@ -4,6 +4,7 @@ namespace App\Modules\Tenant\Settings\Presentation\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Core\VtigerModules\Contracts\ModuleRegistryInterface;
+use App\Modules\Tenant\Contacts\Domain\Enums\CustomFieldType;
 use Illuminate\Http\Request;
 
 /**
@@ -54,8 +55,7 @@ class ModuleManagementController extends Controller
     public function editLayout(string $module)
     {
         $moduleDefinition = $this->moduleRegistry->get($module);
-        $fieldTypes = \App\Modules\Tenant\Contacts\Domain\Enums\CustomFieldType::cases();
-
+        $fieldTypes       = CustomFieldType::cases();
         return view('tenant::module_mgmt.layout', compact('moduleDefinition', 'fieldTypes'));
     }
 
