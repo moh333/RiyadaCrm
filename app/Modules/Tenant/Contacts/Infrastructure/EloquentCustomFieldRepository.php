@@ -21,7 +21,6 @@ class EloquentCustomFieldRepository implements CustomFieldRepositoryInterface
             ->table('vtiger_field')
             ->where('tabid', $tabId)
             ->where('generatedtype', 2) // Only custom fields
-            ->where('presence', '!=', 1) // Exclude deleted fields
             ->orderBy('block')
             ->orderBy('sequence')
             ->get();

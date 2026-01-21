@@ -82,13 +82,14 @@ class CustomFieldsController extends Controller
 
         $validated = $request->validate([
             'fieldname' => 'required|string|max:50|regex:/^[a-zA-Z0-9_]+$/',
-            'fieldlabel' => 'required|string|max:100', // Acts as translation key
+            'fieldlabel_en' => 'required|string|max:100',
+            'fieldlabel_ar' => 'nullable|string|max:100',
             'uitype' => 'required|integer',
             'block' => 'required|integer',
             'quickcreate' => 'boolean',
             'helpinfo' => 'nullable|string',
-            'defaultvalue' => 'nullable', // Can be string or array
-            'picklist_values' => 'nullable|string', // Comma or newline separated values
+            'defaultvalue' => 'nullable',
+            'picklist_values' => 'nullable|string',
             'role_based_picklist' => 'nullable|boolean',
             'length' => 'nullable|integer',
             'decimal_places' => 'nullable|integer',
@@ -163,6 +164,28 @@ class CustomFieldsController extends Controller
     }
 
     /**
+     * Delete multiple custom fields
+     */
+    public function bulkDestroy(Request $request, string $module)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer',
+        ]);
+
+        try {
+            foreach ($validated['ids'] as $id) {
+                $this->deleteCustomFieldUseCase->execute((int) $id);
+            }
+            $this->moduleRegistry->refresh();
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 400);
+        }
+    }
+
+    /**
      * Show form to edit custom field
      */
     public function edit(string $module, int $id)
@@ -201,7 +224,8 @@ class CustomFieldsController extends Controller
         }
 
         $validated = $request->validate([
-            'fieldlabel' => 'required|string|max:100',
+            'fieldlabel_en' => 'required|string|max:100',
+            'fieldlabel_ar' => 'nullable|string|max:100',
             'block' => 'required|integer',
             'quickcreate' => 'boolean',
             'helpinfo' => 'nullable|string',

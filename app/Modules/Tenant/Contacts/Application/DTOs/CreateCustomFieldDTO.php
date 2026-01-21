@@ -15,10 +15,11 @@ class CreateCustomFieldDTO
         public readonly int $tabId,
         public readonly string $moduleName,
         public readonly string $fieldName,
-        public readonly string $fieldLabel,
+        public readonly string $fieldLabelEn,
+        public readonly ?string $fieldLabelAr,
         public readonly CustomFieldType $uitype,
         public readonly int $block,
-        public readonly string $typeOfData = 'V~O', // V=varchar, O=optional, M=mandatory
+        public readonly string $typeOfData = 'V~O',
         public readonly bool $quickCreate = false,
         public readonly ?string $helpInfo = null,
         public readonly ?string $defaultValue = null,
@@ -36,7 +37,8 @@ class CreateCustomFieldDTO
             tabId: (int) $data['tabid'],
             moduleName: $data['module_name'],
             fieldName: $data['fieldname'],
-            fieldLabel: $data['fieldlabel'],
+            fieldLabelEn: $data['fieldlabel_en'],
+            fieldLabelAr: $data['fieldlabel_ar'] ?? null,
             uitype: CustomFieldType::from((int) $data['uitype']),
             block: (int) $data['block'],
             typeOfData: $data['typeofdata'] ?? 'V~O',
@@ -52,11 +54,9 @@ class CreateCustomFieldDTO
 
     /**
      * Generate column name from field name
-     * vtiger convention: cf_{fieldname}
      */
     public function getColumnName(): string
     {
-        // If it starts with cf_, use it as is, otherwise prefix it
         if (str_starts_with(strtolower($this->fieldName), 'cf_')) {
             return strtolower($this->fieldName);
         }
@@ -68,10 +68,6 @@ class CreateCustomFieldDTO
      */
     public function getTableName(): string
     {
-        // vtiger convention: vtiger_{modulename}cf
-        $name = strtolower($this->moduleName);
-
-        // Special case for some modules if needed, but standard is:
-        return "vtiger_{$name}cf";
+        return "vtiger_" . strtolower($this->moduleName) . "cf";
     }
 }

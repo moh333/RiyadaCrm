@@ -3,6 +3,7 @@
 @section('content')
     <!-- Tagify CSS -->
     <link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         .tagify {
             --tags-border-color: #dee2e6;
@@ -26,6 +27,9 @@
                 </h3>
             </div>
             <div class="d-flex gap-2">
+                <button type="button" id="bulkDeleteBtn" class="btn btn-danger rounded-3 shadow-sm d-none" onclick="bulkDeleteFields()">
+                    <i class="bi bi-trash me-2"></i>{{ __('tenant::tenant.delete_selected') }}
+                </button>
                 <button type="button" class="btn btn-primary rounded-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#addBlockModal">
                     <i class="bi bi-folder-plus me-2"></i>{{ __('tenant::tenant.add_block') }}
                 </button>
@@ -101,16 +105,19 @@
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="bg-light">
                                     <tr>
-                                        <th class="ps-4" width="30%">Field Label</th>
-                                        <th width="15%">Internal Name</th>
-                                        <th width="10%">Type</th>
+                                        <th class="text-center" width="5%">
+                                            <input type="checkbox" class="form-check-input select-all-block" title="Select all fields in this block">
+                                        </th>
+                                        <th class="ps-4" width="25%">{{ __('tenant::tenant.field_label') }}</th>
+                                        <th width="15%">{{ __('tenant::tenant.internal_name') }}</th>
+                                        <th width="10%">{{ __('tenant::tenant.field_type') }}</th>
                                         <th width="10%" class="text-center">{{ __('tenant::tenant.status') }}</th>
-                                        <th width="10%" class="text-center">Editable</th>
-                                        <th width="10%" class="text-center">Mandatory</th>
-                                        <th width="15%" class="text-center">Actions</th>
+                                        <th width="10%" class="text-center">{{ __('tenant::tenant.editable') }}</th>
+                                        <th width="10%" class="text-center">{{ __('tenant::tenant.mandatory') }}</th>
+                                    <th width="15%" class="text-center">{{ __('tenant::tenant.actions') }}</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody class="sortable-fields" data-block-id="{{ $block->getId() }}">
                                     @php
                                         $blockFields = $moduleDefinition->fields()
                                             ->filter(fn($f) => $f->getBlockId() === $block->getId())
@@ -118,13 +125,20 @@
                                     @endphp
                                     
                                     @forelse($blockFields as $field)
-                                        <tr class="{{ $field->isCustomField() ? 'table-info' : '' }}">
+                                        <tr class="{{ $field->isCustomField() ? 'table-info' : '' }} field-row" data-field-id="{{ $field->getId() }}">
+                                            <td class="text-center">
+                                                @if($field->isCustomField())
+                                                    <input type="checkbox" class="form-check-input field-selector" value="{{ $field->getId() }}">
+                                                @endif
+                                            </td>
                                             <td class="ps-4">
                                                 <div class="d-flex align-items-center">
-                                                    <i class="bi bi-grip-vertical text-muted me-2"></i>
+                                                    <i class="bi bi-grip-vertical text-muted me-2 cursor-move"></i>
                                                     <span class="fw-bold">{{ $field->getLabel() }}</span>
                                                     @if($field->isCustomField())
-                                                        <span class="badge bg-primary rounded-pill ms-2">Custom</span>
+                                                        <span class="badge bg-primary rounded-pill ms-2">{{ __('tenant::tenant.custom') }}</span>
+                                                    @else
+                                                        <span class="badge bg-secondary rounded-pill ms-2">{{ __('tenant::tenant.standard') }}</span>
                                                     @endif
                                                 </div>
                                             </td>
@@ -164,53 +178,54 @@
                                                 </div>
                                             </td>
                                             <td class="text-center">
-                                                @if($field->isCustomField())
-                                                    <div class="d-flex justify-content-center gap-1">
-                                                        <button type="button" 
-                                                                class="btn btn-sm btn-outline-primary rounded-pill edit-field-btn"
-                                                                data-id="{{ $field->getId() }}"
-                                                                data-label="{{ $field->getLabel() }}"
-                                                                data-name="{{ $field->getFieldName() }}"
-                                                                data-uitype="{{ $field->getUitype() }}"
-                                                                data-block-id="{{ $field->getBlockId() }}"
-                                                                data-block-label="{{ app()->getLocale() == 'ar' ? ($block->getLabelAr() ?? $block->getLabel()) : ($block->getLabelEn() ?? $block->getLabel()) }}"
-                                                                 data-typeofdata="{{ $field->getTypeofdata() }}"
-                                                                   data-quickcreate="{{ $field->isQuickCreate() ? 1 : 0 }}"
-                                                                data-helpinfo="{{ $field->getHelpInfo() }}"
-                                                                data-defaultvalue="{{ $field->getDefaultValue() }}"
-                                                                data-maximumlength="{{ $field->getMaximumLength() }}"
-                                                                data-uitype-label="{{ $field->getUitypeEnum()->label() }}"
-                                                                @php
-                                                                    $picklistValues = '';
-                                                                    if (in_array((int)$field->getUitype(), [15, 16, 33, 55])) {
-                                                                        try {
-                                                                            $picklistValues = \DB::connection('tenant')
-                                                                                ->table('vtiger_' . $field->getFieldName())
-                                                                                ->pluck($field->getFieldName())
-                                                                                ->implode('\n');
-                                                                        } catch (\Exception $e) {}
-                                                                    }
-                                                                @endphp
-                                                                data-picklist-values="{{ $picklistValues }}"
-                                                                data-bs-toggle="modal" 
-                                                                data-bs-target="#editFieldModal">
-                                                            <i class="bi bi-pencil-square"></i>
-                                                        </button>
+                                                <div class="d-flex justify-content-center gap-1">
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-outline-primary rounded-pill edit-field-btn"
+                                                            data-id="{{ $field->getId() }}"
+                                                            data-label="{{ $field->getLabel() }}"
+                                                            data-label-en="{{ $field->getLabelEn() }}"
+                                                            data-label-ar="{{ $field->getLabelAr() }}"
+                                                            data-name="{{ $field->getFieldName() }}"
+                                                            data-uitype="{{ $field->getUitype() }}"
+                                                            data-block-id="{{ $field->getBlockId() }}"
+                                                            data-block-label="{{ app()->getLocale() == 'ar' ? ($block->getLabelAr() ?? $block->getLabel()) : ($block->getLabelEn() ?? $block->getLabel()) }}"
+                                                             data-typeofdata="{{ $field->getTypeofdata() }}"
+                                                               data-quickcreate="{{ $field->isQuickCreate() ? 1 : 0 }}"
+                                                            data-helpinfo="{{ $field->getHelpInfo() }}"
+                                                            data-defaultvalue="{{ $field->getDefaultValue() }}"
+                                                            data-maximumlength="{{ $field->getMaximumLength() }}"
+                                                            data-is-custom="{{ $field->isCustomField() ? 1 : 0 }}"
+                                                            data-uitype-label="{{ $field->getFieldType() }}"
+                                                            @php
+                                                                $picklistValues = '';
+                                                                if (in_array((int)$field->getUitype(), [15, 16, 33, 55])) {
+                                                                    try {
+                                                                        $picklistValues = \DB::connection('tenant')
+                                                                            ->table('vtiger_' . $field->getFieldName())
+                                                                            ->pluck($field->getFieldName())
+                                                                            ->implode('\n');
+                                                                    } catch (\Exception $e) {}
+                                                                }
+                                                            @endphp
+                                                            data-picklist-values="{{ $picklistValues }}"
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#editFieldModal">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </button>
+                                                    @if($field->isCustomField())
                                                         <button type="button" 
                                                                 class="btn btn-sm btn-outline-danger rounded-pill" 
                                                                 onclick="window.confirmDelete('{{ route('tenant.custom-fields.destroy', [$moduleDefinition->getName(), $field->getId()]) }}', '{{ addslashes(__('contacts::contacts.confirm_delete_field')) }}')">
                                                             <i class="bi bi-trash"></i>
                                                         </button>
-                                                    </div>
-                                                @else
-                                                    <span class="text-muted small">Standard</span>
-                                                @endif
+                                                    @endif
+                                                </div>
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="7" class="text-center py-4 text-muted">
-                                                No fields in this block
+                                            <td colspan="8" class="text-center py-4 text-muted">
+                                                {{ __('tenant::tenant.no_fields_in_block') }}
                                             </td>
                                         </tr>
                                     @endforelse
@@ -326,48 +341,53 @@
                             <div class="row g-3">
                                 <div class="col-md-12 mb-2">
                                     <div class="p-2 bg-light rounded-3 border">
-                                        <strong>Adding to block:</strong> <span id="add_field_block_label_display" class="text-primary text-bold"></span>
+                                        <strong>{{ __('tenant::tenant.adding_to_block') }}:</strong> <span id="add_field_block_label_display" class="text-primary text-bold"></span>
                                     </div>
                                     <input type="hidden" name="block" id="add_field_block_id_hidden">
                                 </div>
                                 <div class="col-md-6 text-start">
-                                    <label class="form-label fw-bold">Name</label>
+                                    <label class="form-label fw-bold">{{ __('tenant::tenant.name') }}</label>
                                     <input type="text" name="fieldname" class="form-control rounded-3" placeholder="e.g., linkedin_url" required pattern="^[a-zA-Z0-9_]+$">
                                 </div>
                                 <div class="col-md-6 text-start">
-                                    <label class="form-label fw-bold">Field Label</label>
-                                    <input type="text" name="fieldlabel" class="form-control rounded-3" placeholder="e.g., LinkedIn Profile" required>
+                                    <label class="form-label fw-bold">{{ __('tenant::tenant.label_en') }}</label>
+                                    <input type="text" name="fieldlabel_en" class="form-control rounded-3" placeholder="English Label" required>
                                 </div>
                                 <div class="col-md-6 text-start">
-                                    <label class="form-label fw-bold">Field Type</label>
+                                    <label class="form-label fw-bold">{{ __('tenant::tenant.label_ar') }}</label>
+                                    <input type="text" name="fieldlabel_ar" class="form-control rounded-3" placeholder="Arabic Label" dir="rtl">
+                                </div>
+                                <div class="col-md-6 text-start">
+                                    <label class="form-label fw-bold">{{ __('tenant::tenant.field_type') }}</label>
                                     <select name="uitype" class="form-select rounded-3 uitype-selector" required>
+                                        <option value="">{{ __('tenant::tenant.select_field_type') }}</option>    
                                         @foreach($fieldTypes as $type)
                                             <option value="{{ $type->value }}">{{ $type->label() }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <div class="col-md-6 config-field config-length d-none text-start">
-                                    <label class="form-label fw-bold">Length</label>
+                                    <label class="form-label fw-bold">{{ __('tenant::tenant.length') }}</label>
                                     <input type="number" name="length" class="form-control rounded-3" value="255">
                                 </div>
                                 <div class="col-md-6 config-field config-decimals d-none text-start">
-                                    <label class="form-label fw-bold">Decimal Places</label>
+                                    <label class="form-label fw-bold">{{ __('tenant::tenant.decimal_places') }}</label>
                                     <input type="number" name="decimal_places" class="form-control rounded-3" value="2">
                                 </div>
                                 <div class="col-md-12 picklist-container d-none text-start">
-                                    <label class="form-label fw-bold">Picklist Values</label>
+                                    <label class="form-label fw-bold">{{ __('tenant::tenant.picklist_values') }}</label>
                                     <textarea name="picklist_values" class="form-control rounded-3" rows="3"></textarea>
                                 </div>
                                 <div class="col-md-12 role-based-container d-none text-start">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" name="role_based_picklist" value="1" id="add_role_based_picklist">
                                         <label class="form-check-label fw-bold" for="add_role_based_picklist">
-                                            Role-Based Picklist
+                                            {{ __('tenant::tenant.role_based_picklist') }}
                                         </label>
                                     </div>
                                 </div>
                                 <div class="col-md-6 text-start">
-                                    <label class="form-label fw-bold">Default Value</label>
+                                    <label class="form-label fw-bold">{{ __('tenant::tenant.default_value') }}</label>
                                     <div class="default-value-wrapper">
                                         <input type="text" name="defaultvalue" class="form-control rounded-3" placeholder="Optional">
                                     </div>
@@ -375,7 +395,7 @@
                                 <div class="col-md-6 text-start d-flex align-items-center mt-4 pt-2">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" name="quickcreate" value="1" id="add_quickcreate">
-                                        <label class="form-check-label fw-bold" for="add_quickcreate">Show in Quick Create</label>
+                                        <label class="form-check-label fw-bold" for="add_quickcreate">{{ __('tenant::tenant.quick_create') }}</label>
                                     </div>
                                 </div>
                             </div>
@@ -402,48 +422,52 @@
                         @method('PUT')
                         <div class="modal-body p-4">
                             <div class="row g-3">
-                                <div class="col-md-12 mb-2">
+                                <div class="col-md-12 mb-2 text-start">
                                     <div class="p-2 bg-light rounded-3 border">
-                                        <strong>Block:</strong> <span id="edit_field_block_label_display" class="text-primary text-bold"></span>
+                                        <strong>{{ __('tenant::tenant.block_name') }}:</strong> <span id="edit_field_block_label_display" class="text-primary text-bold"></span>
                                     </div>
                                     <input type="hidden" name="block" id="edit_f_block_hidden">
                                 </div>
                                 <div class="col-md-6 text-start">
-                                    <label class="form-label fw-bold">Internal Name</label>
+                                    <label class="form-label fw-bold">{{ __('tenant::tenant.internal_name') }}</label>
                                     <input type="text" id="edit_f_name" class="form-control rounded-3 bg-light" readonly>
-                                    <small class="text-muted">Cannot be changed</small>
+                                    <small class="text-muted">{{ __('tenant::tenant.cannot_be_changed') }}</small>
+                                </div>
+                                <div class="col-md-12 text-start mt-2">
+                                    <label class="form-label fw-bold">{{ __('tenant::tenant.label_en') }}</label>
+                                    <input type="text" name="fieldlabel_en" id="edit_f_label_en" class="form-control rounded-3" required>
+                                </div>
+                                <div class="col-md-12 text-start mt-2">
+                                    <label class="form-label fw-bold">{{ __('tenant::tenant.label_ar') }}</label>
+                                    <input type="text" name="fieldlabel_ar" id="edit_f_label_ar" class="form-control rounded-3" dir="rtl">
                                 </div>
                                 <div class="col-md-6 text-start">
-                                    <label class="form-label fw-bold">Field Label</label>
-                                    <input type="text" name="fieldlabel" id="edit_f_label" class="form-control rounded-3" required>
-                                </div>
-                                <div class="col-md-6 text-start">
-                                    <label class="form-label fw-bold">Field Type</label>
+                                    <label class="form-label fw-bold">{{ __('tenant::tenant.field_type') }}</label>
                                     <input type="text" id="edit_f_uitype_label" class="form-control rounded-3 bg-light" readonly>
                                     <input type="hidden" name="uitype" id="edit_f_uitype" class="uitype-selector">
                                 </div>
                                 <div class="col-md-6 config-field config-length d-none text-start">
-                                    <label class="form-label fw-bold">Length</label>
+                                    <label class="form-label fw-bold">{{ __('tenant::tenant.length') }}</label>
                                     <input type="number" name="length" id="edit_f_length" class="form-control rounded-3">
                                 </div>
                                 <div class="col-md-6 config-field config-decimals d-none text-start">
-                                    <label class="form-label fw-bold">Decimal Places</label>
+                                    <label class="form-label fw-bold">{{ __('tenant::tenant.decimal_places') }}</label>
                                     <input type="number" name="decimal_places" id="edit_f_decimals" class="form-control rounded-3">
                                 </div>
                                 <div class="col-md-12 picklist-container d-none text-start">
-                                    <label class="form-label fw-bold">Picklist Values</label>
+                                    <label class="form-label fw-bold">{{ __('tenant::tenant.picklist_values') }}</label>
                                     <textarea name="picklist_values" id="edit_f_picklist_values" class="form-control rounded-3" rows="3"></textarea>
                                 </div>
                                 <div class="col-md-12 role-based-container d-none text-start">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" name="role_based_picklist" value="1" id="edit_role_based_picklist">
                                         <label class="form-check-label fw-bold" for="edit_role_based_picklist">
-                                            Role-Based Picklist
+                                            {{ __('tenant::tenant.role_based_picklist') }}
                                         </label>
                                     </div>
                                 </div>
                                 <div class="col-md-6 text-start">
-                                    <label class="form-label fw-bold">Default Value</label>
+                                    <label class="form-label fw-bold">{{ __('tenant::tenant.default_value') }}</label>
                                     <div class="default-value-wrapper">
                                         <input type="text" name="defaultvalue" id="edit_f_default" class="form-control rounded-3">
                                     </div>
@@ -451,11 +475,11 @@
                                 <div class="col-md-6 text-start d-flex align-items-center mt-4">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" name="quickcreate" value="1" id="edit_f_quickcreate">
-                                        <label class="form-check-label fw-bold" for="edit_f_quickcreate">Show in Quick Create</label>
+                                        <label class="form-check-label fw-bold" for="edit_f_quickcreate">{{ __('tenant::tenant.quick_create') }}</label>
                                     </div>
                                 </div>
                                 <div class="col-md-12 text-start">
-                                    <label class="form-label fw-bold">Help Text</label>
+                                    <label class="form-label fw-bold">{{ __('tenant::tenant.help_info') }}</label>
                                     <textarea name="helpinfo" id="edit_f_help" class="form-control rounded-3" rows="2"></textarea>
                                 </div>
                             </div>
@@ -484,6 +508,13 @@
         .bg-primary {
             background-color: #6366f1 !important;
         }
+        .cursor-move {
+            cursor: move;
+        }
+        .sortable-ghost {
+            opacity: 0.4;
+            background-color: #f8fafc !important;
+        }
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
@@ -498,6 +529,104 @@
         };
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Sortable for Fields
+            document.querySelectorAll('.sortable-fields').forEach(el => {
+                new Sortable(el, {
+                    group: 'shared-fields', // Allow dragging between blocks
+                    handle: '.cursor-move',
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    onEnd: function(evt) {
+                        saveFieldOrder();
+                    }
+                });
+            });
+
+            function saveFieldOrder() {
+                const fields = [];
+                document.querySelectorAll('.sortable-fields').forEach(blockEl => {
+                    const blockId = blockEl.getAttribute('data-block-id');
+                    blockEl.querySelectorAll('.field-row').forEach((row, index) => {
+                        fields.push({
+                            field_id: row.getAttribute('data-field-id'),
+                            block_id: blockId,
+                            sequence: index + 1
+                        });
+                    });
+                });
+
+                // Show toast or loading bar if desired
+                fetch("{{ route('tenant.settings.modules.layout.reorder', $moduleDefinition->getName()) }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ fields: fields })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Order saved successfully');
+                    }
+                })
+                .catch(error => console.error('Error saving order:', error));
+            }
+
+            // Selection Logic
+            const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+            const selectors = document.querySelectorAll('.field-selector');
+            const selectAllBlocks = document.querySelectorAll('.select-all-block');
+
+            function updateBulkDeleteButton() {
+                const checkedCount = document.querySelectorAll('.field-selector:checked').length;
+                if (checkedCount > 0) {
+                    bulkDeleteBtn.classList.remove('d-none');
+                } else {
+                    bulkDeleteBtn.classList.add('d-none');
+                }
+            }
+
+            selectors.forEach(s => {
+                s.addEventListener('change', updateBulkDeleteButton);
+            });
+
+            selectAllBlocks.forEach(headerCheckbox => {
+                headerCheckbox.addEventListener('change', function() {
+                    const blockTbody = this.closest('table').querySelector('tbody');
+                    const blockSelectors = blockTbody.querySelectorAll('.field-selector');
+                    blockSelectors.forEach(s => s.checked = this.checked);
+                    updateBulkDeleteButton();
+                });
+            });
+
+            window.bulkDeleteFields = function() {
+                const checked = document.querySelectorAll('.field-selector:checked');
+                const ids = Array.from(checked).map(c => c.value);
+                
+                if (ids.length === 0) return;
+                
+                if (confirm(`Are you sure you want to delete ${ids.length} fields?`)) {
+                    fetch("{{ route('tenant.custom-fields.bulk-destroy', $moduleDefinition->getName()) }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ ids: ids })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            alert('Error: ' + (data.message || 'Unknown error'));
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                }
+            };
+
             const tagifyInstances = new Map();
 
             // Initialize Tagify for Picklist Values
@@ -533,7 +662,7 @@
                     html = `
                         <div class="form-check mt-2">
                             <input class="form-check-input" type="checkbox" name="defaultvalue" value="1" ${currentValue == '1' ? 'checked' : ''}>
-                            <label class="form-check-label">Checked by default</label>
+                            <label class="form-check-label">{{ __('tenant::tenant.checked_by_default') }}</label>
                         </div>
                     `;
                 } else if (['15', '16', '33', '55'].includes(uitype)) { // Picklist or Multiselect
@@ -652,7 +781,8 @@
                 editFieldModal.addEventListener('show.bs.modal', function(event) {
                     const button = event.relatedTarget;
                     const id = button.getAttribute('data-id');
-                    const label = button.getAttribute('data-label');
+                    const labelEn = button.getAttribute('data-label-en');
+                    const labelAr = button.getAttribute('data-label-ar');
                     const name = button.getAttribute('data-name');
                     const blockId = button.getAttribute('data-block-id');
                     const blockLabel = button.getAttribute('data-block-label');
@@ -663,12 +793,14 @@
                     const typeOfData = button.getAttribute('data-typeofdata') || '';
                     const picklistValues = button.getAttribute('data-picklist-values') || '';
                     const uitype = button.getAttribute('data-uitype');
+                    const isCustom = button.getAttribute('data-is-custom') === '1';
 
                     const form = document.getElementById('editFieldForm');
                     form.action = `{{ url('settings/custom-fields') }}/{{ $moduleDefinition->getName() }}/${id}`;
                     
                     document.getElementById('edit_f_name').value = name;
-                    document.getElementById('edit_f_label').value = label;
+                    document.getElementById('edit_f_label_en').value = labelEn || '';
+                    document.getElementById('edit_f_label_ar').value = labelAr || '';
                     document.getElementById('edit_f_block_hidden').value = blockId;
                     document.getElementById('edit_field_block_label_display').innerText = blockLabel;
                     document.getElementById('edit_f_quickcreate').checked = quick;
@@ -711,6 +843,15 @@
                         defaultValue: def,
                         picklistValues: picklistValues.replace(/\\n/g, '\n')
                     });
+
+                    // Disable type change for standard fields
+                    const uitypeInput = document.getElementById('edit_f_uitype');
+                    if (!isCustom) {
+                        // For standard fields, we might want to restrict some edits
+                        // but user said "make update action on standared fields , only update"
+                        // I'll keep it editable but maybe it's risky to change uitype
+                        // uitypeInput.setAttribute('disabled', 'disabled');
+                    }
                 });
             }
         });

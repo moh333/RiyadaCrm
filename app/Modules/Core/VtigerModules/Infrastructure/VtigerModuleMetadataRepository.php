@@ -83,7 +83,6 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
         $fields = DB::connection($this->connection)
             ->table('vtiger_field')
             ->where('tabid', $tabId)
-            ->where('presence', '!=', 1)
             ->orderBy('block')
             ->orderBy('sequence')
             ->get();
@@ -193,7 +192,8 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
             fieldName: $row->fieldname,
             columnName: $row->columnname,
             tableName: $row->tablename,
-            label: $row->fieldlabel,
+            labelEn: $row->fieldlabel_en ?? $row->fieldlabel ?? '', // Handle fallback
+            labelAr: $row->fieldlabel_ar ?? null,
             uitype: (int) $row->uitype,
             typeofdata: $row->typeofdata,
             blockId: (int) $row->block,

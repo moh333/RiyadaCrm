@@ -76,6 +76,7 @@ Route::middleware([
             Route::get('/{module}/{id}/edit', [CustomFieldsController::class, 'edit'])->name('edit');
             Route::put('/{module}/{id}', [CustomFieldsController::class, 'update'])->name('update');
             Route::delete('/{module}/{id}', [CustomFieldsController::class, 'destroy'])->name('destroy');
+            Route::post('/{module}/bulk-destroy', [CustomFieldsController::class, 'bulkDestroy'])->name('bulk-destroy');
         });
 
         // Module Management
@@ -87,6 +88,7 @@ Route::middleware([
             Route::get('/layouts', [ModuleManagementController::class, 'layouts'])->name('layouts');
             Route::get('/{module}/layout', [ModuleManagementController::class, 'editLayout'])->name('layout');
             Route::post('/{module}/layout', [ModuleManagementController::class, 'updateLayout'])->name('layout.update');
+            Route::post('/{module}/layout/reorder', [ModuleManagementController::class, 'updateFieldOrder'])->name('layout.reorder');
             Route::post('/{module}/block', [ModuleManagementController::class, 'addBlock'])->name('block.add');
             Route::put('/{module}/block/{blockId}', [ModuleManagementController::class, 'updateBlock'])->name('block.update');
             Route::delete('/{module}/block/{blockId}', [ModuleManagementController::class, 'deleteBlock'])->name('block.delete');

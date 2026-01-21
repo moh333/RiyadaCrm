@@ -39,137 +39,36 @@
             </div>
         @endif
 
-        <form action="{{ route('tenant.contacts.update', $contact->getId()) }}" method="POST">
+        <form action="{{ route('tenant.contacts.update', $contact->getId()) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             <div class="row">
                 <div class="col-lg-8">
-                    <!-- Basic Information -->
-                    <div class="card border-0 shadow-sm rounded-4 mb-4">
-                        <div class="card-header bg-white border-bottom py-3 px-4">
-                            <h5 class="card-title fw-bold mb-0"><i
-                                    class="bi bi-person me-2"></i>{{ __('contacts::contacts.personal_information') }}</h5>
-                        </div>
-                        <div class="card-body p-4">
-                            <div class="row g-3">
-                                <div class="col-md-2">
-                                    <label
-                                        class="form-label text-muted fw-bold small uppercase">{{ __('contacts::contacts.salutation') }}</label>
-                                    <select name="salutation" class="form-select rounded-3">
-                                        <option value="" @if(!$contact->getFullName()->getSalutation()) selected @endif>
-                                            {{ __('contacts::contacts.none') }}
-                                        </option>
-                                        <option value="Mr." @if($contact->getFullName()->getSalutation() == 'Mr.') selected
-                                        @endif>Mr.</option>
-                                        <option value="Ms." @if($contact->getFullName()->getSalutation() == 'Ms.') selected
-                                        @endif>Ms.</option>
-                                        <option value="Mrs." @if($contact->getFullName()->getSalutation() == 'Mrs.') selected
-                                        @endif>Mrs.</option>
-                                        <option value="Dr." @if($contact->getFullName()->getSalutation() == 'Dr.') selected
-                                        @endif>Dr.</option>
-                                        <option value="Prof." @if($contact->getFullName()->getSalutation() == 'Prof.')
-                                        selected @endif>Prof.</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-5">
-                                    <label
-                                        class="form-label text-muted fw-bold small uppercase">{{ __('contacts::contacts.first_name') }}</label>
-                                    <input type="text" name="firstname" class="form-control rounded-3"
-                                        value="{{ old('firstname', $contact->getFullName()->getFirstName()) }}"
-                                        placeholder="{{ __('contacts::contacts.first_name') }}">
-                                </div>
-                                <div class="col-md-5">
-                                    <label
-                                        class="form-label text-muted fw-bold small uppercase">{{ __('contacts::contacts.last_name') }}
-                                        <span class="text-danger">*</span></label>
-                                    <input type="text" name="lastname" class="form-control rounded-3"
-                                        value="{{ old('lastname', $contact->getFullName()->getLastName()) }}"
-                                        placeholder="{{ __('contacts::contacts.last_name') }}" required>
-                                </div>
+                    @foreach($module->blocks()->sortBy('sequence') as $block)
+                        @php
+                            $fields = $module->fields()
+                                ->filter(fn($f) => $f->getBlockId() === $block->getId() && $f->isVisible() && $f->isEditable())
+                                ->sortBy('sequence');
+                        @endphp
 
-                                <div class="col-md-6">
-                                    <label
-                                        class="form-label text-muted fw-bold small uppercase">{{ __('contacts::contacts.email_address') }}</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light rounded-start-3"><i
-                                                class="bi bi-envelope"></i></span>
-                                        <input type="email" name="email" class="form-control rounded-end-3"
-                                            value="{{ old('email', $contact->getEmail() ? $contact->getEmail()->getEmail() : '') }}"
-                                            placeholder="email@example.com">
+                        @if($fields->count() > 0)
+                            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                                <div class="card-header bg-white border-bottom py-3 px-4">
+                                    <h5 class="card-title fw-bold mb-0">
+                                        <i class="bi bi-grid me-2 text-primary"></i>
+                                        {{ app()->getLocale() == 'ar' ? ($block->getLabelAr() ?? $block->getLabel()) : ($block->getLabelEn() ?? $block->getLabel()) }}
+                                    </h5>
+                                </div>
+                                <div class="card-body p-4">
+                                    <div class="row g-1">
+                                        @foreach($fields as $field)
+                                            @include('contacts_module::contacts.partials.field_renderer', ['field' => $field, 'contact' => $contact])
+                                        @endforeach
                                     </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label
-                                        class="form-label text-muted fw-bold small uppercase">{{ __('contacts::contacts.organization_account') }}</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light rounded-start-3"><i
-                                                class="bi bi-building"></i></span>
-                                        <select name="account_id" class="form-select rounded-end-3">
-                                            <option value="">{{ __('contacts::contacts.select_account') }}</option>
-                                            <option value="1" @if($contact->getAccountId() == 1) selected @endif>Admin Account
-                                            </option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label
-                                        class="form-label text-muted fw-bold small uppercase">{{ __('contacts::contacts.primary_phone') }}</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light rounded-start-3"><i
-                                                class="bi bi-telephone"></i></span>
-                                        <input type="text" name="phone" class="form-control rounded-end-3"
-                                            value="{{ old('phone') }}" placeholder="+1 (555) 000-0000">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label
-                                        class="form-label text-muted fw-bold small uppercase">{{ __('contacts::contacts.mobile_phone') }}</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light rounded-start-3"><i
-                                                class="bi bi-phone"></i></span>
-                                        <input type="text" name="mobile" class="form-control rounded-end-3"
-                                            value="{{ old('mobile') }}" placeholder="+1 (555) 000-0000">
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label
-                                        class="form-label text-muted fw-bold small uppercase">{{ __('contacts::contacts.title') }}</label>
-                                    <input type="text" name="title" class="form-control rounded-3"
-                                        value="{{ old('title', $contact->getTitle()) }}" placeholder="Manager, CEO, etc.">
-                                </div>
-                                <div class="col-md-6">
-                                    <label
-                                        class="form-label text-muted fw-bold small uppercase">{{ __('contacts::contacts.department') }}</label>
-                                    <input type="text" name="department" class="form-control rounded-3"
-                                        value="{{ old('department', $contact->getDepartment()) }}"
-                                        placeholder="Sales, Marketing, etc.">
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    @include('contacts_module::contacts.partials.custom_fields')
-
-                    <!-- Additional Details -->
-                    <div class="card border-0 shadow-sm rounded-4 mb-4">
-                        <div class="card-header bg-white border-bottom py-3 px-4">
-                            <h5 class="card-title fw-bold mb-0"><i
-                                    class="bi bi-info-circle me-2"></i>{{ __('contacts::contacts.additional_details') }}
-                            </h5>
-                        </div>
-                        <div class="card-body p-4">
-                            <div class="row g-3">
-                                <div class="col-md-12">
-                                    <label
-                                        class="form-label text-muted fw-bold small uppercase">{{ __('contacts::contacts.description_notes') }}</label>
-                                    <textarea name="description" class="form-control rounded-3" rows="3"
-                                        placeholder="{{ __('contacts::contacts.description_notes') }}"></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        @endif
+                    @endforeach
                 </div>
 
                 <div class="col-lg-4">

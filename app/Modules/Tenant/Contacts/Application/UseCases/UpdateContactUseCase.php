@@ -93,11 +93,23 @@ class UpdateContactUseCase
             $contact->setDepartment($dto->department);
             $changedFields[] = 'department';
         }
+        if ($dto->description !== $contact->getDescription()) {
+            $contact->setDescription($dto->description);
+            $changedFields[] = 'description';
+        }
 
         // Update custom fields
         if (!empty($dto->customFields)) {
-            $contact->setCustomFields($dto->customFields);
+            foreach ($dto->customFields as $name => $value) {
+                $contact->setCustomField($name, $value);
+            }
             $changedFields[] = 'customFields';
+        }
+
+        // Update standard image if provided
+        if ($dto->image) {
+            $contact->uploadImage($dto->image);
+            $changedFields[] = 'image';
         }
 
 
@@ -129,6 +141,8 @@ class UpdateContactDTO
     public ?string $mobile;
     public ?string $title;
     public ?string $department;
+    public ?string $description;
+    public ?string $image;
     public array $customFields = [];
 
 
@@ -144,6 +158,8 @@ class UpdateContactDTO
         $this->mobile = $data['mobile'] ?? null;
         $this->title = $data['title'] ?? null;
         $this->department = $data['department'] ?? null;
+        $this->description = $data['description'] ?? null;
+        $this->image = $data['image'] ?? null;
         $this->customFields = $data['customFields'] ?? [];
     }
 }

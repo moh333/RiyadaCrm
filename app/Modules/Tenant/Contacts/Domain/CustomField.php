@@ -8,7 +8,6 @@ use App\Modules\Tenant\Contacts\Domain\Enums\CustomFieldType;
  * CustomField Value Object
  * 
  * Represents a custom field definition in vtiger_field table
- * This is the metadata about a field, not the actual data
  */
 class CustomField
 {
@@ -19,9 +18,11 @@ class CustomField
         private string $tableName,
         private CustomFieldType $uitype,
         private string $fieldName,
-        private string $fieldLabel,
+        private string $labelEn,
+        private ?string $labelAr,
         private bool $readonly,
         private int $presence,
+        private int $generatedType,
         private ?string $defaultValue,
         private ?int $maximumLength,
         private ?int $sequence,
@@ -47,7 +48,8 @@ class CustomField
         string $tableName,
         CustomFieldType $uitype,
         string $fieldName,
-        string $fieldLabel,
+        string $labelEn,
+        ?string $labelAr,
         int $block,
         string $typeOfData = 'V~O',
         ?string $defaultValue = null,
@@ -60,14 +62,16 @@ class CustomField
             tableName: $tableName,
             uitype: $uitype,
             fieldName: $fieldName,
-            fieldLabel: $fieldLabel,
+            labelEn: $labelEn,
+            labelAr: $labelAr,
             readonly: false,
-            presence: 2, // 0=active everywhere, 1=inactive, 2=active but not in quick create
+            presence: 2,
+            generatedType: 2,
             defaultValue: $defaultValue,
             maximumLength: $maximumLength ?? $uitype->columnLength(),
             sequence: null,
             block: $block,
-            displayType: 1, // 1=visible, 2=hidden, 3=readonly, 4=readonly in edit
+            displayType: 1,
             typeOfData: $typeOfData,
             quickCreate: false,
             quickCreateSequence: null,
@@ -88,14 +92,16 @@ class CustomField
             tabId: $data['tabid'],
             columnName: $data['columnname'],
             tableName: $data['tablename'],
-            uitype: CustomFieldType::from((int) $data['uitype']),
+            uitype: CustomFieldType::tryFrom((int) $data['uitype']) ?? CustomFieldType::SYSTEM,
             fieldName: $data['fieldname'],
-            fieldLabel: $data['fieldlabel'],
+            labelEn: $data['fieldlabel_en'] ?? $data['fieldlabel'] ?? '', // Fallback for transition
+            labelAr: $data['fieldlabel_ar'] ?? null,
             readonly: (bool) $data['readonly'],
             presence: $data['presence'],
             defaultValue: $data['defaultvalue'],
             maximumLength: $data['maximumlength'],
             sequence: $data['sequence'],
+            generatedType: (int) $data['generatedtype'],
             block: $data['block'],
             displayType: $data['displaytype'],
             typeOfData: $data['typeofdata'],
@@ -133,10 +139,19 @@ class CustomField
     {
         return $this->fieldName;
     }
+    public function getLabelEn(): string
+    {
+        return $this->labelEn;
+    }
+    public function getLabelAr(): ?string
+    {
+        return $this->labelAr;
+    }
     public function getFieldLabel(): string
     {
-        return $this->fieldLabel;
-    }
+        return $this->labelEn;
+    } // Alias for backward compatibility if needed
+
     public function isReadonly(): bool
     {
         return $this->readonly;
@@ -165,6 +180,10 @@ class CustomField
     {
         return $this->displayType;
     }
+    public function getGeneratedType(): int
+    {
+        return $this->generatedType;
+    }
     public function getTypeOfData(): string
     {
         return $this->typeOfData;
@@ -189,70 +208,59 @@ class CustomField
     {
         return $this->summaryField;
     }
-    public function isUnique(): bool
-    {
-        return $this->isUnique;
-    }
 
-    /**
-     * Check if field is mandatory based on typeofdata
-     */
-    public function isMandatory(): bool
+    public function setLabelEn(string $label): void
     {
-        return str_contains($this->typeOfData, '~M');
+        $this->labelEn = $label;
+    }
+    public function setLabelAr(?string $label): void
+    {
+        $this->labelAr = $label;
     }
 
     /**
      * Update field metadata
      */
     public function updateMetadata(
-        ?string $fieldLabel = null,
+        ?string $labelEn = null,
+        ?string $labelAr = null,
         ?int $sequence = null,
         ?bool $quickCreate = null,
         ?string $helpInfo = null,
     ): void {
-        if ($fieldLabel !== null) {
-            $this->fieldLabel = $fieldLabel;
-        }
-        if ($sequence !== null) {
+        if ($labelEn !== null)
+            $this->labelEn = $labelEn;
+        if ($labelAr !== null)
+            $this->labelAr = $labelAr;
+        if ($sequence !== null)
             $this->sequence = $sequence;
-        }
-        if ($quickCreate !== null) {
+        if ($quickCreate !== null)
             $this->quickCreate = $quickCreate;
-        }
-        if ($helpInfo !== null) {
+        if ($helpInfo !== null)
             $this->helpInfo = $helpInfo;
-        }
     }
 
     public function setBlock(int $block): void
     {
         $this->block = $block;
     }
-
     public function setTypeOfData(string $typeOfData): void
     {
         $this->typeOfData = $typeOfData;
     }
-
     public function setUitype(CustomFieldType $uitype): void
     {
         $this->uitype = $uitype;
     }
-
     public function setMaximumLength(?int $maximumLength): void
     {
         $this->maximumLength = $maximumLength;
     }
-
     public function setDefaultValue(?string $defaultValue): void
     {
         $this->defaultValue = $defaultValue;
     }
 
-    /**
-     * Convert to array for database storage
-     */
     public function toArray(): array
     {
         return [
@@ -260,10 +268,11 @@ class CustomField
             'tabid' => $this->tabId,
             'columnname' => $this->columnName,
             'tablename' => $this->tableName,
-            'generatedtype' => 2, // 1=system, 2=custom
+            'generatedtype' => $this->generatedType,
             'uitype' => $this->uitype->value,
             'fieldname' => $this->fieldName,
-            'fieldlabel' => $this->fieldLabel,
+            'fieldlabel_en' => $this->labelEn,
+            'fieldlabel_ar' => $this->labelAr,
             'readonly' => $this->readonly ? 1 : 0,
             'presence' => $this->presence,
             'defaultvalue' => $this->defaultValue,

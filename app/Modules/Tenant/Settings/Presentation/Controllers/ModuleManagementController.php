@@ -118,6 +118,35 @@ class ModuleManagementController extends Controller
     }
 
     /**
+     * Update field order and block (Drag & Drop)
+     */
+    public function updateFieldOrder(Request $request, string $module)
+    {
+        $validated = $request->validate([
+            'fields' => 'required|array',
+            'fields.*.field_id' => 'required|integer',
+            'fields.*.block_id' => 'required|integer',
+            'fields.*.sequence' => 'required|integer',
+        ]);
+
+        \DB::connection('tenant')->transaction(function () use ($validated) {
+            foreach ($validated['fields'] as $fieldData) {
+                \DB::connection('tenant')
+                    ->table('vtiger_field')
+                    ->where('fieldid', $fieldData['field_id'])
+                    ->update([
+                        'block' => $fieldData['block_id'],
+                        'sequence' => $fieldData['sequence'],
+                    ]);
+            }
+        });
+
+        $this->moduleRegistry->refresh();
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
      * Add a new block to a module
      */
     public function addBlock(Request $request, string $module)

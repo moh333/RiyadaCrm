@@ -24,7 +24,8 @@ class ContactsController extends Controller
         CreateContactUseCase $createContactUseCase,
         UpdateContactUseCase $updateContactUseCase,
         DeleteContactUseCase $deleteContactUseCase,
-        \App\Modules\Tenant\Contacts\Application\UseCases\GetModuleCustomFieldsUseCase $getModuleCustomFieldsUseCase
+        \App\Modules\Tenant\Contacts\Application\UseCases\GetModuleCustomFieldsUseCase $getModuleCustomFieldsUseCase,
+        private \App\Modules\Core\VtigerModules\Contracts\ModuleRegistryInterface $moduleRegistry
     ) {
         $this->contactRepository = $contactRepository;
         $this->createContactUseCase = $createContactUseCase;
@@ -111,14 +112,15 @@ class ContactsController extends Controller
             abort(404);
         }
 
-        return view('contacts_module::contacts.show', compact('contact'));
+        $module = $this->moduleRegistry->get('Contacts');
+        return view('contacts_module::contacts.show', compact('contact', 'module'));
 
     }
 
     public function create()
     {
-        $customFields = $this->getModuleCustomFieldsUseCase->execute(4); // 4 = Contacts
-        return view('contacts_module::contacts.create', compact('customFields'));
+        $module = $this->moduleRegistry->get('Contacts');
+        return view('contacts_module::contacts.create', compact('module'));
     }
 
     public function store(Request $request)
@@ -135,11 +137,24 @@ class ContactsController extends Controller
             'department' => 'nullable|string|max:30',
         ]);
 
-        // Extract custom fields (cf_*)
+        // Extract fields
         $customFields = [];
-        foreach ($request->all() as $key => $value) {
+        $imagePath = null;
+
+        // Handle standard/custom inputs
+        foreach ($request->input() as $key => $value) {
             if (str_starts_with($key, 'cf_')) {
                 $customFields[$key] = $value;
+            }
+        }
+
+        // Handle file uploads
+        foreach ($request->allFiles() as $key => $file) {
+            $path = $file->store('custom_fields', 'public');
+            if (str_starts_with($key, 'cf_')) {
+                $customFields[$key] = $path;
+            } elseif ($key === 'imagename') {
+                $imagePath = $path;
             }
         }
 
@@ -155,6 +170,7 @@ class ContactsController extends Controller
             'mobile' => $validated['mobile'] ?? null,
             'title' => $validated['title'] ?? null,
             'department' => $validated['department'] ?? null,
+            'image' => $imagePath,
             'customFields' => $customFields,
         ]);
 
@@ -173,9 +189,8 @@ class ContactsController extends Controller
             abort(404);
         }
 
-        $customFields = $this->getModuleCustomFieldsUseCase->execute(4); // 4 = Contacts
-
-        return view('contacts_module::contacts.edit', compact('contact', 'customFields'));
+        $module = $this->moduleRegistry->get('Contacts');
+        return view('contacts_module::contacts.edit', compact('contact', 'module'));
     }
 
     public function update(Request $request, $id)
@@ -190,14 +205,36 @@ class ContactsController extends Controller
             'mobile' => 'nullable|string|max:50',
             'title' => 'nullable|string|max:50',
             'department' => 'nullable|string|max:30',
+            'description' => 'nullable|string',
         ]);
 
-        // Extract custom fields (cf_*)
+        // Extract fields
         $customFields = [];
-        foreach ($request->all() as $key => $value) {
+        $imagePath = null;
+
+        // Handle standard/custom inputs
+        foreach ($request->input() as $key => $value) {
             if (str_starts_with($key, 'cf_')) {
                 $customFields[$key] = $value;
             }
+        }
+
+        // Handle file uploads
+        foreach ($request->allFiles() as $key => $file) {
+            $path = $file->store('custom_fields', 'public');
+            if (str_starts_with($key, 'cf_')) {
+                $customFields[$key] = $path;
+            } elseif ($key === 'imagename') {
+                $imagePath = $path;
+            }
+        }
+
+        // Get existing contact to preserve image if not uploading new one
+        $existingContact = $this->contactRepository->findById((int) $id);
+
+        // If no new image uploaded, keep the existing one
+        if ($imagePath === null && $existingContact) {
+            $imagePath = $existingContact->getImageName();
         }
 
         $dto = new UpdateContactDTO([
@@ -211,8 +248,11 @@ class ContactsController extends Controller
             'mobile' => $validated['mobile'] ?? null,
             'title' => $validated['title'] ?? null,
             'department' => $validated['department'] ?? null,
+            'description' => $validated['description'] ?? null,
+            'image' => $imagePath,
             'customFields' => $customFields,
         ]);
+
 
         $contact = $this->updateContactUseCase->execute((int) $id, $dto);
 

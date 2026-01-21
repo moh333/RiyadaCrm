@@ -49,6 +49,7 @@ class Contact
     private \DateTimeImmutable $modifiedTime;
     private int $modifiedBy;
     private bool $deleted;
+    private ?string $description;
 
     // Extended fields from vtiger_contactsubdetails
     private ?string $assistant;
@@ -104,6 +105,7 @@ class Contact
         $this->portalEnabled = false;
         $this->supportStartDate = null;
         $this->supportEndDate = null;
+        $this->description = null;
     }
 
 
@@ -267,6 +269,11 @@ class Contact
         return $this->department;
     }
 
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
     // Setters for optional fields
 
     public function setEmail(?EmailAddress $email): void
@@ -296,6 +303,10 @@ class Contact
     public function setDepartment(?string $department): void
     {
         $this->department = $department;
+    }
+    public function setDescription(?string $description): void
+    {
+        $this->description = $description;
     }
     public function setMailingAddress(?Address $address): void
     {

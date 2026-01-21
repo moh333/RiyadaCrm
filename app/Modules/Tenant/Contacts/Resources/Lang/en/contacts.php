@@ -106,4 +106,6 @@ return [
     'update_field_notice' => 'Update the metadata for this field. Database schema changes are restricted here.',
     'default_value' => 'Default Value',
     'default_value_placeholder' => 'Enter an optional default value',
+    'enabled' => 'Enabled',
+    'disabled' => 'Disabled',
 ];

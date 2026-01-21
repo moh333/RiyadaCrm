@@ -11,7 +11,8 @@ class UpdateCustomFieldDTO
 {
     public function __construct(
         public readonly int $fieldId,
-        public readonly string $fieldLabel,
+        public readonly string $fieldLabelEn,
+        public readonly ?string $fieldLabelAr,
         public readonly int $block,
         public readonly string $typeOfData = 'V~O',
         public readonly bool $quickCreate = false,
@@ -30,7 +31,8 @@ class UpdateCustomFieldDTO
     {
         return new self(
             fieldId: $id,
-            fieldLabel: $data['fieldlabel'],
+            fieldLabelEn: $data['fieldlabel_en'],
+            fieldLabelAr: $data['fieldlabel_ar'] ?? null,
             block: (int) $data['block'],
             typeOfData: $data['typeofdata'] ?? 'V~O',
             quickCreate: (bool) ($data['quickcreate'] ?? false),

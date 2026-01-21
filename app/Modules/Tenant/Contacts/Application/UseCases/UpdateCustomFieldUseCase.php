@@ -27,7 +27,8 @@ class UpdateCustomFieldUseCase
 
         // Update metadata
         $field->updateMetadata(
-            fieldLabel: $dto->fieldLabel,
+            labelEn: $dto->fieldLabelEn,
+            labelAr: $dto->fieldLabelAr,
             quickCreate: $dto->quickCreate,
             helpInfo: $dto->helpInfo
         );

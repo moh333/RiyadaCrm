@@ -141,54 +141,23 @@
                     <div class="tab-content p-4">
                         <!-- Details Tab -->
                         <div class="tab-pane fade show active" id="details">
-                            <div class="row g-4">
-                                <div class="col-md-6">
-                                    <h6 class="text-muted small fw-bold mb-2">
-                                        {{ strtoupper(__('contacts::contacts.full_name')) }}
-                                    </h6>
-                                    <p class="fw-500">{{ $contact->getFullName()->getFullNameWithSalutation() }}</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <h6 class="text-muted small fw-bold mb-2">
-                                        {{ strtoupper(__('contacts::contacts.organization')) }}
-                                    </h6>
-                                    <p class="fw-500"><i class="bi bi-building me-1 text-primary"></i>
-                                        {{ $contact->getAccountId() ? 'Admin Account' : __('contacts::contacts.none') }}</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <h6 class="text-muted small fw-bold mb-2">
-                                        {{ strtoupper(__('contacts::contacts.department')) }}
-                                    </h6>
-                                    <p class="fw-500">{{ $contact->getDepartment() ?: '-' }}</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <h6 class="text-muted small fw-bold mb-2">
-                                        {{ strtoupper(__('contacts::contacts.created_by')) }}
-                                    </h6>
-                                    <p class="fw-500"><img src="https://ui-avatars.com/api/?name=Admin&size=20"
-                                            class="rounded-circle me-1"> Administrator</p>
-                                </div>
-
-                                <div class="col-12 mt-5">
-                                    <h6 class="fw-bold mb-3 border-bottom pb-2">
-                                        {{ __('contacts::contacts.address_information') }}
-                                    </h6>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <h6 class="text-muted small fw-bold mb-2">
-                                                {{ strtoupper(__('contacts::contacts.mailing_address')) }}
-                                            </h6>
-                                            <p class="fw-500 mb-0">{{ __('contacts::contacts.na') }}</p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <h6 class="text-muted small fw-bold mb-2">
-                                                {{ strtoupper(__('contacts::contacts.alternate_address')) }}
-                                            </h6>
-                                            <p class="fw-500 mb-0">{{ __('contacts::contacts.na') }}</p>
+                            @if(isset($module))
+                                @foreach($module->blocks()->sortBy('sequence') as $block)
+                                    <div class="col-12 {{ $loop->first ? '' : 'mt-5' }}">
+                                        <h6 class="fw-bold mb-3 border-bottom pb-2">
+                                            {{ app()->getLocale() == 'ar' ? ($block->getLabelAr() ?? $block->getLabel()) : ($block->getLabelEn() ?? $block->getLabel()) }}
+                                        </h6>
+                                        <div class="row">
+                                            @foreach($module->fields()->filter(fn($f) => $f->getBlockId() === $block->getId() && $f->isVisible())->sortBy('sequence') as $field)
+                                                @include('contacts_module::contacts.partials.detail_field', ['field' => $field, 'contact' => $contact])
+                                            @endforeach
                                         </div>
                                     </div>
-                                </div>
-                            </div>
+                                @endforeach
+                            @else
+                                <div class="alert alert-warning">Module definition not found. Cannot display details
+                                    dynamically.</div>
+                            @endif
                         </div>
 
                         <!-- Timeline Tab (Placeholder) -->

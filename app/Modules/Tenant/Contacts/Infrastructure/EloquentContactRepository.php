@@ -249,7 +249,7 @@ class EloquentContactRepository implements ContactRepositoryInterface
             'smownerid' => $contact->getOwnerId(),
             'modifiedby' => $contact->getOwnerId(),
             'setype' => 'Contacts',
-            'description' => null,
+            'description' => $contact->getDescription(),
             'createdtime' => $now,
             'modifiedtime' => $now,
             'viewedtime' => null,
@@ -342,6 +342,7 @@ class EloquentContactRepository implements ContactRepositoryInterface
                 'modifiedtime' => $now,
                 'modifiedby' => $contact->getOwnerId(), // Should be current user
                 'label' => $contact->getFullName()->getDisplayName(),
+                'description' => $contact->getDescription(),
             ]);
 
         // Update vtiger_contactdetails
@@ -691,6 +692,10 @@ class EloquentContactRepository implements ContactRepositoryInterface
 
         if (!empty($data->department)) {
             $contact->setDepartment($data->department);
+        }
+
+        if (!empty($data->description)) {
+            $contact->setDescription($data->description);
         }
 
         // Map Address

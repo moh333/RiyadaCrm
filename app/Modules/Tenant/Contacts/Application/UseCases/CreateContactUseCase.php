@@ -81,6 +81,9 @@ class CreateContactUseCase
         if ($dto->department) {
             $contact->setDepartment($dto->department);
         }
+        if ($dto->image) {
+            $contact->uploadImage($dto->image);
+        }
 
         // Set custom fields
         if (!empty($dto->customFields)) {
@@ -118,6 +121,7 @@ class CreateContactDTO
     public ?string $mobile;
     public ?string $title;
     public ?string $department;
+    public ?string $image;
     public array $customFields = [];
 
     // Address fields
@@ -145,6 +149,7 @@ class CreateContactDTO
         $this->mailingState = $data['mailingState'] ?? null;
         $this->mailingZip = $data['mailingZip'] ?? null;
         $this->mailingCountry = $data['mailingCountry'] ?? null;
+        $this->image = $data['image'] ?? null;
         $this->customFields = $data['customFields'] ?? [];
     }
 }
