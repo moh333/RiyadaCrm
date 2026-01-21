@@ -119,8 +119,12 @@ class CustomFieldsController extends Controller
             $validated['typeofdata'] = implode('~', $parts);
 
             // Handle default value (could be array from multiselect)
-            if (isset($validated['defaultvalue']) && is_array($validated['defaultvalue'])) {
-                $validated['defaultvalue'] = implode('|##|', $validated['defaultvalue']);
+            if (isset($validated['defaultvalue'])) {
+                if (is_array($validated['defaultvalue'])) {
+                    $validated['defaultvalue'] = '|##|' . implode('|##|', $validated['defaultvalue']) . '|##|';
+                } elseif (!empty($validated['defaultvalue']) && $uitypeValue == 33) {
+                    $validated['defaultvalue'] = '|##|' . $validated['defaultvalue'] . '|##|';
+                }
             }
 
             $dto = CreateCustomFieldDTO::fromRequest(array_merge($validated, [
@@ -238,8 +242,12 @@ class CustomFieldsController extends Controller
             $validated['typeofdata'] = implode('~', $parts);
 
             // Handle default value (could be array from multiselect)
-            if (isset($validated['defaultvalue']) && is_array($validated['defaultvalue'])) {
-                $validated['defaultvalue'] = implode('|##|', $validated['defaultvalue']);
+            if (isset($validated['defaultvalue'])) {
+                if (is_array($validated['defaultvalue'])) {
+                    $validated['defaultvalue'] = '|##|' . implode('|##|', $validated['defaultvalue']) . '|##|';
+                } elseif (!empty($validated['defaultvalue']) && $uitypeValue == 33) {
+                    $validated['defaultvalue'] = '|##|' . $validated['defaultvalue'] . '|##|';
+                }
             }
 
             $dto = \App\Modules\Tenant\Contacts\Application\DTOs\UpdateCustomFieldDTO::fromRequest($id, $validated);

@@ -19,6 +19,7 @@ class UpdateCustomFieldDTO
         public readonly ?string $defaultValue = null,
         public readonly array $picklistValues = [],
         public readonly ?int $uitype = null,
+        public readonly ?int $length = null,
     ) {
     }
 
@@ -39,6 +40,7 @@ class UpdateCustomFieldDTO
             ? array_filter(array_map('trim', explode("\n", $data['picklist_values'])))
             : [],
             uitype: isset($data['uitype']) ? (int) $data['uitype'] : null,
+            length: isset($data['length']) ? (int) $data['length'] : null,
         );
     }
 }

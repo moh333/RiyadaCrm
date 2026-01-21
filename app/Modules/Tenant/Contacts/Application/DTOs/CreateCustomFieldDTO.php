@@ -23,6 +23,7 @@ class CreateCustomFieldDTO
         public readonly ?string $helpInfo = null,
         public readonly ?string $defaultValue = null,
         public readonly array $picklistValues = [],
+        public readonly ?int $length = null,
     ) {
     }
 
@@ -45,6 +46,7 @@ class CreateCustomFieldDTO
             picklistValues: isset($data['picklist_values'])
             ? array_filter(array_map('trim', explode("\n", $data['picklist_values'])))
             : [],
+            length: isset($data['length']) ? (int) $data['length'] : null,
         );
     }
 

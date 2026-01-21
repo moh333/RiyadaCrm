@@ -39,6 +39,7 @@ class UpdateCustomFieldUseCase
         $field->setBlock($dto->block);
         $field->setTypeOfData($dto->typeOfData);
         $field->setDefaultValue($dto->defaultValue);
+        $field->setMaximumLength($dto->length);
 
         $this->customFieldRepository->save($field);
 

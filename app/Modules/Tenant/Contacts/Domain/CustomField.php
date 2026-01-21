@@ -50,6 +50,8 @@ class CustomField
         string $fieldLabel,
         int $block,
         string $typeOfData = 'V~O',
+        ?string $defaultValue = null,
+        ?int $maximumLength = null,
     ): self {
         return new self(
             fieldId: $fieldId,
@@ -61,8 +63,8 @@ class CustomField
             fieldLabel: $fieldLabel,
             readonly: false,
             presence: 2, // 0=active everywhere, 1=inactive, 2=active but not in quick create
-            defaultValue: null,
-            maximumLength: $uitype->columnLength(),
+            defaultValue: $defaultValue,
+            maximumLength: $maximumLength ?? $uitype->columnLength(),
             sequence: null,
             block: $block,
             displayType: 1, // 1=visible, 2=hidden, 3=readonly, 4=readonly in edit
@@ -236,6 +238,11 @@ class CustomField
     public function setUitype(CustomFieldType $uitype): void
     {
         $this->uitype = $uitype;
+    }
+
+    public function setMaximumLength(?int $maximumLength): void
+    {
+        $this->maximumLength = $maximumLength;
     }
 
     public function setDefaultValue(?string $defaultValue): void

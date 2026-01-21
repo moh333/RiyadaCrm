@@ -259,17 +259,19 @@ class FieldDefinition
      */
     public function getFieldType(): string
     {
+        $enum = \App\Modules\Tenant\Contacts\Domain\Enums\CustomFieldType::tryFrom($this->uitype);
+        if ($enum) {
+            return $enum->label();
+        }
+
         return match ($this->uitype) {
-            1, 2, 7, 9, 11, 17 => 'text',
-            13 => 'email',
-            5, 6, 23, 70 => 'date',
-            14 => 'time',
-            15, 16, 33 => 'picklist',
-            10 => 'relation',
-            19, 21 => 'textarea',
-            56 => 'checkbox',
-            71, 72 => 'currency',
-            default => 'unknown',
+            4 => 'Contact Name',
+            10 => 'Reference',
+            23 => 'Date',
+            50 => 'Date & Time',
+            51 => 'User',
+            70 => 'Date & Time',
+            default => 'System (' . $this->uitype . ')',
         };
     }
 }

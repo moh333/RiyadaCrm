@@ -538,14 +538,18 @@
                     `;
                 } else if (['15', '16', '33', '55'].includes(uitype)) { // Picklist or Multiselect
                     const values = data.picklistValues ? data.picklistValues.split('\n').map(v => v.trim()).filter(v => v !== '') : [];
-                    const isMulti = uitype === '33';
-                    const currentValues = isMulti 
-                        ? (currentValue ? currentValue.split('|##|').filter(v => v.trim() !== '') : []) 
-                        : [currentValue];
+                    // User requested: Multi Select default value must be single value
+                    const isMulti = false; 
                     
-                    html = `<select name="defaultvalue${isMulti ? '[]' : ''}" class="form-select rounded-3" ${isMulti ? 'multiple' : ''}>
+                    // If it was stored as multi (|##|value|##|), extract the first value
+                    let effectiveValue = currentValue || '';
+                    if (effectiveValue.includes('|##|')) {
+                        effectiveValue = effectiveValue.split('|##|').find(v => v.trim() !== '') || '';
+                    }
+
+                    html = `<select name="defaultvalue" class="form-select rounded-3">
                         <option value="">-- None --</option>
-                        ${values.map(v => `<option value="${v}" ${currentValues.includes(v) ? 'selected' : ''}>${v}</option>`).join('')}
+                        ${values.map(v => `<option value="${v}" ${effectiveValue == v ? 'selected' : ''}>${v}</option>`).join('')}
                     </select>`;
                 } else if (uitype === '21') { // Textarea
                     html = `<textarea name="defaultvalue" class="${baseClass}" rows="2">${currentValue}</textarea>`;
@@ -583,8 +587,8 @@
                 picklistSec?.classList.add('d-none');
                 roleBasedSec?.classList.add('d-none');
 
-                // text(1), integer(7), decimal(71), currency(72)
-                if (['1', '7', '71', '72'].includes(uitype)) {
+                // text(1), integer(7), decimal(71), currency(72), email(13), phone(11), url(17), skype(85)
+                if (['1', '7', '71', '72', '11', '13', '17', '85'].includes(uitype)) {
                     lengthSec?.classList.remove('d-none');
                 }
                 

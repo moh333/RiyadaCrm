@@ -70,6 +70,8 @@ class CreateCustomFieldUseCase
                 fieldLabel: $dto->fieldLabel,
                 block: $dto->block,
                 typeOfData: $dto->typeOfData,
+                defaultValue: $dto->defaultValue,
+                maximumLength: $dto->length,
             );
 
             // Update optional metadata
@@ -97,7 +99,7 @@ class CreateCustomFieldUseCase
             // Ensure the custom table exists for this module
             $this->customFieldRepository->ensureCustomTableExists($dto->getTableName());
 
-            $this->addColumnToTable($dto->getTableName(), $columnName, $dto->uitype);
+            $this->addColumnToTable($dto->getTableName(), $columnName, $dto->uitype, $dto->length);
         } catch (\Throwable $e) {
             // If column creation fails, we should delete the field definition
             // to maintain consistency
@@ -116,11 +118,11 @@ class CreateCustomFieldUseCase
     /**
      * Add column to custom fields table
      */
-    private function addColumnToTable(string $tableName, string $columnName, $uitype): void
+    private function addColumnToTable(string $tableName, string $columnName, $uitype, ?int $length = null): void
     {
-        Schema::connection('tenant')->table($tableName, function ($table) use ($columnName, $uitype) {
+        Schema::connection('tenant')->table($tableName, function ($table) use ($columnName, $uitype, $length) {
             $columnType = $uitype->columnType();
-            $columnLength = $uitype->columnLength();
+            $columnLength = $length ?? $uitype->columnLength();
 
             switch ($columnType) {
                 case 'string':
