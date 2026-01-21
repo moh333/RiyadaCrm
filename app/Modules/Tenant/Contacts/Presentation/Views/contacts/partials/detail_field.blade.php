@@ -1,11 +1,12 @@
 @php
     $fieldName = $field->getFieldName();
+    $columnName = $field->getColumnName();
     $uitype = $field->getUitype();
     $value = null;
 
     try {
         if ($field->isCustomField()) {
-            $value = $contact->getCustomField($fieldName);
+            $value = $contact->getCustomField($columnName);
         } else {
             // Property map for Contact entity getters
             $propMap = [
@@ -65,12 +66,12 @@
     </h6>
     @if ($uitype == 69 && $value) {{-- Image --}}
         <div class="mt-2">
-            <img src="{{ asset('storage/' . $value) }}" class="img-thumbnail rounded-3 shadow-sm"
+            <img src="{{ url('tenancy/assets/' . $value) }}" class="img-thumbnail rounded-3 shadow-sm"
                 style="max-height: 150px;">
         </div>
     @elseif ($uitype == 28 && $value) {{-- File --}}
         <div class="mt-2">
-            <a href="{{ asset('storage/' . $value) }}" target="_blank"
+            <a href="{{ url('tenancy/assets/' . $value) }}" target="_blank"
                 class="text-primary text-decoration-none bg-light px-3 py-2 rounded-3 border d-inline-block">
                 <i class="bi bi-file-earmark-arrow-down me-2"></i> {{ basename($value) }}
             </a>

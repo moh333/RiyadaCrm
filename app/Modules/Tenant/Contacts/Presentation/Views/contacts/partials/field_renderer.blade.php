@@ -1,14 +1,19 @@
 @php
     $fieldName = $field->getFieldName();
+    $columnName = $field->getColumnName();
     $uitype = $field->getUitype();
     $defaultValue = $field->getDefaultValue();
+    
+    // For custom fields, use column name (cf_xxx) for form input name
+    // For standard fields, use field name
+    $inputName = $field->isCustomField() ? $columnName : $fieldName;
 
     // For edit mode, handle current value
     $currentValue = null;
     if (isset($contact)) {
         try {
             if ($field->isCustomField()) {
-                $currentValue = $contact->getCustomField($fieldName);
+                $currentValue = $contact->getCustomField($columnName);
             } else {
                 // Property map for Contact entity getters
                 $propMap = [
@@ -88,12 +93,12 @@
     </label>
 
     @if($fieldName === 'firstname' || $fieldName === 'lastname') {{-- Force name fields to be text --}}
-        <input type="text" name="{{ $fieldName }}" class="form-control rounded-3" value="{{ $value }}"
+        <input type="text" name="{{ $inputName }}" class="form-control rounded-3" value="{{ $value }}"
             placeholder="{{ $field->getLabel() }}" @if($isMandatory) required @endif>
 
     @elseif(in_array($fieldName, ['salutation', 'salutationtype']) || in_array($uitype, [15, 16, 55])) {{-- Force
         Salutation/Picklists to be dropdown --}}
-        <select name="{{ $fieldName }}" class="form-select rounded-3" @if($isMandatory) required @endif>
+        <select name="{{ $inputName }}" class="form-select rounded-3" @if($isMandatory) required @endif>
             <option value="">{{ __('contacts::contacts.none') }}</option>
             @php
                 $options = [];
@@ -142,7 +147,7 @@
             $selectedValues = is_array($value) ? $value : (is_string($value) ? explode('|##|', trim((string) $value, '|##|')) : []);
             $selectedValues = array_map('trim', array_filter($selectedValues));
         @endphp
-        <select name="{{ $fieldName }}[]" class="form-select rounded-3" multiple @if($isMandatory) required @endif>
+        <select name="{{ $inputName }}[]" class="form-select rounded-3" multiple @if($isMandatory) required @endif>
             @foreach($options as $opt)
                 <option value="{{ $opt }}" @if(in_array(trim((string) $opt), $selectedValues)) selected @endif>{{ $opt }}
                 </option>
@@ -151,14 +156,14 @@
 
     @elseif($uitype == 56) {{-- Checkbox --}}
         <div class="form-check form-switch mt-1">
-            <input type="hidden" name="{{ $fieldName }}" value="0">
-            <input class="form-check-input" type="checkbox" name="{{ $fieldName }}" value="1" id="field_{{ $fieldName }}"
+            <input type="hidden" name="{{ $inputName }}" value="0">
+            <input class="form-check-input" type="checkbox" name="{{ $inputName }}" value="1" id="field_{{ $fieldName }}"
                 @if($value == '1' || $value === true) checked @endif>
             <label class="form-check-label" for="field_{{ $fieldName }}">{{ __('contacts::contacts.enabled') }}</label>
         </div>
 
     @elseif(in_array($uitype, [19, 21])) {{-- Textarea / Text Large --}}
-        <textarea name="{{ $fieldName }}" class="form-control rounded-3" rows="{{ $uitype == 19 ? 5 : 3 }}"
+        <textarea name="{{ $inputName }}" class="form-control rounded-3" rows="{{ $uitype == 19 ? 5 : 3 }}"
             placeholder="{{ $field->getLabel() }}" @if($isMandatory) required @endif>{{ $value }}</textarea>
 
     @elseif(in_array($uitype, [28, 69])) {{-- File / Image --}}
@@ -166,7 +171,7 @@
             <span class="input-group-text bg-light rounded-start-3">
                 <i class="bi bi-{{ $uitype == 69 ? 'image' : 'file-earmark-arrow-up' }}"></i>
             </span>
-            <input type="file" name="{{ $fieldName }}" class="form-control rounded-end-3" 
+            <input type="file" name="{{ $inputName }}" class="form-control rounded-end-3" 
                 @if($uitype == 69) accept="image/*" onchange="if(typeof previewImage === 'function') previewImage(this, 'preview_{{ $fieldName }}')"
                 @else accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" @endif
                 @if($isMandatory && !$value) required @endif>
@@ -174,7 +179,7 @@
         
         @if($uitype == 69)
             <div class="mt-2" id="preview_container_{{ $fieldName }}" style="{{ $value ? '' : 'display:none;' }}">
-                <img id="preview_{{ $fieldName }}" src="{{ $value ? asset('storage/' . $value) : '' }}" 
+                <img id="preview_{{ $fieldName }}" src="{{ $value ? url('tenancy/assets/' . $value) : '' }}" 
                      class="img-thumbnail rounded-3 shadow-sm" style="max-height: 150px;">
             </div>
             @once
@@ -200,12 +205,12 @@
         @if($value && $uitype == 28)
             <div class="mt-1 small">
                 <span class="text-muted">Current:</span> 
-                <a href="{{ asset('storage/' . $value) }}" target="_blank" class="text-primary">{{ basename($value) }}</a>
+                <a href="{{ url('tenancy/assets/' . $value) }}" target="_blank" class="text-primary">{{ basename($value) }}</a>
             </div>
         @endif
 
     @elseif($uitype == 5) {{-- Date --}}
-        <input type="date" name="{{ $fieldName }}" class="form-control rounded-3" value="{{ $value }}" @if($isMandatory)
+        <input type="date" name="{{ $inputName }}" class="form-control rounded-3" value="{{ $value }}" @if($isMandatory)
         required @endif>
 
     @elseif(in_array($uitype, [6, 70, 50])) {{-- Date & Time --}}
@@ -214,13 +219,13 @@
                 $value = str_replace(' ', 'T', $value);
             }
         @endphp
-        <input type="datetime-local" name="{{ $fieldName }}" class="form-control rounded-3" value="{{ $value }}"
+        <input type="datetime-local" name="{{ $inputName }}" class="form-control rounded-3" value="{{ $value }}"
             @if($isMandatory) required @endif>
 
     @elseif($uitype == 13) {{-- Email --}}
         <div class="input-group">
             <span class="input-group-text bg-light rounded-start-3"><i class="bi bi-envelope"></i></span>
-            <input type="email" name="{{ $fieldName }}" class="form-control rounded-end-3" value="{{ $value }}"
+            <input type="email" name="{{ $inputName }}" class="form-control rounded-end-3" value="{{ $value }}"
                 placeholder="email@example.com" @if($isMandatory) required @endif>
         </div>
 
@@ -229,7 +234,7 @@
             @if($uitype == 11)
                 <span class="input-group-text bg-light rounded-start-3"><i class="bi bi-telephone"></i></span>
             @endif
-            <input type="text" name="{{ $fieldName }}"
+            <input type="text" name="{{ $inputName }}"
                 class="form-control {{ $uitype == 11 ? 'rounded-end-3' : 'rounded-3' }}" value="{{ $value }}"
                 placeholder="{{ $field->getLabel() }}" @if($isMandatory) required @endif>
         </div>
@@ -237,7 +242,7 @@
     @elseif($uitype == 10) {{-- Reference --}}
         <div class="input-group">
             <span class="input-group-text bg-light rounded-start-3"><i class="bi bi-search"></i></span>
-            <select name="{{ $fieldName }}" class="form-select rounded-end-3" @if($isMandatory) required @endif>
+            <select name="{{ $inputName }}" class="form-select rounded-end-3" @if($isMandatory) required @endif>
                 <option value="">{{ __('contacts::contacts.select_option') }}</option>
                 @if($value)
                     @php
@@ -268,12 +273,12 @@
             @elseif($uitype == 9)
                 <span class="input-group-text bg-light rounded-start-3"><i class="bi bi-percent"></i></span>
             @endif
-            <input type="number" name="{{ $fieldName }}" class="form-control rounded-3" value="{{ $value }}" @if($uitype == 7)
+            <input type="number" name="{{ $inputName }}" class="form-control rounded-3" value="{{ $value }}" @if($uitype == 7)
             step="1" @else step="0.01" @endif placeholder="{{ $field->getLabel() }}" @if($isMandatory) required @endif>
         </div>
 
     @elseif(in_array($uitype, [52, 53, 77])) {{-- User / Owner --}}
-        <select name="{{ $fieldName }}" class="form-select rounded-3" @if($isMandatory) required @endif>
+        <select name="{{ $inputName }}" class="form-select rounded-3" @if($isMandatory) required @endif>
             @php
                 $users = \DB::connection('tenant')->table('users')->select('id', 'name')->get();
             @endphp
@@ -283,7 +288,7 @@
         </select>
 
     @else {{-- Default text input --}}
-        <input type="text" name="{{ $fieldName }}" class="form-control rounded-3" value="{{ $value }}"
+        <input type="text" name="{{ $inputName }}" class="form-control rounded-3" value="{{ $value }}"
             placeholder="{{ $field->getLabel() }}" @if($isMandatory) required @endif>
     @endif
 
