@@ -362,6 +362,44 @@
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function deleteFile(recordId, field, filePath, elementId) {
+            if (!confirm('{{ __("contacts::contacts.are_you_sure") }}')) return;
+
+            const url = `{{ route("tenant.contacts.index") }}/${recordId}/delete-file`;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    field: field,
+                    file_path: filePath
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const element = document.getElementById(elementId);
+                        if (element) {
+                            element.classList.add('fade');
+                            setTimeout(() => element.remove(), 300);
+                        }
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting the file.');
+                });
+        }
+    </script>
+
     @yield('scripts')
 </body>
 

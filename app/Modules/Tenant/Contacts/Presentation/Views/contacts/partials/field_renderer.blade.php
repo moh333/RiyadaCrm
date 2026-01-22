@@ -3,7 +3,7 @@
     $columnName = $field->getColumnName();
     $uitype = $field->getUitype();
     $defaultValue = $field->getDefaultValue();
-    
+
     // For custom fields, use column name (cf_xxx) for form input name
     // For standard fields, use field name
     $inputName = $field->isCustomField() ? $columnName : $fieldName;
@@ -167,45 +167,127 @@
             placeholder="{{ $field->getLabel() }}" @if($isMandatory) required @endif>{{ $value }}</textarea>
 
     @elseif(in_array($uitype, [28, 69])) {{-- File / Image --}}
+        @php
+            // Get file upload configuration
+            $allowMultiple = $field->getAllowMultipleFiles();
+            $acceptableTypes = $field->getAcceptableFileTypes();
+
+            // Build accept attribute
+            $acceptAttr = '';
+            if ($acceptableTypes) {
+                // Parse acceptable types (stored as newline-separated or comma-separated)
+                $types = array_filter(array_map('trim', preg_split('/[\n,]+/', $acceptableTypes)));
+                $acceptAttr = '.' . implode(',.', $types);
+            } else {
+                // Default accept types
+                $acceptAttr = $uitype == 69 ? 'image/*' : '.pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg';
+            }
+
+            // Determine input name for multiple files
+            $fileInputName = $allowMultiple ? $inputName . '[]' : $inputName;
+        @endphp
+
         <div class="input-group">
             <span class="input-group-text bg-light rounded-start-3">
                 <i class="bi bi-{{ $uitype == 69 ? 'image' : 'file-earmark-arrow-up' }}"></i>
             </span>
-            <input type="file" name="{{ $inputName }}" class="form-control rounded-end-3" 
-                @if($uitype == 69) accept="image/*" onchange="if(typeof previewImage === 'function') previewImage(this, 'preview_{{ $fieldName }}')"
-                @else accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" @endif
+            <input type="file" name="{{ $fileInputName }}" class="form-control rounded-end-3 file-upload-input"
+                accept="{{ $acceptAttr }}" data-field-name="{{ $fieldName }}" data-uitype="{{ $uitype }}"
+                data-acceptable-types="{{ $acceptableTypes ?? '' }}" @if($allowMultiple) multiple @endif @if($uitype == 69)
+                onchange="if(typeof previewImage === 'function') previewImage(this, 'preview_{{ $fieldName }}')" @endif
                 @if($isMandatory && !$value) required @endif>
         </div>
-        
+
+        @if($acceptableTypes)
+            <small class="text-muted mt-1 d-block">
+                <i class="bi bi-info-circle me-1"></i>
+                {{ __('contacts::contacts.allowed_extensions') }}: {{ str_replace("\n", ', ', $acceptableTypes) }}
+            </small>
+        @endif
+
+        @if($allowMultiple)
+            <small class="text-muted mt-1 d-block">
+                <i class="bi bi-files me-1"></i>
+                {{ __('contacts::contacts.multiple_files_allowed') }}
+            </small>
+        @endif
+
+        {{-- Preview for new uploads (Single only for preview usually) --}}
         @if($uitype == 69)
-            <div class="mt-2" id="preview_container_{{ $fieldName }}" style="{{ $value ? '' : 'display:none;' }}">
-                <img id="preview_{{ $fieldName }}" src="{{ $value ? url('tenancy/assets/' . $value) : '' }}" 
-                     class="img-thumbnail rounded-3 shadow-sm" style="max-height: 150px;">
+            <div class="mt-2" id="preview_container_{{ $fieldName }}" style="display:none;">
+                <label class="form-label small fw-bold text-primary">{{ __('contacts::contacts.new_preview') }}</label>
+                <img id="preview_{{ $fieldName }}" src="" class="img-thumbnail rounded-3 shadow-sm" style="max-height: 150px;">
             </div>
             @once
-            <script>
-                if (typeof previewImage === 'undefined') {
-                    window.previewImage = function(input, previewId) {
-                        const preview = document.getElementById(previewId);
-                        const container = document.getElementById('preview_container_' + input.name);
-                        if (input.files && input.files[0]) {
-                            const reader = new FileReader();
-                            reader.onload = function(e) {
-                                preview.src = e.target.result;
-                                container.style.display = 'block';
+                <script>
+                    if (typeof previewImage === 'undefined') {
+                        window.previewImage = function (input, previewId) {
+                            const preview = document.getElementById(previewId);
+                            const container = document.getElementById('preview_container_' + input.getAttribute('data-field-name'));
+                            if (input.files && input.files[0]) {
+                                const reader = new FileReader();
+                                reader.onload = function (e) {
+                                    preview.src = e.target.result;
+                                    container.style.display = 'block';
+                                }
+                                reader.readAsDataURL(input.files[0]);
                             }
-                            reader.readAsDataURL(input.files[0]);
                         }
                     }
-                }
-            </script>
+                </script>
             @endonce
         @endif
 
-        @if($value && $uitype == 28)
-            <div class="mt-1 small">
-                <span class="text-muted">Current:</span> 
-                <a href="{{ url('tenancy/assets/' . $value) }}" target="_blank" class="text-primary">{{ basename($value) }}</a>
+        {{-- Display existing files/images in edit mode --}}
+        @if($value && isset($contact))
+            @php
+                $existingFiles = [];
+                if (is_string($value) && str_starts_with($value, '[')) {
+                    $existingFiles = json_decode($value, true) ?? [$value];
+                } else {
+                    $existingFiles = [$value];
+                }
+            @endphp
+
+            <div class="mt-3">
+                <label
+                    class="form-label fw-bold small text-muted text-uppercase">{{ $uitype == 69 ? __('contacts::contacts.existing_images') : __('contacts::contacts.existing_files') }}</label>
+                <div class="row g-2">
+                    @foreach($existingFiles as $index => $filePath)
+                        @php $fileName = basename($filePath); @endphp
+                        @if($uitype == 69)
+                            <div class="col-md-4" id="edit-image-{{ $fieldName }}-{{ $index }}">
+                                <div class="card border shadow-none rounded-3 overflow-hidden">
+                                    <img src="{{ url('tenancy/assets/' . $filePath) }}" class="card-img-top"
+                                        style="height: 100px; object-fit: cover;">
+                                    <div class="card-footer bg-white p-1 d-flex justify-content-between">
+                                        <a href="{{ url('tenancy/assets/' . $filePath) }}" target="_blank"
+                                            class="btn btn-sm btn-link p-0 text-decoration-none"><i class="bi bi-eye"></i></a>
+                                        <button type="button" class="btn btn-sm btn-link p-0 text-danger text-decoration-none"
+                                            onclick="deleteFile('{{ $contact->getId() }}', '{{ $columnName }}', '{{ $filePath }}', 'edit-image-{{ $fieldName }}-{{ $index }}')"><i
+                                                class="bi bi-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        @else
+                            <div class="col-12" id="edit-file-{{ $fieldName }}-{{ $index }}">
+                                <div class="d-flex align-items-center justify-content-between bg-light p-2 rounded-3 border">
+                                    <div class="d-flex align-items-center overflow-hidden">
+                                        <i class="bi bi-file-earmark-text text-primary me-2 fs-5"></i>
+                                        <span class="small text-truncate" title="{{ $fileName }}">{{ $fileName }}</span>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ url('tenancy/assets/' . $filePath) }}" target="_blank" class="text-primary"><i
+                                                class="bi bi-eye"></i></a>
+                                        <button type="button" class="btn btn-sm p-0 text-danger border-0 bg-transparent"
+                                            onclick="deleteFile('{{ $contact->getId() }}', '{{ $columnName }}', '{{ $filePath }}', 'edit-file-{{ $fieldName }}-{{ $index }}')"><i
+                                                class="bi bi-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
             </div>
         @endif
 

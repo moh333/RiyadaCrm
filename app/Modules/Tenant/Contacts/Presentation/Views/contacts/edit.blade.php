@@ -111,4 +111,49 @@
             </div>
         </form>
     </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const form = document.querySelector('form[action="{{ route('tenant.contacts.update', $contact->getId()) }}"]');
+
+                if (form) {
+                    form.addEventListener('submit', function (e) {
+                        const fileInputs = form.querySelectorAll('.file-upload-input');
+                        let hasError = false;
+
+                        fileInputs.forEach(function (input) {
+                            const acceptableTypes = input.dataset.acceptableTypes;
+
+                            if (acceptableTypes && input.files.length > 0) {
+                                const allowedExtensions = acceptableTypes.split(/[\n,]+/).map(ext => ext.trim().toLowerCase()).filter(ext => ext);
+
+                                Array.from(input.files).forEach(function (file) {
+                                    const fileName = file.name;
+                                    const fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+
+                                    if (!allowedExtensions.includes(fileExtension)) {
+                                        hasError = true;
+                                        const fieldName = input.dataset.fieldName;
+                                        const allowedList = allowedExtensions.join(', ');
+
+                                        alert('{{ __("contacts::contacts.invalid_file_extension", ["extensions" => ""]) }}'.replace(':extensions', allowedList) + '\n' +
+                                            'File: ' + fileName + '\n' +
+                                            'Extension: ' + fileExtension);
+
+                                        input.value = ''; // Clear the invalid file
+                                    }
+                                });
+                            }
+                        });
+
+                        if (hasError) {
+                            e.preventDefault();
+                            return false;
+                        }
+                    });
+                }
+            });
+        </script>
+    @endpush
 @endsection

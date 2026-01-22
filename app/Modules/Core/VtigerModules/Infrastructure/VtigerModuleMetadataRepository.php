@@ -205,6 +205,8 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
             maximumLength: $row->maximumlength ? (int) $row->maximumlength : null,
             quickCreate: (bool) $row->quickcreate,
             helpInfo: $row->helpinfo,
+            allowMultipleFiles: (bool) ($row->allow_multiple_files ?? false),
+            acceptableFileTypes: $row->acceptable_file_types ?? null,
         );
     }
 

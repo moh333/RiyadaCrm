@@ -21,6 +21,8 @@ class UpdateCustomFieldDTO
         public readonly array $picklistValues = [],
         public readonly ?int $uitype = null,
         public readonly ?int $length = null,
+        public readonly bool $allowMultipleFiles = false,
+        public readonly ?string $acceptableFileTypes = null,
     ) {
     }
 
@@ -43,6 +45,8 @@ class UpdateCustomFieldDTO
             : [],
             uitype: isset($data['uitype']) ? (int) $data['uitype'] : null,
             length: isset($data['length']) ? (int) $data['length'] : null,
+            allowMultipleFiles: (bool) ($data['allow_multiple_files'] ?? false),
+            acceptableFileTypes: $data['acceptable_file_types'] ?? null,
         );
     }
 }

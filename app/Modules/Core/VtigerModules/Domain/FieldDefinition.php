@@ -28,6 +28,8 @@ class FieldDefinition
         private readonly ?int $maximumLength,
         private readonly bool $quickCreate,
         private readonly ?string $helpInfo,
+        private readonly bool $allowMultipleFiles = false,
+        private readonly ?string $acceptableFileTypes = null,
     ) {
     }
 
@@ -53,6 +55,8 @@ class FieldDefinition
         ?int $maximumLength = null,
         bool $quickCreate = false,
         ?string $helpInfo = null,
+        bool $allowMultipleFiles = false,
+        ?string $acceptableFileTypes = null,
     ): self {
         return new self(
             id: $id,
@@ -73,6 +77,8 @@ class FieldDefinition
             maximumLength: $maximumLength,
             quickCreate: $quickCreate,
             helpInfo: $helpInfo,
+            allowMultipleFiles: $allowMultipleFiles,
+            acceptableFileTypes: $acceptableFileTypes,
         );
     }
 
@@ -185,6 +191,16 @@ class FieldDefinition
     public function getHelpInfo(): ?string
     {
         return $this->helpInfo;
+    }
+
+    public function getAllowMultipleFiles(): bool
+    {
+        return $this->allowMultipleFiles;
+    }
+
+    public function getAcceptableFileTypes(): ?string
+    {
+        return $this->acceptableFileTypes;
     }
 
     public function isMandatory(): bool

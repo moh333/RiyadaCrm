@@ -93,6 +93,8 @@ class CustomFieldsController extends Controller
             'role_based_picklist' => 'nullable|boolean',
             'length' => 'nullable|integer',
             'decimal_places' => 'nullable|integer',
+            'allow_multiple_files' => 'nullable|boolean',
+            'acceptable_file_types' => 'nullable|string',
         ]);
 
         try {
@@ -234,6 +236,8 @@ class CustomFieldsController extends Controller
             'decimal_places' => 'nullable|integer',
             'picklist_values' => 'nullable|string',
             'role_based_picklist' => 'nullable|boolean',
+            'allow_multiple_files' => 'nullable|boolean',
+            'acceptable_file_types' => 'nullable|string',
         ]);
 
         try {

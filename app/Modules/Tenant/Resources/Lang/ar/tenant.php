@@ -118,4 +118,10 @@ return [
     'picklist_values' => 'قيم قائمة الاختيار',
     'role_based_picklist' => 'قائمة اختيار تعتمد على الأدوار',
     'checked_by_default' => 'محدد افتراضياً',
+    'file_upload_settings' => 'إعدادات رفع الملفات',
+    'allow_multiple_files' => 'السماح برفع ملفات متعددة',
+    'allow_multiple_files_help' => 'تمكين المستخدمين من رفع ملفات متعددة لهذا الحقل',
+    'acceptable_file_types' => 'أنواع الملفات المقبولة',
+    'hold_ctrl_select_multiple' => 'اضغط Ctrl/Cmd لتحديد أنواع متعددة',
+    'file_types_help' => 'أدخل امتدادات الملفات (مثل: jpg, pdf, docx)',
 ];

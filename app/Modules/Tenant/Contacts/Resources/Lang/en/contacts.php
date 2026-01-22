@@ -108,4 +108,14 @@ return [
     'default_value_placeholder' => 'Enter an optional default value',
     'enabled' => 'Enabled',
     'disabled' => 'Disabled',
+    'select_option' => 'Select an option',
+
+    // File Upload
+    'allowed_extensions' => 'Allowed extensions',
+    'multiple_files_allowed' => 'Multiple files can be uploaded',
+    'invalid_file_extension' => 'Invalid file extension. Allowed: :extensions',
+    'existing_images' => 'Existing Images',
+    'existing_files' => 'Existing Files',
+    'new_preview' => 'New Upload Preview',
+    'download' => 'Download',
 ];

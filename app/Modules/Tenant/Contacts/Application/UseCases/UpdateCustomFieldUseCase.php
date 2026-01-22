@@ -30,7 +30,9 @@ class UpdateCustomFieldUseCase
             labelEn: $dto->fieldLabelEn,
             labelAr: $dto->fieldLabelAr,
             quickCreate: $dto->quickCreate,
-            helpInfo: $dto->helpInfo
+            helpInfo: $dto->helpInfo,
+            allowMultipleFiles: $dto->allowMultipleFiles,
+            acceptableFileTypes: $dto->acceptableFileTypes,
         );
 
         if ($dto->uitype !== null) {

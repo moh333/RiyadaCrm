@@ -118,5 +118,11 @@ return [
     'picklist_values' => 'Picklist Values',
     'role_based_picklist' => 'Role-Based Picklist',
     'checked_by_default' => 'Checked by default',
+    'file_upload_settings' => 'File Upload Settings',
+    'allow_multiple_files' => 'Allow Multiple Files',
+    'allow_multiple_files_help' => 'Enable users to upload multiple files for this field',
+    'acceptable_file_types' => 'Acceptable File Types',
+    'hold_ctrl_select_multiple' => 'Hold Ctrl/Cmd to select multiple types',
+    'file_types_help' => 'Enter file extensions (e.g., jpg, pdf, docx)',
 ];
 

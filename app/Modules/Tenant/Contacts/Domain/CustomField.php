@@ -35,6 +35,8 @@ class CustomField
         private ?string $helpInfo,
         private bool $summaryField,
         private bool $isUnique,
+        private bool $allowMultipleFiles = false,
+        private ?string $acceptableFileTypes = null,
     ) {
     }
 
@@ -54,6 +56,8 @@ class CustomField
         string $typeOfData = 'V~O',
         ?string $defaultValue = null,
         ?int $maximumLength = null,
+        bool $allowMultipleFiles = false,
+        ?string $acceptableFileTypes = null,
     ): self {
         return new self(
             fieldId: $fieldId,
@@ -79,6 +83,8 @@ class CustomField
             helpInfo: null,
             summaryField: false,
             isUnique: false,
+            allowMultipleFiles: $allowMultipleFiles,
+            acceptableFileTypes: $acceptableFileTypes,
         );
     }
 
@@ -111,6 +117,8 @@ class CustomField
             helpInfo: $data['helpinfo'],
             summaryField: (bool) $data['summaryfield'],
             isUnique: (bool) $data['isunique'],
+            allowMultipleFiles: (bool) ($data['allow_multiple_files'] ?? false),
+            acceptableFileTypes: $data['acceptable_file_types'] ?? null,
         );
     }
 
@@ -209,6 +217,16 @@ class CustomField
         return $this->summaryField;
     }
 
+    public function getAllowMultipleFiles(): bool
+    {
+        return $this->allowMultipleFiles;
+    }
+
+    public function getAcceptableFileTypes(): ?string
+    {
+        return $this->acceptableFileTypes;
+    }
+
     public function setLabelEn(string $label): void
     {
         $this->labelEn = $label;
@@ -227,6 +245,8 @@ class CustomField
         ?int $sequence = null,
         ?bool $quickCreate = null,
         ?string $helpInfo = null,
+        ?bool $allowMultipleFiles = null,
+        ?string $acceptableFileTypes = null,
     ): void {
         if ($labelEn !== null)
             $this->labelEn = $labelEn;
@@ -238,6 +258,10 @@ class CustomField
             $this->quickCreate = $quickCreate;
         if ($helpInfo !== null)
             $this->helpInfo = $helpInfo;
+        if ($allowMultipleFiles !== null)
+            $this->allowMultipleFiles = $allowMultipleFiles;
+        if ($acceptableFileTypes !== null)
+            $this->acceptableFileTypes = $acceptableFileTypes;
     }
 
     public function setBlock(int $block): void
@@ -289,6 +313,8 @@ class CustomField
             'summaryfield' => $this->summaryField ? 1 : 0,
             'headerfield' => 0,
             'isunique' => $this->isUnique ? 1 : 0,
+            'allow_multiple_files' => $this->allowMultipleFiles ? 1 : 0,
+            'acceptable_file_types' => $this->acceptableFileTypes,
         ];
     }
 }

@@ -137,6 +137,12 @@ class ContactsController extends Controller
             'department' => 'nullable|string|max:30',
         ]);
 
+        // Get module definition for field validation
+        $module = $this->moduleRegistry->get('Contacts');
+
+        // Validate file uploads against field configuration
+        $this->validateFileUploads($request, $module);
+
         // Extract fields
         $customFields = [];
         $imagePath = null;
@@ -150,11 +156,22 @@ class ContactsController extends Controller
 
         // Handle file uploads
         foreach ($request->allFiles() as $key => $file) {
-            $path = $file->store('custom_fields', 'public');
-            if (str_starts_with($key, 'cf_')) {
-                $customFields[$key] = $path;
-            } elseif ($key === 'imagename') {
-                $imagePath = $path;
+            // Handle multiple files
+            if (is_array($file)) {
+                $paths = [];
+                foreach ($file as $singleFile) {
+                    $paths[] = $singleFile->store('custom_fields', 'public');
+                }
+                if (str_starts_with($key, 'cf_')) {
+                    $customFields[$key] = json_encode($paths); // Store as JSON array
+                }
+            } else {
+                $path = $file->store('custom_fields', 'public');
+                if (str_starts_with($key, 'cf_')) {
+                    $customFields[$key] = $path;
+                } elseif ($key === 'imagename') {
+                    $imagePath = $path;
+                }
             }
         }
 
@@ -208,6 +225,12 @@ class ContactsController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        // Get module definition for field validation
+        $module = $this->moduleRegistry->get('Contacts');
+
+        // Validate file uploads against field configuration
+        $this->validateFileUploads($request, $module);
+
         // Extract fields
         $customFields = [];
         $imagePath = null;
@@ -221,11 +244,22 @@ class ContactsController extends Controller
 
         // Handle file uploads
         foreach ($request->allFiles() as $key => $file) {
-            $path = $file->store('custom_fields', 'public');
-            if (str_starts_with($key, 'cf_')) {
-                $customFields[$key] = $path;
-            } elseif ($key === 'imagename') {
-                $imagePath = $path;
+            // Handle multiple files
+            if (is_array($file)) {
+                $paths = [];
+                foreach ($file as $singleFile) {
+                    $paths[] = $singleFile->store('custom_fields', 'public');
+                }
+                if (str_starts_with($key, 'cf_')) {
+                    $customFields[$key] = json_encode($paths); // Store as JSON array
+                }
+            } else {
+                $path = $file->store('custom_fields', 'public');
+                if (str_starts_with($key, 'cf_')) {
+                    $customFields[$key] = $path;
+                } elseif ($key === 'imagename') {
+                    $imagePath = $path;
+                }
             }
         }
 
@@ -268,5 +302,138 @@ class ContactsController extends Controller
         return redirect()->route('tenant.contacts.index')
             ->with('success', __('contacts::contacts.deleted_successfully'));
 
+    }
+
+    /**
+     * Validate file uploads against field configuration
+     * 
+     * @param Request $request
+     * @param \App\Modules\Core\VtigerModules\Domain\ModuleDefinition $module
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    private function validateFileUploads(Request $request, $module): void
+    {
+        $allFiles = $request->allFiles();
+
+        foreach ($allFiles as $fieldKey => $files) {
+            // Normalize to array for consistent processing
+            $fileArray = is_array($files) ? $files : [$files];
+
+            // Extract field name (remove cf_ prefix and [] suffix if present)
+            $fieldName = str_replace(['cf_', '[]'], '', $fieldKey);
+
+            // Find the field definition
+            $field = $module->fields()->first(function ($f) use ($fieldName, $fieldKey) {
+                return $f->getFieldName() === $fieldName || $f->getColumnName() === $fieldKey || $f->getColumnName() === str_replace('[]', '', $fieldKey);
+            });
+
+            if (!$field) {
+                continue; // Skip if field not found
+            }
+
+            // Check if field is file/image type (uitype 28 or 69)
+            if (!in_array($field->getUitype(), [28, 69])) {
+                continue;
+            }
+
+            // Get acceptable file types
+            $acceptableTypes = $field->getAcceptableFileTypes();
+
+            if (!$acceptableTypes) {
+                continue; // No restrictions
+            }
+
+            // Parse acceptable types
+            $allowedExtensions = array_filter(
+                array_map('trim', preg_split('/[\n,]+/', strtolower($acceptableTypes)))
+            );
+
+            if (empty($allowedExtensions)) {
+                continue;
+            }
+
+            // Validate each file
+            foreach ($fileArray as $file) {
+                if (!$file)
+                    continue;
+
+                $extension = strtolower($file->getClientOriginalExtension());
+
+                if (!in_array($extension, $allowedExtensions)) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        $fieldKey => __('contacts::contacts.invalid_file_extension', [
+                            'extensions' => implode(', ', $allowedExtensions)
+                        ]) . ' (File: ' . $file->getClientOriginalName() . ', Extension: ' . $extension . ')'
+                    ]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Delete a file from a contact field
+     */
+    public function deleteFile(Request $request, $id)
+    {
+        $field = $request->input('field'); // e.g. 'cf_xxx' or 'imagename'
+        $filePath = $request->input('file_path');
+
+        $contact = $this->contactRepository->findById((int) $id);
+        if (!$contact) {
+            return response()->json(['success' => false, 'message' => 'Contact not found'], 404);
+        }
+
+        $currentValue = null;
+        $isTableCf = false;
+
+        if (str_starts_with($field, 'cf_')) {
+            $currentValue = \DB::connection('tenant')->table('vtiger_contactscf')
+                ->where('contactid', $id)
+                ->value($field);
+            $isTableCf = true;
+        } else {
+            $currentValue = \DB::connection('tenant')->table('vtiger_contactdetails')
+                ->where('contactid', $id)
+                ->value($field);
+        }
+
+        if (!$currentValue) {
+            return response()->json(['success' => false, 'message' => 'Field value not found'], 404);
+        }
+
+        // Handle JSON array (multiple files) or single file
+        if (str_starts_with($currentValue, '[')) {
+            $files = json_decode($currentValue, true);
+            if (($key = array_search($filePath, $files)) !== false) {
+                unset($files[$key]);
+                $newValue = empty($files) ? null : json_encode(array_values($files));
+            } else {
+                return response()->json(['success' => false, 'message' => 'File not found in field'], 404);
+            }
+        } else {
+            if ($currentValue === $filePath) {
+                $newValue = null;
+            } else {
+                return response()->json(['success' => false, 'message' => 'Path mismatch'], 400);
+            }
+        }
+
+        // Update database
+        if ($isTableCf) {
+            \DB::connection('tenant')->table('vtiger_contactscf')
+                ->where('contactid', $id)
+                ->update([$field => $newValue]);
+        } else {
+            \DB::connection('tenant')->table('vtiger_contactdetails')
+                ->where('contactid', $id)
+                ->update([$field => $newValue]);
+        }
+
+        // Delete from storage
+        if (\Storage::disk('public')->exists($filePath)) {
+            \Storage::disk('public')->delete($filePath);
+        }
+
+        return response()->json(['success' => true]);
     }
 }

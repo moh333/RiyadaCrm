@@ -66,6 +66,7 @@ Route::middleware([
             Route::get('/{id}/edit', [ContactsController::class, 'edit'])->name('edit');
             Route::put('/{id}', [ContactsController::class, 'update'])->name('update');
             Route::delete('/{id}', [ContactsController::class, 'destroy'])->name('destroy');
+            Route::post('/{id}/delete-file', [ContactsController::class, 'deleteFile'])->name('delete-file');
         });
 
         // Custom Fields Management (Generic for all modules)

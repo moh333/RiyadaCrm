@@ -73,6 +73,8 @@ class CreateCustomFieldUseCase
                 typeOfData: $dto->typeOfData,
                 defaultValue: $dto->defaultValue,
                 maximumLength: $dto->length,
+                allowMultipleFiles: $dto->allowMultipleFiles,
+                acceptableFileTypes: $dto->acceptableFileTypes,
             );
 
             // Update optional metadata

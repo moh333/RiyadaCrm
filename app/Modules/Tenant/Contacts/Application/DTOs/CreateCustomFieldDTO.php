@@ -25,6 +25,8 @@ class CreateCustomFieldDTO
         public readonly ?string $defaultValue = null,
         public readonly array $picklistValues = [],
         public readonly ?int $length = null,
+        public readonly bool $allowMultipleFiles = false,
+        public readonly ?string $acceptableFileTypes = null,
     ) {
     }
 
@@ -49,6 +51,8 @@ class CreateCustomFieldDTO
             ? array_filter(array_map('trim', explode("\n", $data['picklist_values'])))
             : [],
             length: isset($data['length']) ? (int) $data['length'] : null,
+            allowMultipleFiles: (bool) ($data['allow_multiple_files'] ?? false),
+            acceptableFileTypes: $data['acceptable_file_types'] ?? null,
         );
     }
 

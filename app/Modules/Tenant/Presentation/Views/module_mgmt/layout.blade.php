@@ -208,6 +208,8 @@
                                                                 }
                                                             @endphp
                                                             data-picklist-values="{{ $picklistValues }}"
+                                                            data-allow-multiple-files="{{ $field->getAllowMultipleFiles() ? 1 : 0 }}"
+                                                            data-acceptable-file-types="{{ $field->getAcceptableFileTypes() ?? '' }}"
                                                             data-bs-toggle="modal" 
                                                             data-bs-target="#editFieldModal">
                                                         <i class="bi bi-pencil-square"></i>
@@ -386,6 +388,28 @@
                                         </label>
                                     </div>
                                 </div>
+                                <!-- File/Image Upload Configuration -->
+                                <div class="col-md-12 file-upload-container d-none text-start">
+                                    <div class="card bg-light border-0 p-3">
+                                        <h6 class="fw-bold mb-3"><i class="bi bi-file-earmark-arrow-up me-2"></i>{{ __('tenant::tenant.file_upload_settings') }}</h6>
+                                        <div class="row g-3">
+                                            <div class="col-md-12">
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" name="allow_multiple_files" value="1" id="add_allow_multiple_files">
+                                                    <label class="form-check-label fw-bold" for="add_allow_multiple_files">
+                                                        {{ __('tenant::tenant.allow_multiple_files') }}
+                                                    </label>
+                                                    <small class="d-block text-muted mt-1">{{ __('tenant::tenant.allow_multiple_files_help') }}</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label fw-bold">{{ __('tenant::tenant.acceptable_file_types') }}</label>
+                                                <textarea name="acceptable_file_types" id="add_acceptable_file_types" class="form-control rounded-3" rows="2" placeholder="Type file extensions and press Enter"></textarea>
+                                                <small class="text-muted">{{ __('tenant::tenant.file_types_help') }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="col-md-6 text-start">
                                     <label class="form-label fw-bold">{{ __('tenant::tenant.default_value') }}</label>
                                     <div class="default-value-wrapper">
@@ -464,6 +488,28 @@
                                         <label class="form-check-label fw-bold" for="edit_role_based_picklist">
                                             {{ __('tenant::tenant.role_based_picklist') }}
                                         </label>
+                                    </div>
+                                </div>
+                                <!-- File/Image Upload Configuration -->
+                                <div class="col-md-12 file-upload-container d-none text-start">
+                                    <div class="card bg-light border-0 p-3">
+                                        <h6 class="fw-bold mb-3"><i class="bi bi-file-earmark-arrow-up me-2"></i>{{ __('tenant::tenant.file_upload_settings') }}</h6>
+                                        <div class="row g-3">
+                                            <div class="col-md-12">
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" name="allow_multiple_files" value="1" id="edit_allow_multiple_files">
+                                                    <label class="form-check-label fw-bold" for="edit_allow_multiple_files">
+                                                        {{ __('tenant::tenant.allow_multiple_files') }}
+                                                    </label>
+                                                    <small class="d-block text-muted mt-1">{{ __('tenant::tenant.allow_multiple_files_help') }}</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label fw-bold">{{ __('tenant::tenant.acceptable_file_types') }}</label>
+                                                <textarea name="acceptable_file_types" id="edit_acceptable_file_types" class="form-control rounded-3" rows="2" placeholder="Type file extensions and press Enter"></textarea>
+                                                <small class="text-muted">{{ __('tenant::tenant.file_types_help') }}</small>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6 text-start">
@@ -648,6 +694,26 @@
                 });
             });
 
+            // Initialize Tagify for Acceptable File Types
+            const fileTypesTagifyInstances = new Map();
+            
+            // Default file extensions
+            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
+            const fileExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'csv', 'zip', 'rar', 'ppt', 'pptx'];
+            
+            document.querySelectorAll('textarea[name="acceptable_file_types"]').forEach(el => {
+                const t = new Tagify(el, {
+                    originalInputValueFormat: valuesArr => valuesArr.map(item => item.value).join('\n'),
+                    placeholder: 'Type file extensions and press Enter',
+                    delimiters: ',|\n',
+                    pattern: /^[a-zA-Z0-9]+$/,
+                    transformTag: (tagData) => {
+                        tagData.value = tagData.value.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    }
+                });
+                fileTypesTagifyInstances.set(el, t);
+            });
+
             function updateDefaultValueInput(form, uitype, data = {}, currentValue = '') {
                 const wrapper = form.querySelector('.default-value-wrapper');
                 if (!wrapper) return;
@@ -709,12 +775,14 @@
                 const decimalSec = form.querySelector('.config-decimals');
                 const picklistSec = form.querySelector('.picklist-container');
                 const roleBasedSec = form.querySelector('.role-based-container');
+                const fileUploadSec = form.querySelector('.file-upload-container');
 
                 // Defaults
                 lengthSec?.classList.add('d-none');
                 decimalSec?.classList.add('d-none');
                 picklistSec?.classList.add('d-none');
                 roleBasedSec?.classList.add('d-none');
+                fileUploadSec?.classList.add('d-none');
 
                 // text(1), integer(7), decimal(71), currency(72), email(13), phone(11), url(17), skype(85)
                 if (['1', '7', '71', '72', '11', '13', '17', '85'].includes(uitype)) {
@@ -730,6 +798,24 @@
                 if (['15', '16', '33', '55'].includes(uitype)) {
                     picklistSec?.classList.remove('d-none');
                     if (uitype === '15') roleBasedSec?.classList.remove('d-none');
+                }
+
+                // file(28), image(69)
+                if (['28', '69'].includes(uitype)) {
+                    fileUploadSec?.classList.remove('d-none');
+                    
+                    // Populate file types based on uitype
+                    const fileTypesTextarea = form.querySelector('textarea[name="acceptable_file_types"]');
+                    if (fileTypesTextarea) {
+                        const tagifyInstance = fileTypesTagifyInstances.get(fileTypesTextarea);
+                        if (tagifyInstance) {
+                            // Only populate if empty
+                            if (!tagifyInstance.value || tagifyInstance.value.length === 0) {
+                                const extensions = uitype === '69' ? imageExtensions : fileExtensions;
+                                tagifyInstance.addTags(extensions);
+                            }
+                        }
+                    }
                 }
 
                 // Update Default Value Input Type
@@ -772,7 +858,35 @@
                         document.getElementById('add_field_block_id_hidden').value = blockId;
                         document.getElementById('add_field_block_label_display').innerText = blockLabel;
                     }
+                    
+                    // Reset file types tagify when modal opens
+                    const fileTypesTextarea = document.getElementById('add_acceptable_file_types');
+                    if (fileTypesTextarea) {
+                        const tagifyInstance = fileTypesTagifyInstances.get(fileTypesTextarea);
+                        if (tagifyInstance) {
+                            tagifyInstance.removeAllTags();
+                        }
+                    }
                 });
+                
+                // Listen for uitype changes in the add modal to populate file types
+                const addUitypeSelector = addFieldModal.querySelector('.uitype-selector');
+                if (addUitypeSelector) {
+                    addUitypeSelector.addEventListener('change', function() {
+                        const uitype = this.value;
+                        if (['28', '69'].includes(uitype)) {
+                            const fileTypesTextarea = document.getElementById('add_acceptable_file_types');
+                            if (fileTypesTextarea) {
+                                const tagifyInstance = fileTypesTagifyInstances.get(fileTypesTextarea);
+                                if (tagifyInstance) {
+                                    tagifyInstance.removeAllTags();
+                                    const extensions = uitype === '69' ? imageExtensions : fileExtensions;
+                                    tagifyInstance.addTags(extensions);
+                                }
+                            }
+                        }
+                    });
+                }
             }
 
             // Field Editing
@@ -794,6 +908,8 @@
                     const picklistValues = button.getAttribute('data-picklist-values') || '';
                     const uitype = button.getAttribute('data-uitype');
                     const isCustom = button.getAttribute('data-is-custom') === '1';
+                    const allowMultipleFiles = button.getAttribute('data-allow-multiple-files') === '1';
+                    const acceptableFileTypes = button.getAttribute('data-acceptable-file-types') || '';
 
                     const form = document.getElementById('editFieldForm');
                     form.action = `{{ url('settings/custom-fields') }}/{{ $moduleDefinition->getName() }}/${id}`;
@@ -837,6 +953,26 @@
                     // Set uitype and label
                     document.getElementById('edit_f_uitype_label').value = button.getAttribute('data-uitype-label');
                     document.getElementById('edit_f_uitype').value = uitype;
+
+                    // Set file upload settings
+                    const editAllowMultipleFilesCheckbox = document.getElementById('edit_allow_multiple_files');
+                    if (editAllowMultipleFilesCheckbox) {
+                        editAllowMultipleFilesCheckbox.checked = allowMultipleFiles;
+                    }
+
+                    // Set acceptable file types in tagify
+                    const editFileTypesTextarea = document.getElementById('edit_acceptable_file_types');
+                    if (editFileTypesTextarea) {
+                        const editFileTypesTagify = fileTypesTagifyInstances.get(editFileTypesTextarea);
+                        if (editFileTypesTagify) {
+                            editFileTypesTagify.removeAllTags();
+                            if (acceptableFileTypes) {
+                                // Split by newline and add tags
+                                const extensions = acceptableFileTypes.split('\n').map(ext => ext.trim()).filter(ext => ext !== '');
+                                editFileTypesTagify.addTags(extensions);
+                            }
+                        }
+                    }
 
                     // Trigger uitype visibility
                     handleUitypeChange(document.getElementById('edit_f_uitype'), { 

@@ -108,4 +108,14 @@ return [
     'default_value_placeholder' => 'أدخل قيمة افتراضية اختيارية',
     'enabled' => 'مفعل',
     'disabled' => 'معطل',
+    'select_option' => 'اختر خياراً',
+
+    // File Upload
+    'allowed_extensions' => 'الامتدادات المسموحة',
+    'multiple_files_allowed' => 'يمكن رفع ملفات متعددة',
+    'invalid_file_extension' => 'امتداد الملف غير صالح. المسموح: :extensions',
+    'existing_images' => 'الصور الموجودة',
+    'existing_files' => 'الملفات الموجودة',
+    'new_preview' => 'معاينة التحميل الجديد',
+    'download' => 'تحميل',
 ];
