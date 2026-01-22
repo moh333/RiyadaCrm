@@ -97,7 +97,24 @@
         }
     }
 
-    $value = old($fieldName, $currentValue ?? $defaultValue);
+    // Value priority:
+    // 1. old() - from validation errors (form resubmission)
+    // 2. $currentValue - from existing contact (edit mode)
+    // 3. $defaultValue - only for create mode (when no contact exists)
+    
+    // Check if we have old input (form was submitted with validation errors)
+    $hasOldInput = session()->hasOldInput();
+    
+    if ($hasOldInput) {
+        // Form was resubmitted - use old value (even if null/empty)
+        $value = old($fieldName);
+    } elseif (isset($contact)) {
+        // Edit mode: use current value (even if null/empty)
+        $value = $currentValue;
+    } else {
+        // Create mode: use default value
+        $value = $defaultValue;
+    }
 
     $isMandatory = $field->isMandatory();
     $helpInfo = $field->getHelpInfo();
@@ -192,13 +209,40 @@
             } catch (\Exception $e) {
             }
 
-            $selectedValues = is_array($value) ? $value : (is_string($value) ? explode('|##|', trim((string) $value, '|##|')) : []);
-            $selectedValues = array_map('trim', array_filter($selectedValues));
+            $rawValue = $value;
+            // Handle JSON encoded array (from Laravel validation/old input)
+            if (is_string($value) && str_starts_with($value, '[')) {
+                $decoded = json_decode($value, true);
+                if (is_array($decoded))
+                    $rawValue = $decoded;
+            }
+
+            // Normal vtiger parsing
+            if (is_array($rawValue)) {
+                $selectedValues = $rawValue;
+            } else {
+                $strValue = (string) $rawValue;
+                // Vtiger standard separator is |##|
+                if (str_contains($strValue, '|##|')) {
+                    $selectedValues = explode('|##|', $strValue);
+                } else {
+                    // Fallback or single value
+                    $selectedValues = [$strValue];
+                }
+            }
+
+            // Normalize values for comparison: trim and decode entities
+            $selectedValues = array_map(function ($v) {
+                return html_entity_decode(trim($v), ENT_QUOTES | ENT_HTML5);
+            }, array_filter($selectedValues));
         @endphp
         <select name="{{ $inputName }}[]" class="form-select rounded-3 select2" multiple
             data-placeholder="{{ __('contacts::contacts.select_option') }}" @if($isMandatory) required @endif>
             @foreach($options as $opt)
-                <option value="{{ $opt }}" @if(in_array(trim((string) $opt), $selectedValues)) selected @endif>{{ $opt }}
+                @php 
+                    $normalizedOpt = html_entity_decode(trim($opt), ENT_QUOTES | ENT_HTML5); 
+                @endphp
+                <option value="{{ $opt }}" @if(in_array($normalizedOpt, $selectedValues)) selected @endif>{{ $opt }}
                 </option>
             @endforeach
         </select>

@@ -150,8 +150,8 @@ class UpdateContactUseCase
             $changedFields[] = 'other_address';
         }
 
-        // Update custom fields
-        if (!empty($dto->customFields)) {
+        // Update custom fields (even if empty, to allow clearing)
+        if (isset($dto->customFields)) {
             foreach ($dto->customFields as $name => $value) {
                 $contact->setCustomField($name, $value);
             }

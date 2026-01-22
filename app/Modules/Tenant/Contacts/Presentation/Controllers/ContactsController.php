@@ -275,10 +275,24 @@ class ContactsController extends Controller
         $customFields = [];
         $imagePath = null;
 
-        // Handle standard/custom inputs
-        foreach ($request->input() as $key => $value) {
-            if (str_starts_with($key, 'cf_')) {
-                $customFields[$key] = $value;
+        // Get all custom field definitions to handle empty/cleared fields
+        $allCustomFields = $module->fields()->filter(function ($field) {
+            return $field->isCustomField();
+        });
+
+        // Initialize all custom fields (so we can detect cleared fields)
+        foreach ($allCustomFields as $field) {
+            $columnName = $field->getColumnName();
+            $uitype = $field->getUitype();
+
+            // For multi-select (uitype 33), if not in request, set to empty string
+            // For other fields, if not in request, set to null
+            if ($uitype == 33) {
+                // Multi-select: check if field was submitted
+                $customFields[$columnName] = $request->has($columnName) ? $request->input($columnName) : '';
+            } else {
+                // Other fields: use submitted value or null
+                $customFields[$columnName] = $request->input($columnName);
             }
         }
 
