@@ -13,6 +13,7 @@
                 'firstname' => 'FirstName',
                 'lastname' => 'LastName',
                 'salutation' => 'Salutation',
+                'salutationtype' => 'Salutation',
                 'email' => 'Email',
                 'phone' => 'OfficePhone',
                 'mobile' => 'MobilePhone',
@@ -22,13 +23,29 @@
                 'department' => 'Department',
                 'account_id' => 'AccountId',
                 'leadsource' => 'LeadSource',
+                'assistant' => 'Assistant',
+                'assistantphone' => 'AssistantPhone',
+                'birthday' => 'Birthday',
                 'smownerid' => 'OwnerId',
+                'mailingstreet' => 'MailingAddress',
+                'mailingcity' => 'MailingAddress',
+                'mailingstate' => 'MailingAddress',
+                'mailingzip' => 'MailingAddress',
+                'mailingcountry' => 'MailingAddress',
+                'mailingpobox' => 'MailingAddress',
+                'otherstreet' => 'AlternateAddress',
+                'othercity' => 'AlternateAddress',
+                'otherstate' => 'AlternateAddress',
+                'otherzip' => 'AlternateAddress',
+                'othercountry' => 'AlternateAddress',
+                'otherpobox' => 'AlternateAddress',
+                'imagename' => 'ImageName',
             ];
 
             $prop = $propMap[$fieldName] ?? str_replace('_', '', ucwords($fieldName, '_'));
 
             // Handle Salutation which is in FullName VO
-            if ($fieldName === 'salutation') {
+            if (in_array($fieldName, ['salutation', 'salutationtype'])) {
                 $value = $contact->getFullName()->getSalutation();
             } elseif ($fieldName === 'firstname') {
                 $value = $contact->getFullName()->getFirstName();
@@ -44,6 +61,18 @@
                             $value = $val->getEmail();
                         } elseif (method_exists($val, 'getNumber')) {
                             $value = $val->getNumber();
+                        } elseif ($val instanceof \App\Modules\Tenant\Contacts\Domain\ValueObjects\Address) {
+                            $value = match ($fieldName) {
+                                'mailingstreet', 'otherstreet' => $val->getStreet(),
+                                'mailingcity', 'othercity' => $val->getCity(),
+                                'mailingstate', 'otherstate' => $val->getState(),
+                                'mailingzip', 'otherzip' => $val->getZip(),
+                                'mailingcountry', 'othercountry' => $val->getCountry(),
+                                'mailingpobox', 'otherpobox' => $val->getPoBox(),
+                                default => (string) $val,
+                            };
+                        } elseif ($val instanceof \DateTimeImmutable || $val instanceof \DateTime) {
+                            $value = $val->format('Y-m-d');
                         } elseif (method_exists($val, '__toString')) {
                             $value = (string) $val;
                         } else {
@@ -175,6 +204,12 @@
             $accountName = \DB::connection('tenant')->table('vtiger_account')->where('accountid', $value)->value('accountname');
         @endphp
         <p class="fw-500"><i class="bi bi-building me-1 text-primary"></i> {{ $accountName ?? $value }}</p>
+    @elseif ($uitype == 11 && $value) {{-- Phone --}}
+        <p class="fw-500">
+            <a href="tel:{{ $value }}" class="text-decoration-none text-dark">
+                <i class="bi bi-telephone me-1 text-primary"></i> {{ $value }}
+            </a>
+        </p>
     @elseif ($uitype == 13 && $value) {{-- Email --}}
         <p class="fw-500"><a href="mailto:{{ $value }}" class="text-decoration-none">{{ $value }}</a></p>
     @else

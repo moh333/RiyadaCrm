@@ -114,8 +114,13 @@ return [
     'allowed_extensions' => 'الامتدادات المسموحة',
     'multiple_files_allowed' => 'يمكن رفع ملفات متعددة',
     'invalid_file_extension' => 'امتداد الملف غير صالح. المسموح: :extensions',
+    'invalid_phone' => 'رقم الهاتف غير صالح للدولة المختارة.',
     'existing_images' => 'الصور الموجودة',
     'existing_files' => 'الملفات الموجودة',
     'new_preview' => 'معاينة التحميل الجديد',
+    'preview' => 'معاينة',
+    'current_image' => 'الصورة الحالية',
+    'new_image_preview' => 'معاينة الصورة الجديدة',
     'download' => 'تحميل',
+    'no' => 'لا',
 ];

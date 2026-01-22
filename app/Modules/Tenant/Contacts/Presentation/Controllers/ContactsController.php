@@ -47,11 +47,12 @@ class ContactsController extends Controller
             ->addColumn('full_name', function ($row) {
                 $displayName = trim(($row->salutation ? $row->salutation . ' ' : '') . $row->firstname . ' ' . $row->lastname);
                 $viewUrl = route('tenant.contacts.show', $row->contactid);
-                $avatar = "https://ui-avatars.com/api/?name=" . urlencode($displayName) . "&background=6366f1&color=fff";
+                $avatar = $row->imagename ? url('tenancy/assets/' . $row->imagename) : "https://ui-avatars.com/api/?name=" . urlencode($displayName) . "&background=6366f1&color=fff";
+                $imgStyle = $row->imagename ? 'style="object-fit: cover;"' : '';
 
                 return '
                     <div class="d-flex align-items-center">
-                        <img src="' . $avatar . '" class="rounded-circle me-3" width="36" height="36" alt="">
+                        <img src="' . $avatar . '" class="rounded-circle me-3" width="36" height="36" ' . $imgStyle . ' alt="">
                         <div>
                             <a href="' . $viewUrl . '" class="text-decoration-none fw-bold text-main d-block">
                                 ' . $displayName . '
@@ -129,13 +130,35 @@ class ContactsController extends Controller
             'lastname' => 'required|string|max:80',
             'firstname' => 'nullable|string|max:40',
             'salutation' => 'nullable|string|max:200',
+            'salutationtype' => 'nullable|string|max:200',
             'email' => 'nullable|email|max:100',
             'account_id' => 'nullable|integer',
-            'phone' => 'nullable|string|max:50',
-            'mobile' => 'nullable|string|max:50',
+            'phone' => 'nullable|string|regex:/^\+?[1-9]\d{1,14}$/',
+            'mobile' => 'nullable|string|regex:/^\+?[1-9]\d{1,14}$/',
+            'homephone' => 'nullable|string|regex:/^\+?[1-9]\d{1,14}$/',
+            'fax' => 'nullable|string|regex:/^\+?[1-9]\d{1,14}$/',
             'title' => 'nullable|string|max:50',
             'department' => 'nullable|string|max:30',
+            'description' => 'nullable|string',
+            'assistant' => 'nullable|string|max:30',
+            'assistantphone' => 'nullable|string|regex:/^\+?[1-9]\d{1,14}$/',
+            'birthday' => 'nullable|date',
+            'leadsource' => 'nullable|string|max:200',
+            'mailingstreet' => 'nullable|string',
+            'mailingcity' => 'nullable|string|max:40',
+            'mailingstate' => 'nullable|string|max:30',
+            'mailingzip' => 'nullable|string|max:30',
+            'mailingcountry' => 'nullable|string|max:30',
+            'mailingpobox' => 'nullable|string|max:30',
+            'otherstreet' => 'nullable|string',
+            'othercity' => 'nullable|string|max:40',
+            'otherstate' => 'nullable|string|max:30',
+            'otherzip' => 'nullable|string|max:30',
+            'othercountry' => 'nullable|string|max:30',
+            'otherpobox' => 'nullable|string|max:30',
         ]);
+
+        $salutation = $validated['salutation'] ?? $validated['salutationtype'] ?? null;
 
         // Get module definition for field validation
         $module = $this->moduleRegistry->get('Contacts');
@@ -175,21 +198,17 @@ class ContactsController extends Controller
             }
         }
 
-        $dto = new CreateContactDTO([
+        $dto = new CreateContactDTO(array_merge($validated, [
             'lastName' => $validated['lastname'],
             'firstName' => $validated['firstname'] ?? null,
-            'salutation' => $validated['salutation'] ?? null,
+            'salutation' => $salutation,
             'email' => $validated['email'] ?? null,
             'accountId' => $validated['account_id'] ?? null,
             'ownerId' => auth('tenant')->id(),
             'creatorId' => auth('tenant')->id(),
-            'phone' => $validated['phone'] ?? null,
-            'mobile' => $validated['mobile'] ?? null,
-            'title' => $validated['title'] ?? null,
-            'department' => $validated['department'] ?? null,
             'image' => $imagePath,
             'customFields' => $customFields,
-        ]);
+        ]));
 
         $contact = $this->createContactUseCase->execute($dto);
 
@@ -216,14 +235,35 @@ class ContactsController extends Controller
             'lastname' => 'required|string|max:80',
             'firstname' => 'nullable|string|max:40',
             'salutation' => 'nullable|string|max:200',
+            'salutationtype' => 'nullable|string|max:200',
             'email' => 'nullable|email|max:100',
             'account_id' => 'nullable|integer',
-            'phone' => 'nullable|string|max:50',
-            'mobile' => 'nullable|string|max:50',
+            'phone' => 'nullable|string|regex:/^\+?[1-9]\d{1,14}$/',
+            'mobile' => 'nullable|string|regex:/^\+?[1-9]\d{1,14}$/',
+            'homephone' => 'nullable|string|regex:/^\+?[1-9]\d{1,14}$/',
+            'fax' => 'nullable|string|regex:/^\+?[1-9]\d{1,14}$/',
             'title' => 'nullable|string|max:50',
             'department' => 'nullable|string|max:30',
             'description' => 'nullable|string',
+            'assistant' => 'nullable|string|max:30',
+            'assistantphone' => 'nullable|string|regex:/^\+?[1-9]\d{1,14}$/',
+            'birthday' => 'nullable|date',
+            'leadsource' => 'nullable|string|max:200',
+            'mailingstreet' => 'nullable|string',
+            'mailingcity' => 'nullable|string|max:40',
+            'mailingstate' => 'nullable|string|max:30',
+            'mailingzip' => 'nullable|string|max:30',
+            'mailingcountry' => 'nullable|string|max:30',
+            'mailingpobox' => 'nullable|string|max:30',
+            'otherstreet' => 'nullable|string',
+            'othercity' => 'nullable|string|max:40',
+            'otherstate' => 'nullable|string|max:30',
+            'otherzip' => 'nullable|string|max:30',
+            'othercountry' => 'nullable|string|max:30',
+            'otherpobox' => 'nullable|string|max:30',
         ]);
+
+        $salutation = $validated['salutation'] ?? $validated['salutationtype'] ?? null;
 
         // Get module definition for field validation
         $module = $this->moduleRegistry->get('Contacts');
@@ -271,21 +311,16 @@ class ContactsController extends Controller
             $imagePath = $existingContact->getImageName();
         }
 
-        $dto = new UpdateContactDTO([
+        $dto = new UpdateContactDTO(array_merge($validated, [
             'lastName' => $validated['lastname'],
             'firstName' => $validated['firstname'] ?? null,
-            'salutation' => $validated['salutation'] ?? null,
+            'salutation' => $salutation,
             'email' => $validated['email'] ?? null,
             'accountId' => $validated['account_id'] ?? null,
             'modifiedBy' => auth('tenant')->id(),
-            'phone' => $validated['phone'] ?? null,
-            'mobile' => $validated['mobile'] ?? null,
-            'title' => $validated['title'] ?? null,
-            'department' => $validated['department'] ?? null,
-            'description' => $validated['description'] ?? null,
             'image' => $imagePath,
             'customFields' => $customFields,
-        ]);
+        ]));
 
 
         $contact = $this->updateContactUseCase->execute((int) $id, $dto);

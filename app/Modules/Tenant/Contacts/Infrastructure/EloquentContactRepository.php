@@ -273,7 +273,7 @@ class EloquentContactRepository implements ContactRepositoryInterface
             'mobile' => $contact->getMobilePhone()?->getNumber(),
             'title' => $contact->getTitle(),
             'department' => $contact->getDepartment(),
-            'fax' => null,
+            'fax' => $contact->getFax()?->getNumber(),
             'emailoptout' => $contact->getEmail()?->isOptedOut() ? 1 : 0,
             'imagename' => $contact->getImageName(),
         ]);
@@ -282,29 +282,32 @@ class EloquentContactRepository implements ContactRepositoryInterface
         // 3. Insert into vtiger_contactsubdetails
         DB::connection('tenant')->table('vtiger_contactsubdetails')->insert([
             'contactsubscriptionid' => $contact->getId(),
-            'homephone' => null,
-            'otherphone' => null,
-            'assistant' => null,
-            'assistantphone' => null,
-            'birthday' => null,
-            'leadsource' => null,
+            'homephone' => $contact->getHomePhone()?->getNumber(),
+            'otherphone' => null, // Mapping not defined for and 'otherphone' yet
+            'assistant' => $contact->getAssistant(),
+            'assistantphone' => $contact->getAssistantPhone()?->getNumber(),
+            'birthday' => $contact->getBirthday()?->format('Y-m-d'),
+            'leadsource' => $contact->getLeadSource(),
         ]);
 
         // 4. Insert into vtiger_contactaddress
+        $mailing = $contact->getMailingAddress();
+        $other = $contact->getAlternateAddress();
+
         DB::connection('tenant')->table('vtiger_contactaddress')->insert([
             'contactaddressid' => $contact->getId(),
-            'mailingcity' => null,
-            'mailingstreet' => null,
-            'mailingcountry' => null,
-            'mailingstate' => null,
-            'mailingzip' => null,
-            'mailingpobox' => null,
-            'othercity' => null,
-            'otherstreet' => null,
-            'othercountry' => null,
-            'otherstate' => null,
-            'otherzip' => null,
-            'otherpobox' => null,
+            'mailingcity' => $mailing?->getCity(),
+            'mailingstreet' => $mailing?->getStreet(),
+            'mailingcountry' => $mailing?->getCountry(),
+            'mailingstate' => $mailing?->getState(),
+            'mailingzip' => $mailing?->getZip(),
+            'mailingpobox' => $mailing?->getPoBox(),
+            'othercity' => $other?->getCity(),
+            'otherstreet' => $other?->getStreet(),
+            'othercountry' => $other?->getCountry(),
+            'otherstate' => $other?->getState(),
+            'otherzip' => $other?->getZip(),
+            'otherpobox' => $other?->getPoBox(),
         ]);
 
         // 5. Insert into vtiger_contactscf (custom fields)
@@ -321,8 +324,8 @@ class EloquentContactRepository implements ContactRepositoryInterface
         DB::connection('tenant')->table('vtiger_customerdetails')->insert([
             'customerid' => $contact->getId(),
             'portal' => $contact->isPortalEnabled() ? 1 : 0,
-            'support_start_date' => null,
-            'support_end_date' => null,
+            'support_start_date' => $contact->getSupportStartDate()?->format('Y-m-d'),
+            'support_end_date' => $contact->getSupportEndDate()?->format('Y-m-d'),
         ]);
     }
 
@@ -340,7 +343,7 @@ class EloquentContactRepository implements ContactRepositoryInterface
             ->where('crmid', $contact->getId())
             ->update([
                 'modifiedtime' => $now,
-                'modifiedby' => $contact->getOwnerId(), // Should be current user
+                'modifiedby' => $contact->getOwnerId(), // Should ideally be current user from DTO
                 'label' => $contact->getFullName()->getDisplayName(),
                 'description' => $contact->getDescription(),
             ]);
@@ -358,10 +361,42 @@ class EloquentContactRepository implements ContactRepositoryInterface
                 'mobile' => $contact->getMobilePhone()?->getNumber(),
                 'title' => $contact->getTitle(),
                 'department' => $contact->getDepartment(),
+                'fax' => $contact->getFax()?->getNumber(),
                 'emailoptout' => $contact->getEmail()?->isOptedOut() ? 1 : 0,
                 'imagename' => $contact->getImageName(),
             ]);
 
+        // Update vtiger_contactsubdetails
+        DB::connection('tenant')->table('vtiger_contactsubdetails')
+            ->where('contactsubscriptionid', $contact->getId())
+            ->update([
+                'homephone' => $contact->getHomePhone()?->getNumber(),
+                'assistant' => $contact->getAssistant(),
+                'assistantphone' => $contact->getAssistantPhone()?->getNumber(),
+                'birthday' => $contact->getBirthday()?->format('Y-m-d'),
+                'leadsource' => $contact->getLeadSource(),
+            ]);
+
+        // Update vtiger_contactaddress
+        $mailing = $contact->getMailingAddress();
+        $other = $contact->getAlternateAddress();
+
+        DB::connection('tenant')->table('vtiger_contactaddress')
+            ->where('contactaddressid', $contact->getId())
+            ->update([
+                'mailingcity' => $mailing?->getCity(),
+                'mailingstreet' => $mailing?->getStreet(),
+                'mailingcountry' => $mailing?->getCountry(),
+                'mailingstate' => $mailing?->getState(),
+                'mailingzip' => $mailing?->getZip(),
+                'mailingpobox' => $mailing?->getPoBox(),
+                'othercity' => $other?->getCity(),
+                'otherstreet' => $other?->getStreet(),
+                'othercountry' => $other?->getCountry(),
+                'otherstate' => $other?->getState(),
+                'otherzip' => $other?->getZip(),
+                'otherpobox' => $other?->getPoBox(),
+            ]);
 
         // Update vtiger_contactscf (custom fields)
         $customFieldsData = $contact->getAllCustomFields();
@@ -370,6 +405,15 @@ class EloquentContactRepository implements ContactRepositoryInterface
                 ->where('contactid', $contact->getId())
                 ->update($customFieldsData);
         }
+
+        // Update vtiger_customerdetails
+        DB::connection('tenant')->table('vtiger_customerdetails')
+            ->where('customerid', $contact->getId())
+            ->update([
+                'portal' => $contact->isPortalEnabled() ? 1 : 0,
+                'support_start_date' => $contact->getSupportStartDate()?->format('Y-m-d'),
+                'support_end_date' => $contact->getSupportEndDate()?->format('Y-m-d'),
+            ]);
     }
 
     /**
@@ -654,7 +698,7 @@ class EloquentContactRepository implements ContactRepositoryInterface
     private function mapToEntity($data): Contact
     {
         $fullName = \App\Modules\Tenant\Contacts\Domain\ValueObjects\FullName::create(
-            $data->salutation ?? null,
+            $data->salutation ?? $data->salutationtype ?? null,
             $data->firstname ?? null,
             $data->lastname
         );
@@ -666,6 +710,11 @@ class EloquentContactRepository implements ContactRepositoryInterface
             (int) $data->smownerid,
             (int) $data->smcreatorid
         );
+
+        // Set image name if exists
+        if (!empty($data->imagename)) {
+            $contact->uploadImage($data->imagename);
+        }
 
         if (!empty($data->email)) {
             $contact->setEmail(\App\Modules\Tenant\Contacts\Domain\ValueObjects\EmailAddress::create(
@@ -686,6 +735,14 @@ class EloquentContactRepository implements ContactRepositoryInterface
             $contact->setMobilePhone(\App\Modules\Tenant\Contacts\Domain\ValueObjects\PhoneNumber::mobile($data->mobile));
         }
 
+        if (!empty($data->homephone)) {
+            $contact->setHomePhone(\App\Modules\Tenant\Contacts\Domain\ValueObjects\PhoneNumber::home($data->homephone));
+        }
+
+        if (!empty($data->fax)) {
+            $contact->setFax(\App\Modules\Tenant\Contacts\Domain\ValueObjects\PhoneNumber::other($data->fax));
+        }
+
         if (!empty($data->title)) {
             $contact->setTitle($data->title);
         }
@@ -696,6 +753,25 @@ class EloquentContactRepository implements ContactRepositoryInterface
 
         if (!empty($data->description)) {
             $contact->setDescription($data->description);
+        }
+
+        if (!empty($data->assistant)) {
+            $contact->setAssistant($data->assistant);
+        }
+
+        if (!empty($data->assistantphone)) {
+            $contact->setAssistantPhone(\App\Modules\Tenant\Contacts\Domain\ValueObjects\PhoneNumber::other($data->assistantphone));
+        }
+
+        if (!empty($data->birthday)) {
+            try {
+                $contact->setBirthday(new \DateTimeImmutable($data->birthday));
+            } catch (\Exception $e) {
+            }
+        }
+
+        if (!empty($data->leadsource)) {
+            $contact->setLeadSource($data->leadsource);
         }
 
         // Map Address
@@ -710,14 +786,33 @@ class EloquentContactRepository implements ContactRepositoryInterface
             ));
         }
 
+        if (!empty($data->otherstreet) || !empty($data->othercity)) {
+            $contact->setAlternateAddress(\App\Modules\Tenant\Contacts\Domain\ValueObjects\Address::alternate(
+                $data->otherstreet,
+                $data->othercity,
+                $data->otherstate,
+                $data->otherzip,
+                $data->othercountry,
+                $data->otherpobox
+            ));
+        }
+
         // Map Portal Info
         if (!empty($data->portal)) {
             // Usually we'd load vtiger_portalinfo here, but for now we just set the flag
-            // The domain entity handles portalEnabled via a property
             $reflection = new \ReflectionClass($contact);
             $property = $reflection->getProperty('portalEnabled');
             $property->setAccessible(true);
             $property->setValue($contact, (bool) $data->portal);
+
+            if (!empty($data->support_start_date) || !empty($data->support_end_date)) {
+                try {
+                    $start = $data->support_start_date ? new \DateTimeImmutable($data->support_start_date) : null;
+                    $end = $data->support_end_date ? new \DateTimeImmutable($data->support_end_date) : null;
+                    $contact->setSupportDates($start, $end);
+                } catch (\Exception $e) {
+                }
+            }
         }
 
         // Map Custom Fields (from vtiger_contactscf)
@@ -753,7 +848,8 @@ class EloquentContactRepository implements ContactRepositoryInterface
                 'cd.accountid',
                 'ce.smownerid',
                 'ce.modifiedtime',
-                'acc.accountname as account_name'
+                'acc.accountname as account_name',
+                'cd.imagename'
             ]);
     }
 }

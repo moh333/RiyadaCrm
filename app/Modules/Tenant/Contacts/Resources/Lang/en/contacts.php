@@ -114,8 +114,13 @@ return [
     'allowed_extensions' => 'Allowed extensions',
     'multiple_files_allowed' => 'Multiple files can be uploaded',
     'invalid_file_extension' => 'Invalid file extension. Allowed: :extensions',
+    'invalid_phone' => 'Invalid phone number for the selected country.',
     'existing_images' => 'Existing Images',
     'existing_files' => 'Existing Files',
     'new_preview' => 'New Upload Preview',
+    'preview' => 'Preview',
+    'current_image' => 'Current Image',
+    'new_image_preview' => 'New Image Preview',
     'download' => 'Download',
+    'no' => 'No',
 ];

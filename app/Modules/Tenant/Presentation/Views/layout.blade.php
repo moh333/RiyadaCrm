@@ -25,6 +25,14 @@
             rel="stylesheet">
     @endif
 
+    <!-- intl-tel-input CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@24.5.0/build/css/intlTelInput.css">
+
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+
     <style>
         :root {
             --sidebar-width: 280px;
@@ -221,6 +229,37 @@
                 transform: translateX(0);
             }
         }
+
+        /* intl-tel-input tweaks */
+        .iti {
+            width: 100%;
+            display: block;
+        }
+
+        .iti__country-list {
+            z-index: 1050;
+        }
+
+        .iti input {
+            padding-{{ app()->getLocale() == 'ar' ? 'right' : 'left' }}: 50px !important;
+        }
+
+        /* Select2 Tweaks */
+        .select2-container--bootstrap-5 .select2-selection {
+            border-radius: 0.5rem;
+            /* rounded-3 */
+            border-color: #dee2e6;
+            min-height: 38px;
+        }
+
+        .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+            color: #212529;
+            padding-{{ app()->getLocale() == 'ar' ? 'right' : 'left' }}: 0.75rem;
+        }
+
+        .select2-search__field {
+            border-radius: 0.375rem;
+        }
     </style>
 </head>
 
@@ -363,6 +402,15 @@
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- jQuery (Required for Select2) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- intl-tel-input JS -->
+    <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@24.5.0/build/js/intlTelInput.min.js"></script>
+
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <script>
         function deleteFile(recordId, field, filePath, elementId) {
             if (!confirm('{{ __("contacts::contacts.are_you_sure") }}')) return;
@@ -398,8 +446,72 @@
                     alert('An error occurred while deleting the file.');
                 });
         }
-    </script>
 
+        // Initialize things
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // Select2 Initialization for all .select2 inputs
+            // We use jQuery because Select2 is jQuery dependent
+            if (typeof $ !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
+                $('.select2').select2({
+                    theme: 'bootstrap-5',
+                    width: '100%',
+                    dir: '{{ app()->getLocale() == "ar" ? "rtl" : "ltr" }}',
+                    placeholder: $(this).data('placeholder'),
+                    allowClear: true
+                });
+            } else {
+                // Should load jQuery if simple select2 requires it, but CDN might not bundle it.
+                // It seems I missed to include jQuery which is required for Select2 (standard version).
+                // I will add jQuery as well.
+                console.warn('jQuery not found for Select2');
+            }
+
+            // Phone Input
+            if (typeof window.intlTelInput !== 'undefined') {
+                document.querySelectorAll('.phone-input:not(.iti-initialized)').forEach(input => {
+                    input.classList.add('iti-initialized');
+                    const iti = window.intlTelInput(input, {
+                        utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@24.5.0/build/js/utils.js",
+                        initialCountry: "auto",
+                        geoIpLookup: callback => {
+                            fetch("https://ipapi.co/json")
+                                .then(res => res.json())
+                                .then(data => callback(data.country_code))
+                                .catch(() => callback("SA"));
+                        },
+                        separateDialCode: true,
+                        autoPlaceholder: "aggressive",
+                        nationalMode: false,
+                        formatOnDisplay: true
+                    });
+
+                    // Update input with full international number before form submission & VALIDATE
+                    const form = input.closest('form');
+                    if (form) {
+                        form.addEventListener('submit', function (e) {
+                            if (input.value.trim()) {
+                                if (iti.isValidNumber()) {
+                                    // Replace value with full formatted international number
+                                    input.value = iti.getNumber();
+                                } else {
+                                    e.preventDefault();
+                                    input.classList.add('is-invalid');
+                                    alert('{{ __("contacts::contacts.invalid_phone") }} (' + input.placeholder + ')');
+                                    input.focus();
+                                }
+                            }
+                        });
+
+                        input.addEventListener('input', function () {
+                            input.classList.remove('is-invalid');
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+    @stack('scripts')
     @yield('scripts')
 </body>
 

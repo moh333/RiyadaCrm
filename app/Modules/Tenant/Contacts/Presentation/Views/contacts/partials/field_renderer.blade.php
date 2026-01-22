@@ -20,6 +20,7 @@
                     'firstname' => 'FirstName',
                     'lastname' => 'LastName',
                     'salutation' => 'Salutation',
+                    'salutationtype' => 'Salutation',
                     'email' => 'Email',
                     'phone' => 'OfficePhone',
                     'mobile' => 'MobilePhone',
@@ -29,13 +30,30 @@
                     'department' => 'Department',
                     'account_id' => 'AccountId',
                     'leadsource' => 'LeadSource',
+                    'assistant' => 'Assistant',
+                    'assistantphone' => 'AssistantPhone',
+                    'birthday' => 'Birthday',
+                    'description' => 'Description',
                     'smownerid' => 'OwnerId',
+                    'mailingstreet' => 'MailingAddress',
+                    'mailingcity' => 'MailingAddress',
+                    'mailingstate' => 'MailingAddress',
+                    'mailingzip' => 'MailingAddress',
+                    'mailingcountry' => 'MailingAddress',
+                    'mailingpobox' => 'MailingAddress',
+                    'otherstreet' => 'AlternateAddress',
+                    'othercity' => 'AlternateAddress',
+                    'otherstate' => 'AlternateAddress',
+                    'otherzip' => 'AlternateAddress',
+                    'othercountry' => 'AlternateAddress',
+                    'otherpobox' => 'AlternateAddress',
+                    'imagename' => 'ImageName',
                 ];
 
                 $prop = $propMap[$fieldName] ?? str_replace('_', '', ucwords($fieldName, '_'));
 
                 // Handle Salutation which is in FullName VO
-                if ($fieldName === 'salutation') {
+                if (in_array($fieldName, ['salutation', 'salutationtype'])) {
                     $currentValue = $contact->getFullName()->getSalutation();
                 } elseif ($fieldName === 'firstname') {
                     $currentValue = $contact->getFullName()->getFirstName();
@@ -51,6 +69,18 @@
                                 $currentValue = $val->getEmail();
                             } elseif (method_exists($val, 'getNumber')) {
                                 $currentValue = $val->getNumber();
+                            } elseif ($val instanceof \App\Modules\Tenant\Contacts\Domain\ValueObjects\Address) {
+                                $currentValue = match ($fieldName) {
+                                    'mailingstreet', 'otherstreet' => $val->getStreet(),
+                                    'mailingcity', 'othercity' => $val->getCity(),
+                                    'mailingstate', 'otherstate' => $val->getState(),
+                                    'mailingzip', 'otherzip' => $val->getZip(),
+                                    'mailingcountry', 'othercountry' => $val->getCountry(),
+                                    'mailingpobox', 'otherpobox' => $val->getPoBox(),
+                                    default => (string) $val,
+                                };
+                            } elseif ($val instanceof \DateTimeImmutable || $val instanceof \DateTime) {
+                                $currentValue = $val->format('Y-m-d');
                             } elseif (method_exists($val, '__toString')) {
                                 $currentValue = (string) $val;
                             } else {
@@ -98,20 +128,33 @@
 
     @elseif(in_array($fieldName, ['salutation', 'salutationtype']) || in_array($uitype, [15, 16, 55])) {{-- Force
         Salutation/Picklists to be dropdown --}}
-        <select name="{{ $inputName }}" class="form-select rounded-3" @if($isMandatory) required @endif>
+        <select name="{{ $inputName }}" class="form-select rounded-3 select2"
+            data-placeholder="{{ __('contacts::contacts.select_option') }}" @if($isMandatory) required @endif>
             <option value="">{{ __('contacts::contacts.none') }}</option>
             @php
                 $options = [];
                 try {
                     $tableName = 'vtiger_' . $fieldName;
+                    // Check if table exists, or try vtiger_salutationtype if it's a salutation field
+                    if (!\Schema::connection('tenant')->hasTable($tableName) && in_array($fieldName, ['salutation', 'salutationtype'])) {
+                        $tableName = 'vtiger_salutationtype';
+                    }
+
                     if (\Schema::connection('tenant')->hasTable($tableName)) {
                         $query = \DB::connection('tenant')->table($tableName);
-                        if (\Schema::connection('tenant')->hasColumn($tableName, 'sortorderid')) {
-                            $query->orderBy('sortorderid');
-                        } elseif (\Schema::connection('tenant')->hasColumn($tableName, 'sortid')) {
-                            $query->orderBy('sortid');
+                        // The column name is usually the same as field name, but for salutationtype it might be salutationtype
+                        $column = \Schema::connection('tenant')->hasColumn($tableName, $fieldName) ? $fieldName :
+                            (\Schema::connection('tenant')->hasColumn($tableName, 'salutationtype') ? 'salutationtype' :
+                                (\Schema::connection('tenant')->hasColumn($tableName, 'salutation') ? 'salutation' : null));
+
+                        if ($column) {
+                            if (\Schema::connection('tenant')->hasColumn($tableName, 'sortorderid')) {
+                                $query->orderBy('sortorderid');
+                            } elseif (\Schema::connection('tenant')->hasColumn($tableName, 'sortid')) {
+                                $query->orderBy('sortid');
+                            }
+                            $options = $query->pluck($column)->toArray();
                         }
-                        $options = $query->pluck($fieldName)->toArray();
                     }
                 } catch (\Exception $e) {
                 }
@@ -134,12 +177,17 @@
                 $tableName = 'vtiger_' . $fieldName;
                 if (\Schema::connection('tenant')->hasTable($tableName)) {
                     $query = \DB::connection('tenant')->table($tableName);
-                    if (\Schema::connection('tenant')->hasColumn($tableName, 'sortorderid')) {
-                        $query->orderBy('sortorderid');
-                    } elseif (\Schema::connection('tenant')->hasColumn($tableName, 'sortid')) {
-                        $query->orderBy('sortid');
+                    $column = \Schema::connection('tenant')->hasColumn($tableName, $fieldName) ? $fieldName :
+                        (\Schema::connection('tenant')->hasColumn($tableName, $fieldName . 'type') ? $fieldName . 'type' : null);
+
+                    if ($column) {
+                        if (\Schema::connection('tenant')->hasColumn($tableName, 'sortorderid')) {
+                            $query->orderBy('sortorderid');
+                        } elseif (\Schema::connection('tenant')->hasColumn($tableName, 'sortid')) {
+                            $query->orderBy('sortid');
+                        }
+                        $options = $query->pluck($column)->toArray();
                     }
-                    $options = $query->pluck($fieldName)->toArray();
                 }
             } catch (\Exception $e) {
             }
@@ -147,7 +195,8 @@
             $selectedValues = is_array($value) ? $value : (is_string($value) ? explode('|##|', trim((string) $value, '|##|')) : []);
             $selectedValues = array_map('trim', array_filter($selectedValues));
         @endphp
-        <select name="{{ $inputName }}[]" class="form-select rounded-3" multiple @if($isMandatory) required @endif>
+        <select name="{{ $inputName }}[]" class="form-select rounded-3 select2" multiple
+            data-placeholder="{{ __('contacts::contacts.select_option') }}" @if($isMandatory) required @endif>
             @foreach($options as $opt)
                 <option value="{{ $opt }}" @if(in_array(trim((string) $opt), $selectedValues)) selected @endif>{{ $opt }}
                 </option>
@@ -203,6 +252,38 @@
                 <i class="bi bi-info-circle me-1"></i>
                 {{ __('contacts::contacts.allowed_extensions') }}: {{ str_replace("\n", ', ', $acceptableTypes) }}
             </small>
+
+        @endif
+
+        {{-- Show current image in edit mode --}}
+        @if($uitype == 69 && $value && isset($contact))
+            <div class="mt-4">
+                <div class="position-relative d-inline-block" id="current_image_{{ $fieldName }}">
+                    <img src="{{ url('tenancy/assets/' . $value) }}" class="img-thumbnail rounded-3 shadow-sm"
+                        style="max-height: 150px; max-width: 200px; object-fit: cover;">
+                    <button type="button"
+                        class="btn btn-sm btn-danger rounded-circle position-absolute top-0 start-100 translate-middle p-1"
+                        style="line-height: 1;"
+                        onclick="deleteFile('{{ $contact->getId() }}', '{{ $columnName }}', '{{ $value }}', 'current_image_{{ $fieldName }}')">
+                        <i class="bi bi-x small"></i>
+                    </button>
+                </div>
+            </div>
+        @endif
+
+        {{-- Preview for newly selected image --}}
+        @if($uitype == 69)
+            <div class="mt-4" id="preview_container_{{ $fieldName }}" style="display:none;">
+                <div class="position-relative d-inline-block">
+                    <img id="preview_{{ $fieldName }}" src="" class="img-thumbnail rounded-3 shadow-sm"
+                        style="max-height: 150px; max-width: 200px; object-fit: cover;">
+                    <button type="button"
+                        class="btn btn-sm btn-danger rounded-circle position-absolute top-0 start-100 translate-middle p-1"
+                        style="line-height: 1;" onclick="clearImagePreview('{{ $fieldName }}')">
+                        <i class="bi bi-x small"></i>
+                    </button>
+                </div>
+            </div>
         @endif
 
         @if($allowMultiple)
@@ -212,84 +293,34 @@
             </small>
         @endif
 
-        {{-- Preview for new uploads (Single only for preview usually) --}}
-        @if($uitype == 69)
-            <div class="mt-2" id="preview_container_{{ $fieldName }}" style="display:none;">
-                <label class="form-label small fw-bold text-primary">{{ __('contacts::contacts.new_preview') }}</label>
-                <img id="preview_{{ $fieldName }}" src="" class="img-thumbnail rounded-3 shadow-sm" style="max-height: 150px;">
-            </div>
-            @once
-                <script>
-                    if (typeof previewImage === 'undefined') {
-                        window.previewImage = function (input, previewId) {
-                            const preview = document.getElementById(previewId);
-                            const container = document.getElementById('preview_container_' + input.getAttribute('data-field-name'));
-                            if (input.files && input.files[0]) {
-                                const reader = new FileReader();
-                                reader.onload = function (e) {
-                                    preview.src = e.target.result;
-                                    container.style.display = 'block';
-                                }
-                                reader.readAsDataURL(input.files[0]);
+        @once
+            <script>
+                if (typeof previewImage === 'undefined') {
+                    window.previewImage = function (input, previewId) {
+                        const preview = document.getElementById(previewId);
+                        const container = document.getElementById('preview_container_' + input.getAttribute('data-field-name'));
+                        if (input.files && input.files[0]) {
+                            const reader = new FileReader();
+                            reader.onload = function (e) {
+                                preview.src = e.target.result;
+                                container.style.display = 'block';
                             }
+                            reader.readAsDataURL(input.files[0]);
                         }
                     }
-                </script>
-            @endonce
-        @endif
 
-        {{-- Display existing files/images in edit mode --}}
-        @if($value && isset($contact))
-            @php
-                $existingFiles = [];
-                if (is_string($value) && str_starts_with($value, '[')) {
-                    $existingFiles = json_decode($value, true) ?? [$value];
-                } else {
-                    $existingFiles = [$value];
+                    window.clearImagePreview = function (fieldName) {
+                        const container = document.getElementById('preview_container_' + fieldName);
+                        const preview = document.getElementById('preview_' + fieldName);
+                        const input = document.querySelector('input[data-field-name="' + fieldName + '"]');
+
+                        if (container) container.style.display = 'none';
+                        if (preview) preview.src = '';
+                        if (input) input.value = '';
+                    }
                 }
-            @endphp
-
-            <div class="mt-3">
-                <label
-                    class="form-label fw-bold small text-muted text-uppercase">{{ $uitype == 69 ? __('contacts::contacts.existing_images') : __('contacts::contacts.existing_files') }}</label>
-                <div class="row g-2">
-                    @foreach($existingFiles as $index => $filePath)
-                        @php $fileName = basename($filePath); @endphp
-                        @if($uitype == 69)
-                            <div class="col-md-4" id="edit-image-{{ $fieldName }}-{{ $index }}">
-                                <div class="card border shadow-none rounded-3 overflow-hidden">
-                                    <img src="{{ url('tenancy/assets/' . $filePath) }}" class="card-img-top"
-                                        style="height: 100px; object-fit: cover;">
-                                    <div class="card-footer bg-white p-1 d-flex justify-content-between">
-                                        <a href="{{ url('tenancy/assets/' . $filePath) }}" target="_blank"
-                                            class="btn btn-sm btn-link p-0 text-decoration-none"><i class="bi bi-eye"></i></a>
-                                        <button type="button" class="btn btn-sm btn-link p-0 text-danger text-decoration-none"
-                                            onclick="deleteFile('{{ $contact->getId() }}', '{{ $columnName }}', '{{ $filePath }}', 'edit-image-{{ $fieldName }}-{{ $index }}')"><i
-                                                class="bi bi-trash"></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                        @else
-                            <div class="col-12" id="edit-file-{{ $fieldName }}-{{ $index }}">
-                                <div class="d-flex align-items-center justify-content-between bg-light p-2 rounded-3 border">
-                                    <div class="d-flex align-items-center overflow-hidden">
-                                        <i class="bi bi-file-earmark-text text-primary me-2 fs-5"></i>
-                                        <span class="small text-truncate" title="{{ $fileName }}">{{ $fileName }}</span>
-                                    </div>
-                                    <div class="d-flex gap-2">
-                                        <a href="{{ url('tenancy/assets/' . $filePath) }}" target="_blank" class="text-primary"><i
-                                                class="bi bi-eye"></i></a>
-                                        <button type="button" class="btn btn-sm p-0 text-danger border-0 bg-transparent"
-                                            onclick="deleteFile('{{ $contact->getId() }}', '{{ $columnName }}', '{{ $filePath }}', 'edit-file-{{ $fieldName }}-{{ $index }}')"><i
-                                                class="bi bi-trash"></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-                    @endforeach
-                </div>
-            </div>
-        @endif
+            </script>
+        @endonce
 
     @elseif($uitype == 5) {{-- Date --}}
         <input type="date" name="{{ $inputName }}" class="form-control rounded-3" value="{{ $value }}" @if($isMandatory)
@@ -311,20 +342,20 @@
                 placeholder="email@example.com" @if($isMandatory) required @endif>
         </div>
 
-    @elseif(in_array($uitype, [11, 1])) {{-- Phone / Text --}}
-        <div class="input-group">
-            @if($uitype == 11)
-                <span class="input-group-text bg-light rounded-start-3"><i class="bi bi-telephone"></i></span>
-            @endif
-            <input type="text" name="{{ $inputName }}"
-                class="form-control {{ $uitype == 11 ? 'rounded-end-3' : 'rounded-3' }}" value="{{ $value }}"
-                placeholder="{{ $field->getLabel() }}" @if($isMandatory) required @endif>
-        </div>
+    @elseif($uitype == 11 || str_contains(strtolower($fieldName), 'phone') || str_contains(strtolower($fieldName), 'mobile'))
+        {{-- Phone --}}
+        <input type="tel" name="{{ $inputName }}" class="form-control rounded-3 phone-input" value="{{ $value }}"
+            placeholder="{{ $field->getLabel() }}" @if($isMandatory) required @endif>
+
+    @elseif($uitype == 1) {{-- Text --}}
+        <input type="text" name="{{ $inputName }}" class="form-control rounded-3" value="{{ $value }}"
+            placeholder="{{ $field->getLabel() }}" @if($isMandatory) required @endif>
 
     @elseif($uitype == 10) {{-- Reference --}}
         <div class="input-group">
             <span class="input-group-text bg-light rounded-start-3"><i class="bi bi-search"></i></span>
-            <select name="{{ $inputName }}" class="form-select rounded-end-3" @if($isMandatory) required @endif>
+            <select name="{{ $inputName }}" class="form-select rounded-end-3 select2"
+                data-placeholder="{{ __('contacts::contacts.select_option') }}" @if($isMandatory) required @endif>
                 <option value="">{{ __('contacts::contacts.select_option') }}</option>
                 @if($value)
                     @php
@@ -360,7 +391,8 @@
         </div>
 
     @elseif(in_array($uitype, [52, 53, 77])) {{-- User / Owner --}}
-        <select name="{{ $inputName }}" class="form-select rounded-3" @if($isMandatory) required @endif>
+        <select name="{{ $inputName }}" class="form-select rounded-3 select2"
+            data-placeholder="{{ __('contacts::contacts.select_option') }}" @if($isMandatory) required @endif>
             @php
                 $users = \DB::connection('tenant')->table('users')->select('id', 'name')->get();
             @endphp

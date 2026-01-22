@@ -42,8 +42,13 @@
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm rounded-4 mb-4 text-center p-4">
                     <div class="position-relative d-inline-block mx-auto mb-3">
-                        <img src="https://ui-avatars.com/api/?name={{ $contact->getFullName()->getDisplayName() }}&background=6366f1&color=fff&size=200"
-                            class="rounded-circle border p-1" width="120" height="120" alt="">
+                        @if($contact->getImageName())
+                            <img src="{{ url('tenancy/assets/' . $contact->getImageName()) }}" class="rounded-circle border p-1"
+                                width="120" height="120" style="object-fit: cover;" alt="">
+                        @else
+                            <img src="https://ui-avatars.com/api/?name={{ $contact->getFullName()->getDisplayName() }}&background=6366f1&color=fff&size=200"
+                                class="rounded-circle border p-1" width="120" height="120" alt="">
+                        @endif
                         <span
                             class="position-absolute bottom-0 end-0 p-2 bg-success border border-white border-3 rounded-circle"
                             title="Active"></span>

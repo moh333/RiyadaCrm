@@ -85,6 +85,14 @@ class UpdateContactUseCase
             $contact->setMobilePhone(\App\Modules\Tenant\Contacts\Domain\ValueObjects\PhoneNumber::mobile($dto->mobile));
             $changedFields[] = 'mobile';
         }
+        if ($dto->homePhone) {
+            $contact->setHomePhone(\App\Modules\Tenant\Contacts\Domain\ValueObjects\PhoneNumber::home($dto->homePhone));
+            $changedFields[] = 'homephone';
+        }
+        if ($dto->fax) {
+            $contact->setFax(\App\Modules\Tenant\Contacts\Domain\ValueObjects\PhoneNumber::other($dto->fax));
+            $changedFields[] = 'fax';
+        }
         if ($dto->title !== $contact->getTitle()) {
             $contact->setTitle($dto->title);
             $changedFields[] = 'title';
@@ -96,6 +104,50 @@ class UpdateContactUseCase
         if ($dto->description !== $contact->getDescription()) {
             $contact->setDescription($dto->description);
             $changedFields[] = 'description';
+        }
+        if ($dto->assistant) {
+            $contact->setAssistant($dto->assistant);
+            $changedFields[] = 'assistant';
+        }
+        if ($dto->assistantPhone) {
+            $contact->setAssistantPhone(\App\Modules\Tenant\Contacts\Domain\ValueObjects\PhoneNumber::other($dto->assistantPhone));
+            $changedFields[] = 'assistantphone';
+        }
+        if ($dto->birthday) {
+            try {
+                $contact->setBirthday(new \DateTimeImmutable($dto->birthday));
+                $changedFields[] = 'birthday';
+            } catch (\Exception $e) {
+            }
+        }
+        if ($dto->leadSource) {
+            $contact->setLeadSource($dto->leadSource);
+            $changedFields[] = 'leadsource';
+        }
+
+        // Address mapping
+        if ($dto->mailingStreet || $dto->mailingCity) {
+            $contact->setMailingAddress(\App\Modules\Tenant\Contacts\Domain\ValueObjects\Address::mailing(
+                $dto->mailingStreet,
+                $dto->mailingCity,
+                $dto->mailingState,
+                $dto->mailingZip,
+                $dto->mailingCountry,
+                $dto->mailingPoBox
+            ));
+            $changedFields[] = 'mailing_address';
+        }
+
+        if ($dto->otherStreet || $dto->otherCity) {
+            $contact->setAlternateAddress(\App\Modules\Tenant\Contacts\Domain\ValueObjects\Address::alternate(
+                $dto->otherStreet,
+                $dto->otherCity,
+                $dto->otherState,
+                $dto->otherZip,
+                $dto->otherCountry,
+                $dto->otherPoBox
+            ));
+            $changedFields[] = 'other_address';
         }
 
         // Update custom fields
@@ -139,11 +191,32 @@ class UpdateContactDTO
 
     public ?string $phone;
     public ?string $mobile;
+    public ?string $homePhone;
+    public ?string $fax;
     public ?string $title;
     public ?string $department;
     public ?string $description;
+    public ?string $assistant;
+    public ?string $assistantPhone;
+    public ?string $birthday;
+    public ?string $leadSource;
     public ?string $image;
     public array $customFields = [];
+
+    // Address fields
+    public ?string $mailingStreet;
+    public ?string $mailingCity;
+    public ?string $mailingState;
+    public ?string $mailingZip;
+    public ?string $mailingCountry;
+    public ?string $mailingPoBox;
+
+    public ?string $otherStreet;
+    public ?string $otherCity;
+    public ?string $otherState;
+    public ?string $otherZip;
+    public ?string $otherCountry;
+    public ?string $otherPoBox;
 
 
     public function __construct(array $data)
@@ -156,9 +229,30 @@ class UpdateContactDTO
         $this->modifiedBy = $data['modifiedBy'];
         $this->phone = $data['phone'] ?? null;
         $this->mobile = $data['mobile'] ?? null;
+        $this->homePhone = $data['homephone'] ?? $data['homePhone'] ?? null;
+        $this->fax = $data['fax'] ?? null;
         $this->title = $data['title'] ?? null;
         $this->department = $data['department'] ?? null;
         $this->description = $data['description'] ?? null;
+        $this->assistant = $data['assistant'] ?? null;
+        $this->assistantPhone = $data['assistantphone'] ?? null;
+        $this->birthday = $data['birthday'] ?? null;
+        $this->leadSource = $data['leadsource'] ?? null;
+
+        $this->mailingStreet = $data['mailingstreet'] ?? null;
+        $this->mailingCity = $data['mailingcity'] ?? null;
+        $this->mailingState = $data['mailingstate'] ?? null;
+        $this->mailingZip = $data['mailingzip'] ?? null;
+        $this->mailingCountry = $data['mailingcountry'] ?? null;
+        $this->mailingPoBox = $data['mailingpobox'] ?? null;
+
+        $this->otherStreet = $data['otherstreet'] ?? null;
+        $this->otherCity = $data['othercity'] ?? null;
+        $this->otherState = $data['otherstate'] ?? null;
+        $this->otherZip = $data['otherzip'] ?? null;
+        $this->otherCountry = $data['othercountry'] ?? null;
+        $this->otherPoBox = $data['otherpobox'] ?? null;
+
         $this->image = $data['image'] ?? null;
         $this->customFields = $data['customFields'] ?? [];
     }

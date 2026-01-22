@@ -274,6 +274,56 @@ class Contact
         return $this->description;
     }
 
+    public function getHomePhone(): ?PhoneNumber
+    {
+        return $this->homePhone;
+    }
+
+    public function getFax(): ?PhoneNumber
+    {
+        return $this->fax;
+    }
+
+    public function getMailingAddress(): ?Address
+    {
+        return $this->mailingAddress;
+    }
+
+    public function getAlternateAddress(): ?Address
+    {
+        return $this->alternateAddress;
+    }
+
+    public function getAssistant(): ?string
+    {
+        return $this->assistant;
+    }
+
+    public function getAssistantPhone(): ?PhoneNumber
+    {
+        return $this->assistantPhone;
+    }
+
+    public function getBirthday(): ?\DateTimeImmutable
+    {
+        return $this->birthday;
+    }
+
+    public function getLeadSource(): ?string
+    {
+        return $this->leadSource;
+    }
+
+    public function getSupportStartDate(): ?\DateTimeImmutable
+    {
+        return $this->supportStartDate;
+    }
+
+    public function getSupportEndDate(): ?\DateTimeImmutable
+    {
+        return $this->supportEndDate;
+    }
+
     // Setters for optional fields
 
     public function setEmail(?EmailAddress $email): void
