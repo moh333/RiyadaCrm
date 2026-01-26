@@ -437,12 +437,32 @@
     @elseif(in_array($uitype, [52, 53, 77])) {{-- User / Owner --}}
         <select name="{{ $inputName }}" class="form-select rounded-3 select2"
             data-placeholder="{{ __('contacts::contacts.select_option') }}" @if($isMandatory) required @endif>
-            @php
-                $users = \DB::connection('tenant')->table('users')->select('id', 'name')->get();
-            @endphp
-            @foreach($users as $user)
-                <option value="{{ $user->id }}" @if($value == $user->id) selected @endif>{{ $user->name }}</option>
-            @endforeach
+            <option value="">{{ __('contacts::contacts.select_option') }}</option>
+            <optgroup label="{{ __('contacts::contacts.users') ?? 'Users' }}">
+                @php
+                    $users = \DB::connection('tenant')->table('vtiger_users')
+                        ->where('deleted', 0)
+                        ->where('status', 'Active')
+                        ->select('id', 'first_name', 'last_name', 'user_name')
+                        ->get();
+                @endphp
+                @foreach($users as $user)
+                    @php 
+                        $displayName = trim($user->first_name . ' ' . $user->last_name) ?: $user->user_name;
+                    @endphp
+                    <option value="{{ $user->id }}" @selected($value == $user->id)>{{ $displayName }}</option>
+                @endforeach
+            </optgroup>
+            <optgroup label="{{ __('contacts::contacts.groups') ?? 'Groups' }}">
+                @php
+                    $groups = \DB::connection('tenant')->table('vtiger_groups')
+                        ->select('groupid as id', 'groupname as name')
+                        ->get();
+                @endphp
+                @foreach($groups as $group)
+                    <option value="{{ $group->id }}" @selected($value == $group->id)>{{ $group->name }}</option>
+                @endforeach
+            </optgroup>
         </select>
 
     @else {{-- Default text input --}}

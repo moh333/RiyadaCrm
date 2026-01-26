@@ -123,4 +123,6 @@ return [
     'new_image_preview' => 'New Image Preview',
     'download' => 'Download',
     'no' => 'No',
+    'users' => 'Users',
+    'groups' => 'Groups',
 ];
