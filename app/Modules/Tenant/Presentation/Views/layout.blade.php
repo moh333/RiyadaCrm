@@ -329,7 +329,7 @@
                                     class="bi bi-collection me-2"></i>
                                 {{ __('tenant::tenant.modules') ?? 'Modules' }}
                             </a>
-                        </li>   
+                        </li>
 
                         <li><a href="{{ route('tenant.settings.modules.layouts') }}"
                                 class="nav-link {{ request()->routeIs('tenant.settings.modules.layouts') ? 'active' : '' }} ps-4"><i
@@ -339,7 +339,8 @@
 
                         <li><a href="{{ route('tenant.settings.modules.numbering.selection') }}"
                                 class="nav-link {{ request()->routeIs('tenant.settings.modules.numbering.*') ? 'active' : '' }} ps-4"><i
-                                    class="bi bi-123 me-2"></i> {{ __('tenant::tenant.module_numbering') ?? 'Numbering' }}</a>
+                                    class="bi bi-123 me-2"></i>
+                                {{ __('tenant::tenant.module_numbering') ?? 'Numbering' }}</a>
                         </li>
 
                         <li><a href="{{ route('tenant.settings.modules.relations.selection') }}"
@@ -365,18 +366,15 @@
                     id="userMgmtSubmenu">
                     <ul class="list-unstyled fw-normal pb-1 small bg-light rounded-bottom px-2 pt-1">
                         <li><a href="{{ route('tenant.settings.users.index') }}"
-                                class="nav-link {{ request()->routeIs('tenant.settings.users.*') ? 'active' : '' }} ps-4"><i
+                                class="nav-link {{ request()->routeIs('tenant.settings.users.index') ? 'active' : '' }} ps-4"><i
                                     class="bi bi-person me-2"></i> {{ __('tenant::users.users') }}</a></li>
-                        <li><a href="#" class="nav-link ps-4 text-muted"><i class="bi bi-diagram-3 me-2"></i>
-                                {{ __('tenant::users.roles') }}</a></li>
-                        <li><a href="#" class="nav-link ps-4 text-muted"><i class="bi bi-person-badge me-2"></i>
-                                {{ __('tenant::users.profiles') }}</a></li>
-                        <li><a href="#" class="nav-link ps-4 text-muted"><i class="bi bi-share me-2"></i>
-                                {{ __('tenant::users.sharing_rules') }}</a></li>
-                        <li><a href="#" class="nav-link ps-4 text-muted"><i class="bi bi-people me-2"></i>
-                                {{ __('tenant::users.groups') }}</a></li>
-                        <li><a href="#" class="nav-link ps-4 text-muted"><i class="bi bi-clock-history me-2"></i>
-                                {{ __('tenant::users.login_history') }}</a></li>
+                        <li><a href="{{ route('tenant.settings.users.roles.index') }}"
+                                class="nav-link {{ request()->routeIs('tenant.settings.users.roles.*') ? 'active' : '' }} ps-4"><i
+                                    class="bi bi-diagram-3 me-2"></i> {{ __('tenant::users.roles') }}</a></li>
+                        <li><a href="{{ route('tenant.settings.users.profiles.index') }}" class="nav-link {{ request()->routeIs('tenant.settings.users.profiles.*') ? 'active' : '' }} ps-4"><i class="bi bi-person-badge me-2"></i> {{ __('tenant::users.profiles') }}</a></li>
+                        <li><a href="{{ route('tenant.settings.users.sharing-rules.index') }}" class="nav-link {{ request()->routeIs('tenant.settings.users.sharing-rules.*') ? 'active' : '' }} ps-4"><i class="bi bi-share me-2"></i> {{ __('tenant::users.sharing_rules') }}</a></li>
+                        <li><a href="{{ route('tenant.settings.users.groups.index') }}" class="nav-link {{ request()->routeIs('tenant.settings.users.groups.*') ? 'active' : '' }} ps-4"><i class="bi bi-people me-2"></i> {{ __('tenant::users.groups') }}</a></li>
+                        <li><a href="{{ route('tenant.settings.users.login-history.index') }}" class="nav-link {{ request()->routeIs('tenant.settings.users.login-history.*') ? 'active' : '' }} ps-4"><i class="bi bi-clock-history me-2"></i> {{ __('tenant::users.login_history') }}</a></li>
                     </ul>
                 </div>
             </li>

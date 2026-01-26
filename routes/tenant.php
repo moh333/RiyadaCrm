@@ -5,11 +5,18 @@ declare(strict_types=1);
 use App\Http\Middleware\InitializeTenancyOrRedirect;
 use App\Modules\Tenant\Contacts\Presentation\Controllers\ContactsController;
 use App\Modules\Tenant\Contacts\Presentation\Controllers\CustomFieldsController;
+use App\Modules\Tenant\ModComments\Presentation\Controllers\ModCommentsController;
 use App\Modules\Tenant\Presentation\Controllers\DashboardController;
 use App\Modules\Tenant\Presentation\Controllers\LoginController;
 use App\Modules\Tenant\Presentation\Controllers\ProfileController;
 use App\Modules\Tenant\Presentation\Controllers\SettingsController;
 use App\Modules\Tenant\Settings\Presentation\Controllers\ModuleManagementController;
+use App\Modules\Tenant\Users\Presentation\Controllers\GroupsController;
+use App\Modules\Tenant\Users\Presentation\Controllers\LoginHistoryController;
+use App\Modules\Tenant\Users\Presentation\Controllers\ProfilesController;
+use App\Modules\Tenant\Users\Presentation\Controllers\RolesController;
+use App\Modules\Tenant\Users\Presentation\Controllers\SharingRulesController;
+use App\Modules\Tenant\Users\Presentation\Controllers\UsersController;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Features\UserImpersonation;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
@@ -117,19 +124,40 @@ Route::middleware([
 
         // ModComments Routes
         Route::prefix('comments')->name('comments.')->group(function () {
-            Route::post('/', [\App\Modules\Tenant\ModComments\Presentation\Controllers\ModCommentsController::class, 'store'])->name('store');
-            Route::put('/{id}', [\App\Modules\Tenant\ModComments\Presentation\Controllers\ModCommentsController::class, 'update'])->name('update');
-            Route::delete('/{id}', [\App\Modules\Tenant\ModComments\Presentation\Controllers\ModCommentsController::class, 'destroy'])->name('destroy');
+            Route::post('/', [ModCommentsController::class, 'store'])->name('store');
+            Route::put('/{id}', [ModCommentsController::class, 'update'])->name('update');
+            Route::delete('/{id}', [ModCommentsController::class, 'destroy'])->name('destroy');
         });
 
         // User Management Routes
         Route::prefix('settings/users')->name('settings.users.')->group(function () {
-            Route::get('/', [\App\Modules\Tenant\Users\Presentation\Controllers\UsersController::class, 'index'])->name('index');
-            Route::get('/create', [\App\Modules\Tenant\Users\Presentation\Controllers\UsersController::class, 'create'])->name('create');
-            Route::post('/', [\App\Modules\Tenant\Users\Presentation\Controllers\UsersController::class, 'store'])->name('store');
-            Route::get('/{id}/edit', [\App\Modules\Tenant\Users\Presentation\Controllers\UsersController::class, 'edit'])->name('edit');
-            Route::put('/{id}', [\App\Modules\Tenant\Users\Presentation\Controllers\UsersController::class, 'update'])->name('update');
-            Route::delete('/{id}', [\App\Modules\Tenant\Users\Presentation\Controllers\UsersController::class, 'destroy'])->name('destroy');
+            // Users
+            Route::get('/', [UsersController::class, 'index'])->name('index');
+            Route::get('/create', [UsersController::class, 'create'])->name('create');
+            Route::post('/', [UsersController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [UsersController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [UsersController::class, 'update'])->name('update');
+            Route::delete('/{id}', [UsersController::class, 'destroy'])->name('destroy');
+
+            // Roles
+            Route::post('roles/reorder', [RolesController::class, 'reorder'])->name('roles.reorder');
+            Route::resource('roles', RolesController::class);
+
+            // Profiles
+            Route::resource('profiles', ProfilesController::class);
+
+            // Sharing Rules
+            Route::get('/sharing-rules', [SharingRulesController::class, 'index'])->name('sharing-rules.index');
+            Route::post('/sharing-rules', [SharingRulesController::class, 'updateDefaults'])->name('sharing-rules.update-defaults');
+            Route::post('/sharing-rules/custom', [SharingRulesController::class, 'storeCustom'])->name('sharing-rules.custom.store');
+            Route::put('/sharing-rules/custom/{id}', [SharingRulesController::class, 'updateCustom'])->name('sharing-rules.custom.update');
+            Route::delete('/sharing-rules/custom/{id}', [SharingRulesController::class, 'destroyCustom'])->name('sharing-rules.custom.destroy');
+
+            // Groups
+            Route::resource('groups', GroupsController::class);
+
+            // Login History
+            Route::get('/login-history', [LoginHistoryController::class, 'index'])->name('login-history.index');
         });
     });
 
