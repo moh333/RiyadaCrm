@@ -17,64 +17,7 @@
             </div>
         @endif
 
-        <!-- Quick Actions -->
-        <div class="row g-3 mb-4">
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-3 p-3 me-3">
-                                <i class="bi bi-layout-text-sidebar-reverse fs-4"></i>
-                            </div>
-                            <div>
-                                <h5 class="mb-0">Menu Manager</h5>
-                                <small class="text-muted">Configure navigation</small>
-                            </div>
-                        </div>
-                        <a href="{{ route('tenant.settings.modules.menu') }}" class="btn btn-outline-primary w-100">
-                            <i class="bi bi-gear me-2"></i>Manage Menu
-                        </a>
-                    </div>
-                </div>
-            </div>
 
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="icon-box bg-success bg-opacity-10 text-success rounded-3 p-3 me-3">
-                                <i class="bi bi-ui-checks fs-4"></i>
-                            </div>
-                            <div>
-                                <h5 class="mb-0">Custom Fields</h5>
-                                <small class="text-muted">Add custom fields</small>
-                            </div>
-                        </div>
-                        <a href="{{ route('tenant.custom-fields.index', ['module' => 'Contacts']) }}"
-                            class="btn btn-outline-success w-100">
-                            <i class="bi bi-plus-circle me-2"></i>Manage Fields
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="icon-box bg-info bg-opacity-10 text-info rounded-3 p-3 me-3">
-                                <i class="bi bi-123 fs-4"></i>
-                            </div>
-                            <div>
-                                <h5 class="mb-0">Numbering</h5>
-                                <small class="text-muted">Auto-number settings</small>
-                            </div>
-                        </div>
-                        <p class="text-muted small mb-0">Configure per module below</p>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Modules List -->
         <div class="card border-0 shadow-sm rounded-4">

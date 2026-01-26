@@ -85,6 +85,10 @@ Route::middleware([
             Route::get('/', [ModuleManagementController::class, 'index'])->name('index');
             Route::get('/list', [ModuleManagementController::class, 'listModules'])->name('list');
 
+            // Menu Management
+            Route::get('/menu', [ModuleManagementController::class, 'menu'])->name('menu');
+            Route::post('/menu', [ModuleManagementController::class, 'updateMenu'])->name('menu.update');
+
             // Layout Management
             Route::get('/layouts', [ModuleManagementController::class, 'layouts'])->name('layouts');
             Route::get('/{module}/layout', [ModuleManagementController::class, 'editLayout'])->name('layout');
@@ -116,6 +120,16 @@ Route::middleware([
             Route::post('/', [\App\Modules\Tenant\ModComments\Presentation\Controllers\ModCommentsController::class, 'store'])->name('store');
             Route::put('/{id}', [\App\Modules\Tenant\ModComments\Presentation\Controllers\ModCommentsController::class, 'update'])->name('update');
             Route::delete('/{id}', [\App\Modules\Tenant\ModComments\Presentation\Controllers\ModCommentsController::class, 'destroy'])->name('destroy');
+        });
+
+        // User Management Routes
+        Route::prefix('settings/users')->name('settings.users.')->group(function () {
+            Route::get('/', [\App\Modules\Tenant\Users\Presentation\Controllers\UsersController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Modules\Tenant\Users\Presentation\Controllers\UsersController::class, 'create'])->name('create');
+            Route::post('/', [\App\Modules\Tenant\Users\Presentation\Controllers\UsersController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [\App\Modules\Tenant\Users\Presentation\Controllers\UsersController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [\App\Modules\Tenant\Users\Presentation\Controllers\UsersController::class, 'update'])->name('update');
+            Route::delete('/{id}', [\App\Modules\Tenant\Users\Presentation\Controllers\UsersController::class, 'destroy'])->name('destroy');
         });
     });
 

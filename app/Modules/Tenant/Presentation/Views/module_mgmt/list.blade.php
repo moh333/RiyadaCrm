@@ -20,28 +20,7 @@
 
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-body p-0">
-                <ul class="nav nav-pills nav-fill p-2 bg-light rounded-4">
-                    <li class="nav-item">
-                        <a class="nav-link active fw-bold" href="{{ route('tenant.settings.modules.list') }}">
-                            <i class="bi bi-list-task me-2"></i>{{ __('tenant::tenant.modules') }}
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-muted fw-bold" href="{{ route('tenant.settings.modules.layouts') }}">
-                            <i class="bi bi-layout-sidebar-inset me-2"></i>{{ __('tenant::tenant.module_layouts_fields') }}
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-muted fw-bold" href="{{ route('tenant.settings.modules.numbering.selection') }}">
-                            <i class="bi bi-123 me-2"></i>{{ __('tenant::tenant.module_numbering') }}
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-muted fw-bold" href="{{ route('tenant.settings.modules.relations.selection') }}">
-                            <i class="bi bi-diagram-3 me-2"></i>{{ __('tenant::tenant.module_relations') }}
-                        </a>
-                    </li>
-                </ul>
+                
             </div>
         </div>
 

@@ -41,7 +41,47 @@ class ModuleManagementController extends Controller
     }
 
     /**
-     * 2. Module Layouts & Fields (Selection Page)
+     * 2. Menu Management
+     */
+    public function menu()
+    {
+        $modules = $this->moduleRegistry->all();
+        return view('tenant::module_mgmt.menu', compact('modules'));
+    }
+
+    public function updateMenu(Request $request)
+    {
+        $validated = $request->validate([
+            'modules' => 'required|array',
+            'modules.*.tabid' => 'required|integer',
+            'modules.*.sequence' => 'required|integer',
+            'modules.*.visible' => 'nullable|boolean', // 1 or 0
+        ]);
+
+        \DB::connection('tenant')->transaction(function () use ($validated) {
+            foreach ($validated['modules'] as $modData) {
+                // vtiger_tab: tabsequence determines order, presence=0 is visible, 1 is hidden
+                // Incoming visible=1 means we set presence=0. visible=0 or missing means presence=1.
+                $presence = isset($modData['visible']) && $modData['visible'] == 1 ? 0 : 1;
+
+                \DB::connection('tenant')
+                    ->table('vtiger_tab')
+                    ->where('tabid', $modData['tabid'])
+                    ->update([
+                        'tabsequence' => $modData['sequence'],
+                        'presence' => $presence
+                    ]);
+            }
+        });
+
+        $this->moduleRegistry->refresh();
+
+        return redirect()->route('tenant.settings.modules.menu')
+            ->with('success', __('tenant::tenant.updated_successfully'));
+    }
+
+    /**
+     * 3. Module Layouts & Fields (Selection Page)
      */
     public function layouts()
     {
