@@ -36,6 +36,11 @@
                             <i class="bi bi-123 me-2"></i>{{ __('tenant::tenant.module_numbering') }}
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-muted fw-bold" href="{{ route('tenant.settings.modules.relations.selection') }}">
+                            <i class="bi bi-diagram-3 me-2"></i>{{ __('tenant::tenant.module_relations') }}
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>

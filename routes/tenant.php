@@ -99,8 +99,23 @@ Route::middleware([
             Route::get('/{module}/numbering', [ModuleManagementController::class, 'editNumbering'])->name('numbering');
             Route::post('/{module}/numbering', [ModuleManagementController::class, 'updateNumbering'])->name('numbering.update');
 
+            // Relations Management
+            Route::get('/relations', [ModuleManagementController::class, 'relationsSelection'])->name('relations.selection');
+            Route::get('/{module}/relations', [ModuleManagementController::class, 'editRelations'])->name('relations');
+            Route::post('/{module}/relations', [ModuleManagementController::class, 'storeRelation'])->name('relations.store');
+            Route::put('/{module}/relations/{relationId}', [ModuleManagementController::class, 'updateRelation'])->name('relations.update');
+            Route::delete('/{module}/relations/{relationId}', [ModuleManagementController::class, 'deleteRelation'])->name('relations.destroy');
+            Route::post('/{module}/relations/reorder', [ModuleManagementController::class, 'reorderRelations'])->name('relations.reorder');
+
             // Toggle Module Status
             Route::post('/{module}/toggle', [ModuleManagementController::class, 'toggleStatus'])->name('toggle');
+        });
+
+        // ModComments Routes
+        Route::prefix('comments')->name('comments.')->group(function () {
+            Route::post('/', [\App\Modules\Tenant\ModComments\Presentation\Controllers\ModCommentsController::class, 'store'])->name('store');
+            Route::put('/{id}', [\App\Modules\Tenant\ModComments\Presentation\Controllers\ModCommentsController::class, 'update'])->name('update');
+            Route::delete('/{id}', [\App\Modules\Tenant\ModComments\Presentation\Controllers\ModCommentsController::class, 'destroy'])->name('destroy');
         });
     });
 

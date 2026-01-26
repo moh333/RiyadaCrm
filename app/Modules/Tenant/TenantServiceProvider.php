@@ -14,6 +14,11 @@ class TenantServiceProvider extends ServiceProvider
             TenantRepositoryInterface::class,
             EloquentTenantRepository::class
         );
+
+        $this->app->bind(
+            \App\Modules\Tenant\ModComments\Domain\Repositories\CommentRepositoryInterface::class,
+            \App\Modules\Tenant\ModComments\Infrastructure\EloquentCommentRepository::class
+        );
     }
 
     public function boot()

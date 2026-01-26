@@ -5,7 +5,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h3 class="fw-bold mb-0">
-                    <i class="bi bi-123 text-primary me-2"></i>{{ __('tenant::tenant.module_numbering') }}
+                    <i class="bi bi-diagram-3 text-primary me-2"></i>{{ __('tenant::tenant.module_relations') }}
                 </h3>
             </div>
         </div>
@@ -13,12 +13,12 @@
         <div class="row g-4">
             @foreach($modules->filter(fn($module) => $module->isEntity()) as $module)
                 <div class="col-md-4 col-xl-3">
-                    <a href="{{ route('tenant.settings.modules.numbering', $module->getName()) }}" class="text-decoration-none">
+                    <a href="{{ route('tenant.settings.modules.relations', $module->getName()) }}" class="text-decoration-none">
                         <div class="card h-100 border-0 shadow-sm rounded-4 module-selection-card transition-all">
                             <div class="card-body text-center p-4">
-                                <div class="icon-box bg-soft-warning rounded-circle mx-auto mb-3"
+                                <div class="icon-box bg-soft-info rounded-circle mx-auto mb-3"
                                     style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
-                                    <i class="bi bi-hash"></i>
+                                    <i class="bi bi-diagram-3"></i>
                                 </div>
                                 <h6 class="fw-bold text-dark mb-1">{{ $module->getName() }}</h6>
                                 <p class="text-muted small mb-0">{{ $module->getLabel() }}</p>
@@ -37,13 +37,13 @@
 
         .module-selection-card:hover {
             transform: translateY(-5px);
-            border-color: #f59e0b !important;
-            background-color: #fffbeb;
+            border-color: #0dcaf0 !important;
+            background-color: #cff4fc;
         }
 
-        .bg-soft-warning {
-            background-color: #fffbeb;
-            color: #f59e0b;
+        .bg-soft-info {
+            background-color: #cff4fc;
+            color: #0dcaf0;
         }
     </style>
 @endsection

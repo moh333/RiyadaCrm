@@ -141,6 +141,10 @@
                                 <button class="nav-link py-3 border-0 border-bottom-3 fw-bold" data-bs-toggle="tab"
                                     data-bs-target="#deals">{{ strtoupper(__('contacts::contacts.deals')) }}</button>
                             </li>
+                            <li class="nav-item">
+                                <button class="nav-link py-3 border-0 border-bottom-3 fw-bold" data-bs-toggle="tab"
+                                    data-bs-target="#related">{{ strtoupper(__('tenant::tenant.module_relations')) }}</button>
+                            </li>
                         </ul>
                     </div>
                     <div class="tab-content p-4">
@@ -177,6 +181,11 @@
                             <div class="text-center py-5">
                                 <p class="text-muted">{{ __('contacts::contacts.no_deals') }}</p>
                             </div>
+                        </div>
+
+                        <!-- Related Lists Tab -->
+                        <div class="tab-pane fade" id="related">
+                            <x-tenant::related-lists :module="$module" :recordId="$contact->getId()" />
                         </div>
                     </div>
                 </div>

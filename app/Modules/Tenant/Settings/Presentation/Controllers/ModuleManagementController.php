@@ -309,4 +309,189 @@ class ModuleManagementController extends Controller
             ->route('tenant.settings.modules.list')
             ->with('success', __('tenant::tenant.updated_successfully'));
     }
+
+    /**
+     * 4. Module Relations (Selection Page)
+     */
+    public function relationsSelection()
+    {
+        $modules = $this->moduleRegistry->getActive();
+        return view('tenant::module_mgmt.relations_selection', compact('modules'));
+    }
+
+    /**
+     * Show module relations management
+     */
+    public function editRelations(string $module)
+    {
+        $moduleDefinition = $this->moduleRegistry->get($module);
+
+        // Get all relations for this module
+        $relations = \DB::connection('tenant')
+            ->table('vtiger_relatedlists as vrl')
+            ->join('vtiger_tab as vt', 'vrl.related_tabid', '=', 'vt.tabid')
+            ->where('vrl.tabid', $moduleDefinition->getId())
+            ->where('vrl.presence', 0) // Only visible relations
+            ->select([
+                'vrl.relation_id',
+                'vrl.related_tabid',
+                'vrl.name',
+                'vrl.sequence',
+                'vrl.label',
+                'vrl.actions',
+                'vrl.relationtype',
+                'vt.name as target_module_name',
+                'vt.tablabel as target_module_label'
+            ])
+            ->orderBy('vrl.sequence')
+            ->get();
+
+        // Get all available modules for adding new relations
+        $availableModules = $this->moduleRegistry->getActive()
+            ->filter(fn($m) => $m->getName() !== $module);
+
+        return view('tenant::module_mgmt.relations', compact('moduleDefinition', 'relations', 'availableModules'));
+    }
+
+    /**
+     * Store new relation
+     */
+    public function storeRelation(Request $request, string $module)
+    {
+        $moduleDefinition = $this->moduleRegistry->get($module);
+
+        $validated = $request->validate([
+            'target_module' => 'required|string',
+            'label' => 'required|string|max:100',
+            'relation_type' => 'required|in:1:N,N:N',
+            'actions' => 'nullable|array',
+            'actions.*' => 'in:ADD,SELECT',
+        ]);
+
+        $targetModule = $this->moduleRegistry->get($validated['target_module']);
+
+        // Generate next relation ID
+        $nextRelationId = $this->getNextRelationId();
+
+        // Get next sequence number
+        $maxSequence = \DB::connection('tenant')
+            ->table('vtiger_relatedlists')
+            ->where('tabid', $moduleDefinition->getId())
+            ->max('sequence') ?? 0;
+
+        // Prepare actions string
+        $actionsString = !empty($validated['actions']) ? implode(',', $validated['actions']) : '';
+
+        // Insert relation
+        \DB::connection('tenant')->table('vtiger_relatedlists')->insert([
+            'relation_id' => $nextRelationId,
+            'tabid' => $moduleDefinition->getId(),
+            'related_tabid' => $targetModule->getId(),
+            'name' => $validated['target_module'],
+            'sequence' => $maxSequence + 1,
+            'label' => $validated['label'],
+            'presence' => 0,
+            'actions' => $actionsString,
+            'relationtype' => $validated['relation_type'],
+        ]);
+
+        $this->moduleRegistry->refresh();
+
+        return redirect()
+            ->route('tenant.settings.modules.relations', $module)
+            ->with('success', __('tenant::tenant.created_successfully'));
+    }
+
+    /**
+     * Update existing relation
+     */
+    public function updateRelation(Request $request, string $module, int $relationId)
+    {
+        $validated = $request->validate([
+            'label' => 'required|string|max:100',
+            'actions' => 'nullable|array',
+            'actions.*' => 'in:ADD,SELECT',
+        ]);
+
+        // Prepare actions string
+        $actionsString = !empty($validated['actions']) ? implode(',', $validated['actions']) : '';
+
+        \DB::connection('tenant')
+            ->table('vtiger_relatedlists')
+            ->where('relation_id', $relationId)
+            ->update([
+                'label' => $validated['label'],
+                'actions' => $actionsString,
+            ]);
+
+        $this->moduleRegistry->refresh();
+
+        return redirect()
+            ->route('tenant.settings.modules.relations', $module)
+            ->with('success', __('tenant::tenant.updated_successfully'));
+    }
+
+    /**
+     * Delete relation
+     */
+    public function deleteRelation(string $module, int $relationId)
+    {
+        // Soft delete by setting presence to 1
+        \DB::connection('tenant')
+            ->table('vtiger_relatedlists')
+            ->where('relation_id', $relationId)
+            ->update(['presence' => 1]);
+
+        $this->moduleRegistry->refresh();
+
+        return redirect()
+            ->route('tenant.settings.modules.relations', $module)
+            ->with('success', __('tenant::tenant.deleted_successfully'));
+    }
+
+    /**
+     * Reorder relations
+     */
+    public function reorderRelations(Request $request, string $module)
+    {
+        $validated = $request->validate([
+            'relations' => 'required|array',
+            'relations.*.relation_id' => 'required|integer',
+            'relations.*.sequence' => 'required|integer',
+        ]);
+
+        \DB::connection('tenant')->transaction(function () use ($validated) {
+            foreach ($validated['relations'] as $relation) {
+                \DB::connection('tenant')
+                    ->table('vtiger_relatedlists')
+                    ->where('relation_id', $relation['relation_id'])
+                    ->update(['sequence' => $relation['sequence']]);
+            }
+        });
+
+        $this->moduleRegistry->refresh();
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Generate next relation ID from sequence table
+     */
+    private function getNextRelationId(): int
+    {
+        $query = \DB::connection('tenant')->table('vtiger_relatedlists_seq')->lockForUpdate();
+        $result = $query->first();
+
+        if (!$result) {
+            $maxId = \DB::connection('tenant')->table('vtiger_relatedlists')->max('relation_id') ?? 1000;
+            $nextId = $maxId + 1;
+            \DB::connection('tenant')->table('vtiger_relatedlists_seq')->insert(['id' => $nextId]);
+            return $nextId;
+        }
+
+        $nextId = $result->id + 1;
+        \DB::connection('tenant')->table('vtiger_relatedlists_seq')->update(['id' => $nextId]);
+
+        return $nextId;
+    }
 }
