@@ -222,7 +222,7 @@ class ModuleManagementController extends Controller
      */
     public function numbering()
     {
-        $modules = $this->moduleRegistry->all();
+        $modules = $this->moduleRegistry->getActive();
         return view('tenant::module_mgmt.numbering_selection', compact('modules'));
     }
 
@@ -251,17 +251,39 @@ class ModuleManagementController extends Controller
             'start_id' => 'required|integer|min:1',
         ]);
 
-        \DB::connection('tenant')
-            ->table('vtiger_modentity_num')
-            ->updateOrInsert(
-                ['semodule' => $module],
-                [
-                    'prefix' => $validated['prefix'],
-                    'start_id' => $validated['start_id'],
-                    'cur_id' => \DB::raw('COALESCE(cur_id, ' . $validated['start_id'] . ')'),
-                    'active' => 1,
-                ]
-            );
+        // Check if configuration already exists
+        \DB::connection('tenant')->transaction(function () use ($module, $validated) {
+            $existing = \DB::connection('tenant')
+                ->table('vtiger_modentity_num')
+                ->where('semodule', $module)
+                ->first();
+
+            if ($existing) {
+                // Update existing configuration
+                \DB::connection('tenant')
+                    ->table('vtiger_modentity_num')
+                    ->where('semodule', $module)
+                    ->update([
+                        'prefix' => $validated['prefix'],
+                        'start_id' => $validated['start_id'],
+                        // Only update cur_id if new start_id is greater than current cur_id
+                        // This prevents going backwards but allows increasing the sequence
+                        'cur_id' => \DB::raw('GREATEST(cur_id, ' . $validated['start_id'] . ')'),
+                        'active' => 1,
+                    ]);
+            } else {
+                // Insert new configuration
+                \DB::connection('tenant')
+                    ->table('vtiger_modentity_num')
+                    ->insert([
+                        'semodule' => $module,
+                        'prefix' => $validated['prefix'],
+                        'start_id' => $validated['start_id'],
+                        'cur_id' => $validated['start_id'],
+                        'active' => 1,
+                    ]);
+            }
+        });
 
         return redirect()
             ->route('tenant.settings.modules.numbering', $module)

@@ -5,10 +5,12 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h3 class="fw-bold mb-0">
-                    <i class="bi bi-123 text-primary me-2"></i>{{ $moduleDefinition->getName() }} - {{ __('tenant::tenant.module_numbering') }}
+                    <i class="bi bi-123 text-primary me-2"></i>{{ $moduleDefinition->getName() }} -
+                    {{ __('tenant::tenant.module_numbering') }}
                 </h3>
             </div>
-            <a href="{{ route('tenant.settings.modules.numbering.selection') }}" class="btn btn-outline-secondary rounded-3">
+            <a href="{{ route('tenant.settings.modules.numbering.selection') }}"
+                class="btn btn-outline-secondary rounded-3">
                 <i class="bi bi-arrow-left me-2"></i>{{ __('tenant::tenant.cancel') }}
             </a>
         </div>
@@ -23,9 +25,10 @@
 
         <div class="row">
             <div class="col-lg-8">
-                <form action="{{ route('tenant.settings.modules.numbering.update', $moduleDefinition->getName()) }}" method="POST">
+                <form action="{{ route('tenant.settings.modules.numbering.update', $moduleDefinition->getName()) }}"
+                    method="POST">
                     @csrf
-                    
+
                     <div class="card border-0 shadow-sm rounded-4 mb-4">
                         <div class="card-header bg-white border-bottom py-3 px-4">
                             <h5 class="mb-0 fw-bold">{{ __('tenant::tenant.module_numbering') }}</h5>
@@ -33,35 +36,43 @@
                         <div class="card-body p-4">
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold">{{ __('tenant::tenant.prefix') }} <span class="text-danger">*</span></label>
-                                    <input type="text" 
-                                           name="prefix" 
-                                           class="form-control rounded-3" 
-                                           value="{{ old('prefix', $numberingConfig->prefix ?? strtoupper(substr($moduleDefinition->getName(), 0, 3))) }}"
-                                           placeholder="e.g., CON, ACC, LEA"
-                                           required>
+                                    <label class="form-label fw-bold">{{ __('tenant::tenant.prefix') }} <span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" name="prefix" class="form-control rounded-3"
+                                        value="{{ old('prefix', $numberingConfig->prefix ?? strtoupper(substr($moduleDefinition->getName(), 0, 3))) }}"
+                                        placeholder="e.g., CON, ACC, LEA" required>
                                     <small class="text-muted">Prefix for auto-generated numbers</small>
                                 </div>
 
+
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold">{{ __('tenant::tenant.start_sequence') }} <span class="text-danger">*</span></label>
-                                    <input type="number" 
-                                           name="start_id" 
-                                           class="form-control rounded-3" 
-                                           value="{{ old('start_id', $numberingConfig->start_id ?? 1) }}"
-                                           min="1"
-                                           required>
+                                    <label class="form-label fw-bold">{{ __('tenant::tenant.start_sequence') }} <span
+                                            class="text-danger">*</span></label>
+                                    <input type="number" name="start_id" class="form-control rounded-3"
+                                        value="{{ old('start_id', $numberingConfig->start_id ?? 1) }}" min="1" required>
                                     <small class="text-muted">First number in sequence</small>
                                 </div>
+
 
                                 <div class="col-12">
                                     <div class="alert alert-info rounded-3 border-0 bg-soft-primary text-primary">
                                         <i class="bi bi-info-circle me-2"></i>
-                                        <strong>Preview:</strong> 
+                                        <strong>Preview:</strong>
                                         <span id="preview-number" class="fw-bold">
                                             {{ old('prefix', $numberingConfig->prefix ?? 'CON') }}{{ old('start_id', $numberingConfig->start_id ?? 1) }}
                                         </span>
                                     </div>
+
+                                    @if($numberingConfig && $numberingConfig->cur_id)
+                                        <div class="alert alert-success rounded-3 border-0 bg-soft-success text-success">
+                                            <i class="bi bi-check-circle me-2"></i>
+                                            <strong>Current Sequence:</strong>
+                                            <span class="fw-bold">{{ $numberingConfig->cur_id }}</span>
+                                            <br>
+                                            <small>Next record will be:
+                                                <strong>{{ $numberingConfig->prefix }}{{ $numberingConfig->cur_id + 1 }}</strong></small>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -102,7 +113,7 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const prefixInput = document.querySelector('input[name="prefix"]');
             const curIdInput = document.querySelector('input[name="start_id"]');
             const preview = document.getElementById('preview-number');
@@ -122,6 +133,11 @@
         .bg-soft-primary {
             background-color: #eef2ff !important;
             color: #6366f1 !important;
+        }
+
+        .bg-soft-success {
+            background-color: #f0fdf4 !important;
+            color: #16a34a !important;
         }
     </style>
 @endsection

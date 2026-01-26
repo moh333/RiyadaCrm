@@ -34,7 +34,7 @@
         </div>
 
         <div class="row g-4">
-            @foreach($modules->where('isEntity', true) as $module)
+            @foreach($modules->filter(fn($module) => $module->isEntity()) as $module)
                 <div class="col-md-4 col-xl-3">
                     <a href="{{ route('tenant.settings.modules.numbering', $module->getName()) }}" class="text-decoration-none">
                         <div class="card h-100 border-0 shadow-sm rounded-4 module-selection-card transition-all">
