@@ -99,9 +99,13 @@ class RolesController extends Controller
     {
         $parentRoles = DB::connection('tenant')->table('vtiger_role')->get();
         $profiles = DB::connection('tenant')->table('vtiger_profile')->get();
+
+        // Only show modules that are entity types (isentitytype = 1) and active (presence = 0)
+        // This matches vtiger's behavior - only entity modules need permission management
         $modules = DB::connection('tenant')->table('vtiger_tab')
             ->where('presence', 0)
-            ->orderBy('tablabel')
+            ->where('isentitytype', 1)
+            ->orderBy('name')
             ->get();
 
         return view('tenant::roles.create', compact('parentRoles', 'profiles', 'modules'));
@@ -112,9 +116,11 @@ class RolesController extends Controller
         $validated = $request->validate([
             'rolename' => 'required|string|max:200|unique:tenant.vtiger_role,rolename',
             'parent_role_id' => 'required|string',
-            'assign_type' => 'required|in:all,same_or_subordinate,subordinate',
-            'privilege_type' => 'required|in:direct,profile',
-            'assigned_profile_id' => 'nullable|integer',
+            'allowassignedrecordsto' => 'required|in:1,2,3',
+            'profile_directly_related_to_role' => 'required|in:0,1',
+            'profilename' => 'nullable|string|max:200',
+            'profiles' => 'nullable|array',
+            'profiles.*' => 'integer',
             'copy_from_profile' => 'nullable|integer',
         ]);
 
@@ -122,45 +128,162 @@ class RolesController extends Controller
             ->where('roleid', $validated['parent_role_id'])
             ->first();
 
-        // Generate new Role ID (usually Hx format or similar in vtiger, but typically standard ID)
-        // Check `vtiger_role` ID format. It's usually like 'H1', 'H2'. 
-        // IF it is standard vtiger, we need to generate proper ID.
-        // For simplicity in this "modern" version, if the table allows arbitrary string/int IDs great.
-        // Assuming standard vtiger behavior: depth and parentrole string must be calculated.
+        if (!$parentRole) {
+            return back()->withErrors(['parent_role_id' => 'Parent role not found.']);
+        }
 
-        $roleId = 'H' . (DB::connection('tenant')->table('vtiger_role')->count() + 1 + rand(100, 999)); // Simplified generation
+        // Generate new Role ID (vtiger format: H1, H2, etc.)
+        $roleId = 'H' . (DB::connection('tenant')->table('vtiger_role')->count() + 1 + rand(100, 999));
 
         $depth = $parentRole->depth + 1;
         $parentRolePath = $parentRole->parentrole . '::' . $roleId;
 
-        DB::connection('tenant')->table('vtiger_role')->insert([
-            'roleid' => $roleId,
-            'rolename' => $validated['rolename'],
-            'parentrole' => $parentRolePath,
-            'depth' => $depth,
-            'assign_type' => $validated['assign_type'],
-            'privilege_type' => $validated['privilege_type'],
-            'assigned_profile_id' => $validated['assigned_profile_id'] ?? null,
-        ]);
+        DB::connection('tenant')->transaction(function () use ($validated, $request, $roleId, $parentRolePath, $depth, $parentRole) {
+            // Insert the role
+            DB::connection('tenant')->table('vtiger_role')->insert([
+                'roleid' => $roleId,
+                'rolename' => $validated['rolename'],
+                'parentrole' => $parentRolePath,
+                'depth' => $depth,
+                'allowassignedrecordsto' => $validated['allowassignedrecordsto'],
+                'copy_from_profile' => $validated['copy_from_profile'] ?? null,
+            ]);
 
+            // Handle profile assignment
+            if ($validated['profile_directly_related_to_role'] == '1') {
+                // Create a directly related profile
+                $profileName = $validated['profilename'] ?? ($validated['rolename'] . ' Profile');
 
-        // Handle direct privileges if selected
-        if ($validated['privilege_type'] === 'direct' && $request->has('privileges')) {
-            // Insert privileges for the new role
-            foreach ($request->input('privileges', []) as $tabid => $permissions) {
-                // Only insert if at least one permission is granted
-                if (!empty(array_filter($permissions))) {
-                    DB::connection('tenant')->table('vtiger_role2profile')->insert([
-                        'roleid' => $roleId,
-                        'tabid' => $tabid,
-                        'view' => isset($permissions['view']) ? 1 : 0,
-                        'create' => isset($permissions['create']) ? 1 : 0,
-                        'edit' => isset($permissions['edit']) ? 1 : 0,
-                        'delete' => isset($permissions['delete']) ? 1 : 0,
-                    ]);
+                $profileId = DB::connection('tenant')->table('vtiger_profile')->insertGetId([
+                    'profilename' => $profileName,
+                    'directly_related_to_role' => 1,
+                    'description' => 'Profile for ' . $validated['rolename'],
+                ]);
+
+                // Link role to profile
+                DB::connection('tenant')->table('vtiger_role2profile')->insert([
+                    'roleid' => $roleId,
+                    'profileid' => $profileId,
+                ]);
+
+                // Save module-level permissions if provided
+                if ($request->has('permissions')) {
+                    $profile2tab = [];
+                    $profile2standard = [];
+                    foreach ($request->input('permissions', []) as $tabid => $perms) {
+                        // Insert into vtiger_profile2tab (module access)
+                        if (isset($perms['view']) && $perms['view']) {
+                            $profile2tab[] = [
+                                'profileid' => $profileId,
+                                'tabid' => $tabid,
+                                'permissions' => 0, // 0 = enabled in vtiger
+                            ];
+
+                            // Insert into vtiger_profile2standardpermissions (create, edit, delete)
+                            $profile2standard[] = [
+                                'profileid' => $profileId,
+                                'tabid' => $tabid,
+                                'operation' => 0, // Create
+                                'permissions' => isset($perms['create']) && $perms['create'] ? 0 : 1,
+                            ];
+                            $profile2standard[] = [
+                                'profileid' => $profileId,
+                                'tabid' => $tabid,
+                                'operation' => 1, // Edit
+                                'permissions' => isset($perms['edit']) && $perms['edit'] ? 0 : 1,
+                            ];
+                            $profile2standard[] = [
+                                'profileid' => $profileId,
+                                'tabid' => $tabid,
+                                'operation' => 2, // Delete
+                                'permissions' => isset($perms['delete']) && $perms['delete'] ? 0 : 1,
+                            ];
+                        }
+                    }
+                    if (!empty($profile2tab)) {
+                        DB::connection('tenant')->table('vtiger_profile2tab')->insert($profile2tab);
+                    }
+                    if (!empty($profile2standard)) {
+                        DB::connection('tenant')->table('vtiger_profile2standardpermissions')->insert($profile2standard);
+                    }
+                }
+
+                // Save field-level permissions if provided
+                if ($request->has('field_privileges')) {
+                    $fieldPrivs = json_decode($request->input('field_privileges'), true);
+                    if (!empty($fieldPrivs)) {
+                        $profile2field = [];
+                        foreach ($fieldPrivs as $tabid => $fields) {
+                            foreach ($fields as $fieldid => $permission) {
+                                // permission: 0=Invisible, 1=Read-only, 2=Write
+                                $visible = ($permission == '0') ? 1 : 0;
+                                $readonly = ($permission == '1') ? 1 : 0;
+
+                                $profile2field[] = [
+                                    'profileid' => $profileId,
+                                    'tabid' => $tabid,
+                                    'fieldid' => $fieldid,
+                                    'visible' => $visible,
+                                    'readonly' => $readonly,
+                                ];
+                            }
+                        }
+                        if (!empty($profile2field)) {
+                            DB::connection('tenant')->table('vtiger_profile2field')->insert($profile2field);
+                        }
+                    }
+                }
+
+                // Save tool-level permissions if provided
+                if ($request->has('tool_privileges')) {
+                    $toolPrivs = json_decode($request->input('tool_privileges'), true);
+                    if (!empty($toolPrivs)) {
+                        $profile2utility = [];
+                        foreach ($toolPrivs as $tabid => $tools) {
+                            foreach ($tools as $toolid => $isEnabled) {
+                                $actionId = $toolid;
+                                if ($toolid == 'Import')
+                                    $actionId = 4;
+                                if ($toolid == 'Export')
+                                    $actionId = 3;
+                                if ($toolid == 'Merge')
+                                    $actionId = 8;
+                                if ($toolid == 'DuplicatesHandling')
+                                    $actionId = 10;
+
+                                $profile2utility[] = [
+                                    'profileid' => $profileId,
+                                    'tabid' => $tabid,
+                                    'activityid' => $actionId,
+                                    'permission' => $isEnabled ? 0 : 1, // 0=allowed, 1=denied
+                                ];
+                            }
+                        }
+                        if (!empty($profile2utility)) {
+                            DB::connection('tenant')->table('vtiger_profile2utility')->insert($profile2utility);
+                        }
+                    }
+                }
+            } else {
+                // Assign existing profiles
+                if (!empty($validated['profiles'])) {
+                    foreach ($validated['profiles'] as $profileId) {
+                        DB::connection('tenant')->table('vtiger_role2profile')->insert([
+                            'roleid' => $roleId,
+                            'profileid' => $profileId,
+                        ]);
+                    }
                 }
             }
-        }
+
+            // Copy picklist values from parent role (vtiger behavior)
+            DB::connection('tenant')->statement(
+                "INSERT INTO vtiger_role2picklist (roleid, picklistvalueid, picklistid, sortid)
+                 SELECT ?, picklistvalueid, picklistid, sortid
+                 FROM vtiger_role2picklist WHERE roleid = ?",
+                [$roleId, $parentRole->roleid]
+            );
+        });
 
         return redirect()->route('tenant.settings.users.roles.index')
             ->with('success', __('tenant::users.created_successfully'));
@@ -172,115 +295,299 @@ class RolesController extends Controller
         if (!$role)
             abort(404);
 
-        $parentRoles = DB::connection('tenant')->table('vtiger_role')->where('roleid', '!=', $id)->get();
         $profiles = DB::connection('tenant')->table('vtiger_profile')->get();
+
+        // Get parent role name
+        $parentRoleName = null;
+        if ($role->parentrole) {
+            $parentRoleIds = explode('::', $role->parentrole);
+            if (count($parentRoleIds) > 1) {
+                $parentRoleId = $parentRoleIds[count($parentRoleIds) - 2];
+                $parentRoleData = DB::connection('tenant')->table('vtiger_role')
+                    ->where('roleid', $parentRoleId)
+                    ->first();
+                $parentRoleName = $parentRoleData->rolename ?? null;
+            }
+        }
+
+        // Get assigned profiles for this role
+        $roleProfiles = DB::connection('tenant')->table('vtiger_role2profile')
+            ->where('roleid', $id)
+            ->pluck('profileid')
+            ->toArray();
+
+        // Check if role has a directly related profile
+        $directlyRelatedProfileId = null;
+        $directlyRelatedProfileName = null;
+
+        if (!empty($roleProfiles)) {
+            $directProfile = DB::connection('tenant')->table('vtiger_profile')
+                ->whereIn('profileid', $roleProfiles)
+                ->where('directly_related_to_role', 1)
+                ->first();
+
+            if ($directProfile) {
+                $directlyRelatedProfileId = $directProfile->profileid;
+                $directlyRelatedProfileName = $directProfile->profilename;
+            }
+        }
+
+        // Load modules for the permissions table (entity types only)
         $modules = DB::connection('tenant')->table('vtiger_tab')
             ->where('presence', 0)
-            ->orderBy('tablabel')
+            ->where('isentitytype', 1)
+            ->orderBy('name')
             ->get();
 
-        // Fetch existing privileges for this role
-        // In vtiger, role privileges can be stored in multiple ways:
-        // 1. If role uses a profile (assigned_profile_id), privileges come from that profile
-        // 2. If role has direct privileges, they're in vtiger_role2profile or similar tables
+        $existingPrivileges = [];
+        $existingFieldPrivs = [];
+        $existingToolPrivs = [];
 
-        $rolePrivileges = [];
-
-        // Check if role has an assigned profile
-        if (isset($role->assigned_profile_id) && $role->assigned_profile_id) {
-            // Load privileges from the assigned profile
-            $profileId = $role->assigned_profile_id;
-
+        if ($directlyRelatedProfileId) {
+            // Load module privileges
             $tabPermissions = DB::connection('tenant')
                 ->table('vtiger_profile2tab')
-                ->where('profileid', $profileId)
+                ->where('profileid', $directlyRelatedProfileId)
                 ->get();
 
             foreach ($tabPermissions as $tabPerm) {
                 $tabid = $tabPerm->tabid;
-
                 $standardPerms = DB::connection('tenant')
                     ->table('vtiger_profile2standardpermissions')
-                    ->where('profileid', $profileId)
+                    ->where('profileid', $directlyRelatedProfileId)
                     ->where('tabid', $tabid)
-                    ->first();
+                    ->get()
+                    ->keyBy('operation');
 
-                $rolePrivileges[$tabid] = [
+                $existingPrivileges[$tabid] = [
                     'view' => $tabPerm->permissions == 0,
-                    'create' => $standardPerms ? $standardPerms->permissions == 0 : false,
-                    'edit' => $standardPerms ? $standardPerms->permissions == 0 : false,
-                    'delete' => $standardPerms ? $standardPerms->permissions == 0 : false,
+                    'create' => isset($standardPerms[0]) ? $standardPerms[0]->permissions == 0 : false,
+                    'edit' => isset($standardPerms[1]) ? $standardPerms[1]->permissions == 0 : false,
+                    'delete' => isset($standardPerms[2]) ? $standardPerms[2]->permissions == 0 : false,
                 ];
             }
-        } else {
-            // Load direct role privileges
-            // Note: vtiger typically uses profiles, but we'll check for direct role permissions
-            // This might be stored in custom tables or vtiger_role2profile
-            $rolePerms = DB::connection('tenant')
-                ->table('vtiger_role2profile')
-                ->where('roleid', $id)
+
+            // Load field privileges
+            $fieldPermissions = DB::connection('tenant')
+                ->table('vtiger_profile2field')
+                ->where('profileid', $directlyRelatedProfileId)
                 ->get();
 
-            foreach ($rolePerms as $perm) {
-                if (isset($perm->tabid)) {
-                    $rolePrivileges[$perm->tabid] = [
-                        'view' => isset($perm->view) ? $perm->view : false,
-                        'create' => isset($perm->create) ? $perm->create : false,
-                        'edit' => isset($perm->edit) ? $perm->edit : false,
-                        'delete' => isset($perm->delete) ? $perm->delete : false,
-                    ];
-                }
+            foreach ($fieldPermissions as $fieldPerm) {
+                $val = 2; // Write
+                if ($fieldPerm->visible == 1)
+                    $val = 0; // Invisible
+                else if ($fieldPerm->readonly == 1)
+                    $val = 1; // Read-only
+                $existingFieldPrivs[$fieldPerm->tabid][$fieldPerm->fieldid] = $val;
+            }
+
+            // Load tool privileges
+            $toolPermissions = DB::connection('tenant')
+                ->table('vtiger_profile2utility')
+                ->where('profileid', $directlyRelatedProfileId)
+                ->get();
+
+            foreach ($toolPermissions as $toolPerm) {
+                $activityId = $toolPerm->activityid;
+                $toolId = $activityId;
+                if ($activityId == 4)
+                    $toolId = 'Import';
+                if ($activityId == 3)
+                    $toolId = 'Export';
+                if ($activityId == 8)
+                    $toolId = 'Merge';
+                if ($activityId == 10)
+                    $toolId = 'DuplicatesHandling';
+                $existingToolPrivs[$toolPerm->tabid][$toolId] = $toolPerm->permission == 0;
             }
         }
 
-        return view('tenant::roles.edit', compact('role', 'parentRoles', 'profiles', 'modules', 'rolePrivileges'));
+        return view('tenant::roles.edit', compact(
+            'role',
+            'profiles',
+            'modules',
+            'parentRoleName',
+            'roleProfiles',
+            'directlyRelatedProfileId',
+            'directlyRelatedProfileName',
+            'existingPrivileges',
+            'existingFieldPrivs',
+            'existingToolPrivs'
+        ));
     }
 
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
             'rolename' => 'required|string|max:200',
-            'assign_type' => 'required|in:all,same_or_subordinate,subordinate',
-            'privilege_type' => 'required|in:direct,profile',
-            'assigned_profile_id' => 'nullable|integer',
+            'allowassignedrecordsto' => 'required|in:1,2,3',
+            'profile_directly_related_to_role' => 'required|in:0,1',
+            'profilename' => 'nullable|string|max:200',
+            'profiles' => 'nullable|array',
+            'profiles.*' => 'integer',
+            'profile_directly_related_to_role_id' => 'nullable|integer',
             'copy_from_profile' => 'nullable|integer',
         ]);
 
-        DB::connection('tenant')->table('vtiger_role')
-            ->where('roleid', $id)
-            ->update([
-                'rolename' => $validated['rolename'],
-                'assign_type' => $validated['assign_type'],
-                'privilege_type' => $validated['privilege_type'],
-                'assigned_profile_id' => $validated['assigned_profile_id'] ?? null,
-            ]);
+        DB::connection('tenant')->transaction(function () use ($validated, $request, $id) {
+            // Update role basic info
+            DB::connection('tenant')->table('vtiger_role')
+                ->where('roleid', $id)
+                ->update([
+                    'rolename' => $validated['rolename'],
+                    'allowassignedrecordsto' => $validated['allowassignedrecordsto'],
+                    'copy_from_profile' => $validated['copy_from_profile'] ?? null,
+                ]);
 
-        // Handle direct privileges if selected
-        if ($validated['privilege_type'] === 'direct' && $request->has('privileges')) {
-            // First, delete existing role privileges
+            // Clear existing profile assignments
             DB::connection('tenant')->table('vtiger_role2profile')->where('roleid', $id)->delete();
 
-            // Insert new privileges
-            foreach ($request->input('privileges', []) as $tabid => $permissions) {
-                // Only insert if at least one permission is granted
-                if (!empty(array_filter($permissions))) {
-                    DB::connection('tenant')->table('vtiger_role2profile')->insert([
-                        'roleid' => $id,
-                        'tabid' => $tabid,
-                        'view' => isset($permissions['view']) ? 1 : 0,
-                        'create' => isset($permissions['create']) ? 1 : 0,
-                        'edit' => isset($permissions['edit']) ? 1 : 0,
-                        'delete' => isset($permissions['delete']) ? 1 : 0,
+            // Handle profile assignment
+            if ($validated['profile_directly_related_to_role'] == '1') {
+                // Create or update directly related profile
+                $profileId = $validated['profile_directly_related_to_role_id'] ?? null;
+                $profileName = $validated['profilename'] ?? ($validated['rolename'] . ' Profile');
+
+                if ($profileId) {
+                    // Update existing directly related profile
+                    DB::connection('tenant')->table('vtiger_profile')
+                        ->where('profileid', $profileId)
+                        ->update([
+                            'profilename' => $profileName,
+                        ]);
+                } else {
+                    // Create new directly related profile
+                    $profileId = DB::connection('tenant')->table('vtiger_profile')->insertGetId([
+                        'profilename' => $profileName,
+                        'directly_related_to_role' => 1,
+                        'description' => 'Profile for ' . $validated['rolename'],
                     ]);
                 }
-            }
-        } elseif ($validated['privilege_type'] === 'profile') {
-            // If switching to profile-based, clear any direct privileges
-            DB::connection('tenant')->table('vtiger_role2profile')->where('roleid', $id)->delete();
-        }
 
-        // Note: Moving roles in hierarchy (changing parent) is complex due to 'parentrole' path updates.
-        // Skipping for MVP unless requested.
+                // Link role to profile
+                DB::connection('tenant')->table('vtiger_role2profile')->insert([
+                    'roleid' => $id,
+                    'profileid' => $profileId,
+                ]);
+
+                // Clear existing permissions for this profile before re-saving
+                DB::connection('tenant')->table('vtiger_profile2tab')->where('profileid', $profileId)->delete();
+                DB::connection('tenant')->table('vtiger_profile2standardpermissions')->where('profileid', $profileId)->delete();
+                DB::connection('tenant')->table('vtiger_profile2field')->where('profileid', $profileId)->delete();
+                DB::connection('tenant')->table('vtiger_profile2utility')->where('profileid', $profileId)->delete();
+
+                // Save module-level permissions if provided
+                if ($request->has('permissions')) {
+                    $profile2tab = [];
+                    $profile2standard = [];
+                    foreach ($request->input('permissions', []) as $tabid => $perms) {
+                        // Insert into vtiger_profile2tab (module access)
+                        if (isset($perms['view']) && $perms['view']) {
+                            $profile2tab[] = [
+                                'profileid' => $profileId,
+                                'tabid' => $tabid,
+                                'permissions' => 0, // 0 = enabled in vtiger
+                            ];
+
+                            // Insert into vtiger_profile2standardpermissions (create, edit, delete)
+                            $profile2standard[] = [
+                                'profileid' => $profileId,
+                                'tabid' => $tabid,
+                                'operation' => 0, // Create
+                                'permissions' => isset($perms['create']) && $perms['create'] ? 0 : 1,
+                            ];
+
+                            $profile2standard[] = [
+                                'profileid' => $profileId,
+                                'tabid' => $tabid,
+                                'operation' => 1, // Edit
+                                'permissions' => isset($perms['edit']) && $perms['edit'] ? 0 : 1,
+                            ];
+
+                            $profile2standard[] = [
+                                'profileid' => $profileId,
+                                'tabid' => $tabid,
+                                'operation' => 2, // Delete
+                                'permissions' => isset($perms['delete']) && $perms['delete'] ? 0 : 1,
+                            ];
+                        }
+                    }
+                    if (!empty($profile2tab)) {
+                        DB::connection('tenant')->table('vtiger_profile2tab')->insert($profile2tab);
+                    }
+                    if (!empty($profile2standard)) {
+                        DB::connection('tenant')->table('vtiger_profile2standardpermissions')->insert($profile2standard);
+                    }
+                }
+
+                // Save field-level permissions if provided
+                if ($request->has('field_privileges')) {
+                    $fieldPrivs = json_decode($request->input('field_privileges'), true);
+                    if (!empty($fieldPrivs)) {
+                        $profile2field = [];
+                        foreach ($fieldPrivs as $tabid => $fields) {
+                            foreach ($fields as $fieldid => $permission) {
+                                $visible = ($permission == '0') ? 1 : 0;
+                                $readonly = ($permission == '1') ? 1 : 0;
+
+                                $profile2field[] = [
+                                    'profileid' => $profileId,
+                                    'tabid' => $tabid,
+                                    'fieldid' => $fieldid,
+                                    'visible' => $visible,
+                                    'readonly' => $readonly,
+                                ];
+                            }
+                        }
+                        if (!empty($profile2field)) {
+                            DB::connection('tenant')->table('vtiger_profile2field')->insert($profile2field);
+                        }
+                    }
+                }
+
+                // Save tool-level permissions if provided
+                if ($request->has('tool_privileges')) {
+                    $toolPrivs = json_decode($request->input('tool_privileges'), true);
+                    if (!empty($toolPrivs)) {
+                        $profile2utility = [];
+                        foreach ($toolPrivs as $tabid => $tools) {
+                            foreach ($tools as $toolid => $isEnabled) {
+                                $actionId = $toolid;
+                                if ($toolid == 'Import')
+                                    $actionId = 4;
+                                if ($toolid == 'Export')
+                                    $actionId = 3;
+                                if ($toolid == 'Merge')
+                                    $actionId = 8;
+                                if ($toolid == 'DuplicatesHandling')
+                                    $actionId = 10;
+
+                                $profile2utility[] = [
+                                    'profileid' => $profileId,
+                                    'tabid' => $tabid,
+                                    'activityid' => $actionId,
+                                    'permission' => $isEnabled ? 0 : 1,
+                                ];
+                            }
+                        }
+                        if (!empty($profile2utility)) {
+                            DB::connection('tenant')->table('vtiger_profile2utility')->insert($profile2utility);
+                        }
+                    }
+                }
+            } else {
+                // Assign existing profiles
+                if (!empty($validated['profiles'])) {
+                    foreach ($validated['profiles'] as $profileId) {
+                        DB::connection('tenant')->table('vtiger_role2profile')->insert([
+                            'roleid' => $id,
+                            'profileid' => $profileId,
+                        ]);
+                    }
+                }
+            }
+        });
 
         return redirect()->route('tenant.settings.users.roles.index')
             ->with('success', __('tenant::users.updated_successfully'));
@@ -330,21 +637,124 @@ class RolesController extends Controller
         foreach ($tabPermissions as $tabPerm) {
             $tabid = $tabPerm->tabid;
 
-            // Get standard permissions for this module
+            // Get standard permissions for this module (Create, Edit, Delete)
             $standardPerms = DB::connection('tenant')
                 ->table('vtiger_profile2standardpermissions')
                 ->where('profileid', $profileId)
                 ->where('tabid', $tabid)
-                ->first();
+                ->get()
+                ->keyBy('operation'); // Key by operation: 0=Create, 1=Edit, 2=Delete
 
             $privileges[$tabid] = [
-                'view' => $tabPerm->permissions == 0, // 0 = enabled, 1 = disabled in vtiger
-                'create' => $standardPerms ? $standardPerms->permissions == 0 : false,
-                'edit' => $standardPerms ? $standardPerms->permissions == 0 : false,
-                'delete' => $standardPerms ? $standardPerms->permissions == 0 : false,
+                'view' => $tabPerm->permissions == 0,
+                'create' => isset($standardPerms[0]) ? $standardPerms[0]->permissions == 0 : false,
+                'edit' => isset($standardPerms[1]) ? $standardPerms[1]->permissions == 0 : false,
+                'delete' => isset($standardPerms[2]) ? $standardPerms[2]->permissions == 0 : false,
             ];
         }
 
-        return response()->json(['privileges' => $privileges]);
+        // Get field permissions
+        $fieldPermissions = DB::connection('tenant')
+            ->table('vtiger_profile2field')
+            ->where('profileid', $profileId)
+            ->get();
+
+        $fieldPrivs = [];
+        foreach ($fieldPermissions as $fieldPerm) {
+            $tabid = $fieldPerm->tabid;
+            $fieldid = $fieldPerm->fieldid;
+
+            // Logic: 0=Invisible, 1=Read-only, 2=Write
+            $val = 2; // Write
+            if ($fieldPerm->visible == 1)
+                $val = 0; // Invisible
+            else if ($fieldPerm->readonly == 1)
+                $val = 1; // Read-only
+
+            $fieldPrivs[$tabid][$fieldid] = $val;
+        }
+
+        // Get tool permissions
+        $toolPermissions = DB::connection('tenant')
+            ->table('vtiger_profile2utility')
+            ->where('profileid', $profileId)
+            ->get();
+
+        $toolPrivs = [];
+        foreach ($toolPermissions as $toolPerm) {
+            $tabid = $toolPerm->tabid;
+            $activityId = $toolPerm->activityid;
+
+            // Map activityId back to toolid string
+            $toolId = $activityId;
+            if ($activityId == 4)
+                $toolId = 'Import';
+            if ($activityId == 3)
+                $toolId = 'Export';
+            if ($activityId == 8)
+                $toolId = 'Merge';
+            if ($activityId == 10)
+                $toolId = 'DuplicatesHandling';
+
+            $toolPrivs[$tabid][$toolId] = $toolPerm->permission == 0;
+        }
+
+        return response()->json([
+            'privileges' => $privileges,
+            'field_privileges' => $fieldPrivs,
+            'tool_privileges' => $toolPrivs
+        ]);
+    }
+
+    public function getModuleFields(Request $request)
+    {
+        $moduleId = $request->input('module_id');
+        if (!$moduleId) {
+            return response()->json(['error' => 'Module ID is required'], 400);
+        }
+
+        $locale = app()->getLocale();
+        $labelColumn = ($locale === 'ar') ? 'fieldlabel_ar' : 'fieldlabel_en';
+
+        $fields = DB::connection('tenant')
+            ->table('vtiger_field')
+            ->join('vtiger_blocks', 'vtiger_field.block', '=', 'vtiger_blocks.blockid')
+            ->where('vtiger_field.tabid', $moduleId)
+            ->whereIn('vtiger_field.presence', [0, 2])
+            ->whereIn('vtiger_field.displaytype', [1, 2, 4])
+            ->where('vtiger_blocks.visible', 0) // 0 = visible in vtiger
+            ->orderBy('vtiger_blocks.sequence')
+            ->orderBy('vtiger_field.sequence')
+            ->get([
+                'vtiger_field.fieldid',
+                'vtiger_field.fieldname',
+                DB::raw("CASE 
+                    WHEN vtiger_field.fieldname = 'cf_912' THEN '" . __('tenant::users.value') . "'
+                    WHEN (vtiger_field.{$labelColumn} IS NOT NULL AND vtiger_field.{$labelColumn} != '') THEN vtiger_field.{$labelColumn}
+                    ELSE vtiger_field.fieldname 
+                END as fieldlabel"),
+                'vtiger_field.uitype',
+                'vtiger_field.typeofdata'
+            ]);
+
+        return response()->json(['fields' => $fields]);
+    }
+
+    public function getModuleTools(Request $request)
+    {
+        $moduleId = $request->input('module_id');
+        if (!$moduleId) {
+            return response()->json(['error' => 'Module ID is required'], 400);
+        }
+
+        // In vtiger, tools are standard actions like Import, Export, etc.
+        $tools = [
+            ['toolid' => 'Import', 'toolname' => __('tenant::users.import'), 'description' => __('tenant::users.import_description')],
+            ['toolid' => 'Export', 'toolname' => __('tenant::users.export'), 'description' => __('tenant::users.export_description')],
+            ['toolid' => 'Merge', 'toolname' => __('tenant::users.merge'), 'description' => __('tenant::users.merge_description')],
+            ['toolid' => 'DuplicatesHandling', 'toolname' => __('tenant::users.duplicates_handling'), 'description' => __('tenant::users.duplicates_handling_description')],
+        ];
+
+        return response()->json(['tools' => $tools]);
     }
 }

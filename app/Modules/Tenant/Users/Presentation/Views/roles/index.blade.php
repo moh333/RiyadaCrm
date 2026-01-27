@@ -9,17 +9,18 @@
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0">
                         <li class="breadcrumb-item"><a href="{{ route('tenant.dashboard') }}"
-                                class="text-decoration-none">Dashboard</a></li>
-                        <li class="breadcrumb-item active">Role Management</li>
+                                class="text-decoration-none">{{ __('tenant::users.dashboard') ?? 'Dashboard' }}</a></li>
+                        <li class="breadcrumb-item active">{{ __('tenant::users.role_management') }}</li>
                     </ol>
                 </nav>
+
             </div>
             <div class="d-flex gap-2">
                 <button class="btn btn-outline-secondary rounded-pill px-3 shadow-sm transition-all" id="expand-all">
-                    <i class="bi bi-arrows-expand me-1"></i> Expand All
+                    <i class="bi bi-arrows-expand me-1"></i> {{ __('tenant::users.expand_all') }}
                 </button>
                 <button class="btn btn-outline-secondary rounded-pill px-3 shadow-sm transition-all" id="collapse-all">
-                    <i class="bi bi-arrows-collapse me-1"></i> Collapse All
+                    <i class="bi bi-arrows-collapse me-1"></i> {{ __('tenant::users.collapse_all') }}
                 </button>
                 <a href="{{ route('tenant.settings.users.roles.create') }}"
                     class="btn btn-primary rounded-pill px-4 shadow-sm hover-up">
@@ -44,9 +45,8 @@
         <!-- Role List Wrapper -->
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden animate__animated animate__fadeInUp">
             <div class="card-header bg-white py-3 px-4 border-bottom">
-                <h5 class="mb-0 fw-bold">Hierarchy List</h5>
-                <p class="text-muted small mb-0">Each parent role displays its immediate subordinates in a collapsible
-                    group.</p>
+                <h5 class="mb-0 fw-bold">{{ __('tenant::users.hierarchy_list') }}</h5>
+                <p class="text-muted small mb-0">{{ __('tenant::users.hierarchy_list_description') }}</p>
             </div>
             <div class="card-body p-0">
                 <div class="role-management-list">
@@ -54,9 +54,9 @@
                     <div
                         class="list-header bg-light py-2 px-4 d-none d-md-flex align-items-center border-bottom small fw-bold text-muted text-uppercase">
                         <div style="width: 40px;">#</div>
-                        <div class="flex-grow-1 ps-4">Role Details</div>
-                        <div style="width: 150px;" class="text-center">ID / Depth</div>
-                        <div style="width: 200px;" class="text-end pe-4">Actions</div>
+                        <div class="flex-grow-1 ps-4">{{ __('tenant::users.role_details') }}</div>
+                        <div style="width: 150px;" class="text-center">{{ __('tenant::users.id_depth') }}</div>
+                        <div style="width: 200px;" class="text-end pe-4">{{ __('tenant::users.actions') }}</div>
                     </div>
 
                     <div class="role-items-container">

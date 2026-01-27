@@ -141,6 +141,8 @@ Route::middleware([
 
             // Roles
             Route::get('roles/get-profile-privileges', [RolesController::class, 'getProfilePrivileges'])->name('roles.get-profile-privileges');
+            Route::get('roles/get-module-fields', [RolesController::class, 'getModuleFields'])->name('roles.get-module-fields');
+            Route::get('roles/get-module-tools', [RolesController::class, 'getModuleTools'])->name('roles.get-module-tools');
             Route::post('roles/reorder', [RolesController::class, 'reorder'])->name('roles.reorder');
             Route::resource('roles', RolesController::class);
 

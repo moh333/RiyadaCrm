@@ -27,24 +27,26 @@
             </div>
             <div>
                 <span class="role-name fw-bold text-dark d-block mb-0">{{ $role->rolename }}</span>
-                <span class="depth-indicator">Level {{ $currentDepth }}</span>
+                <span class="depth-indicator">{{ __('tenant::users.level') }} {{ $currentDepth }}</span>
             </div>
+
         </div>
 
         <!-- ID & Depth Meta -->
         <div style="width: 150px;" class="text-center d-flex flex-column align-items-center">
-            <span class="role-id-badge mb-1">ID: {{ $role->roleid }}</span>
+            <span class="role-id-badge mb-1">{{ __('tenant::users.id') ?? 'ID' }}: {{ $role->roleid }}</span>
         </div>
 
         <!-- Actions -->
         <div style="width: 200px;" class="text-end pe-4">
             <div class="btn-group shadow-sm rounded-3 overflow-hidden">
                 <a href="{{ route('tenant.settings.users.roles.create', ['parent_role_id' => $role->roleid]) }}"
-                    class="btn btn-sm btn-white py-2 px-3 transition-all" title="Add Sub-Role">
+                    class="btn btn-sm btn-white py-2 px-3 transition-all"
+                    title="{{ __('tenant::users.add_sub_role') }}">
                     <i class="bi bi-plus-circle-fill text-success"></i>
                 </a>
                 <a href="{{ route('tenant.settings.users.roles.edit', $role->roleid) }}"
-                    class="btn btn-sm btn-white py-2 px-3 transition-all" title="{{ __('tenant::users.update') }}">
+                    class="btn btn-sm btn-white py-2 px-3 transition-all" title="{{ __('tenant::users.edit') }}">
                     <i class="bi bi-pencil-fill text-primary"></i>
                 </a>
                 @if($role->roleid !== 'H1')
