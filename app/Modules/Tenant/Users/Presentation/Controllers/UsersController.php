@@ -57,6 +57,7 @@ class UsersController extends Controller
                     return '<span class="badge bg-soft-danger text-danger">' . (__('tenant::users.inactive') ?? 'Inactive') . '</span>';
                 })
                 ->addColumn('actions', function ($row) {
+                    $showUrl = route('tenant.settings.users.show', $row->id);
                     $editUrl = route('tenant.settings.users.edit', $row->id);
                     $deleteUrl = route('tenant.settings.users.destroy', $row->id);
                     $confirmMsg = __('tenant::users.are_you_sure') ?? 'Are you sure?';
@@ -76,6 +77,9 @@ class UsersController extends Controller
 
                     return '
                         <div class="d-flex justify-content-end gap-2">
+                            <a href="' . $showUrl . '" class="btn btn-sm btn-outline-info rounded-3" title="' . (__('tenant::users.view') ?? 'View') . '">
+                                <i class="bi bi-eye"></i>
+                            </a>
                             <a href="' . $editUrl . '" class="btn btn-sm btn-outline-secondary rounded-3" title="' . (__('tenant::users.edit') ?? 'Edit') . '">
                                 <i class="bi bi-pencil"></i>
                             </a>
@@ -87,6 +91,31 @@ class UsersController extends Controller
         }
 
         return view('tenant::users.index');
+    }
+
+    public function show(int $id)
+    {
+        $user = $this->repository->findById($id);
+        if (!$user) {
+            abort(404);
+        }
+
+        $role = null;
+        if ($user->getRoleId()) {
+            $role = DB::connection('tenant')->table('vtiger_role')
+                ->where('roleid', $user->getRoleId())
+                ->first();
+        }
+
+        $reportsTo = null;
+        if ($user->getReportsToId()) {
+            $reportsTo = DB::connection('tenant')->table('vtiger_users')
+                ->where('id', $user->getReportsToId())
+                ->select('first_name', 'last_name', 'user_name')
+                ->first();
+        }
+
+        return view('tenant::users.show', compact('user', 'role', 'reportsTo'));
     }
 
     public function create()
