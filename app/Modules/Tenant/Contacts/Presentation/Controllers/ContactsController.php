@@ -25,7 +25,8 @@ class ContactsController extends Controller
         UpdateContactUseCase $updateContactUseCase,
         DeleteContactUseCase $deleteContactUseCase,
         \App\Modules\Tenant\Contacts\Application\UseCases\GetModuleCustomFieldsUseCase $getModuleCustomFieldsUseCase,
-        private \App\Modules\Core\VtigerModules\Contracts\ModuleRegistryInterface $moduleRegistry
+        private \App\Modules\Core\VtigerModules\Contracts\ModuleRegistryInterface $moduleRegistry,
+        private \App\Modules\Tenant\Users\Domain\Services\PermissionService $permissionService
     ) {
         $this->contactRepository = $contactRepository;
         $this->createContactUseCase = $createContactUseCase;
@@ -79,27 +80,42 @@ class ContactsController extends Controller
                 return '<span class="text-muted">-</span>';
             })
             ->addColumn('actions', function ($row) {
+                $userId = auth('tenant')->id();
                 $viewUrl = route('tenant.contacts.show', $row->contactid);
                 $editUrl = route('tenant.contacts.edit', $row->contactid);
                 $deleteUrl = route('tenant.contacts.destroy', $row->contactid);
                 $confirmMsg = __('contacts::contacts.are_you_sure');
 
-                return '
-                    <div class="d-flex justify-content-end gap-2">
-                        <a href="' . $viewUrl . '" class="btn btn-sm btn-soft-info rounded-2" title="' . __('contacts::contacts.view') . '">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                        <a href="' . $editUrl . '" class="btn btn-sm btn-soft-primary rounded-2" title="' . __('contacts::contacts.edit') . '">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <form action="' . $deleteUrl . '" method="POST" onsubmit="return confirm(\'' . $confirmMsg . '\')" class="d-inline">
-                            ' . csrf_field() . '
-                            ' . method_field('DELETE') . '
-                            <button type="submit" class="btn btn-sm btn-soft-danger rounded-2" title="' . __('contacts::contacts.delete') . '">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </form>
-                    </div>';
+                $canEdit = $this->permissionService->hasPermission($userId, 'Contacts', 'edit');
+                $canDelete = $this->permissionService->hasPermission($userId, 'Contacts', 'delete');
+
+                $actions = '<div class="d-flex justify-content-end gap-2">';
+
+                // View button - always show
+                $actions .= '<a href="' . $viewUrl . '" class="btn btn-sm btn-soft-info rounded-2" title="' . __('contacts::contacts.view') . '">
+                    <i class="bi bi-eye"></i>
+                </a>';
+
+                // Edit button - only if user has edit permission
+                if ($canEdit) {
+                    $actions .= '<a href="' . $editUrl . '" class="btn btn-sm btn-soft-primary rounded-2" title="' . __('contacts::contacts.edit') . '">
+                        <i class="bi bi-pencil"></i>
+                    </a>';
+                }
+
+                // Delete button - only if user has delete permission
+                if ($canDelete) {
+                    $actions .= '<form action="' . $deleteUrl . '" method="POST" onsubmit="return confirm(\'' . $confirmMsg . '\')" class="d-inline">
+                        ' . csrf_field() . '
+                        ' . method_field('DELETE') . '
+                        <button type="submit" class="btn btn-sm btn-soft-danger rounded-2" title="' . __('contacts::contacts.delete') . '">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>';
+                }
+
+                $actions .= '</div>';
+                return $actions;
             })
             ->rawColumns(['full_name', 'contact_no', 'email', 'account_name', 'actions'])
             ->make(true);

@@ -13,13 +13,15 @@
                     </ol>
                 </nav>
             </div>
-            <div>
-                <a href="{{ route('tenant.contacts.create') }}"
-                    class="btn btn-primary d-flex align-items-center gap-2 px-4 py-2 rounded-3 shadow-sm">
-                    <i class="bi bi-plus-lg"></i>
-                    <span>{{ __('contacts::contacts.add_contact') }}</span>
-                </a>
-            </div>
+            @if(canModule('Contacts', 'create'))
+                <div>
+                    <a href="{{ route('tenant.contacts.create') }}"
+                        class="btn btn-primary d-flex align-items-center gap-2 px-4 py-2 rounded-3 shadow-sm">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>{{ __('contacts::contacts.add_contact') }}</span>
+                    </a>
+                </div>
+            @endif
         </div>
 
         @if(session('success'))
@@ -55,17 +57,23 @@
                                 <li><a class="dropdown-item" href="#">Portal Enabled</a></li>
                             </ul>
                         </div>
-                        <a href="{{ route('tenant.contacts.export') }}" class="btn btn-outline-secondary ms-2 rounded-3">
-                            <i class="bi bi-download me-1"></i> Export
-                        </a>
-                        <a href="{{ route('tenant.contacts.import.step1') }}"
-                            class="btn btn-outline-secondary ms-2 rounded-3">
-                            <i class="bi bi-upload me-1"></i> Import
-                        </a>
-                        <a href="{{ route('tenant.contacts.duplicates.index') }}"
-                            class="btn btn-outline-secondary ms-2 rounded-3">
-                            <i class="bi bi-intersect me-1"></i> Duplicates
-                        </a>
+                        @if(canTool('Contacts', 'Export'))
+                            <a href="{{ route('tenant.contacts.export') }}" class="btn btn-outline-secondary ms-2 rounded-3">
+                                <i class="bi bi-download me-1"></i> Export
+                            </a>
+                        @endif
+                        @if(canTool('Contacts', 'Import'))
+                            <a href="{{ route('tenant.contacts.import.step1') }}"
+                                class="btn btn-outline-secondary ms-2 rounded-3">
+                                <i class="bi bi-upload me-1"></i> Import
+                            </a>
+                        @endif
+                        @if(canTool('Contacts', 'DuplicatesHandling'))
+                            <a href="{{ route('tenant.contacts.duplicates.index') }}"
+                                class="btn btn-outline-secondary ms-2 rounded-3">
+                                <i class="bi bi-intersect me-1"></i> Duplicates
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -195,13 +203,13 @@
                     @if(app()->getLocale() == 'ar')
                         url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/ar.json'
                     @endif
-                    },
+                                    },
             order: [[1, 'asc']]
-                });
+                                });
 
         $('#custom-search').keyup(function () {
             table.search($(this).val()).draw();
         });
-            });
+                            });
     </script>
 @endsection

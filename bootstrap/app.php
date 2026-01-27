@@ -42,6 +42,11 @@ return Application::configure(basePath: dirname(__DIR__))
             }
             return '/';
         });
+
+        // Register custom middleware aliases
+        $middleware->alias([
+            'permission.module' => \App\Http\Middleware\CheckModulePermission::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

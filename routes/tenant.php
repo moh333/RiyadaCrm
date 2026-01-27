@@ -63,30 +63,30 @@ Route::middleware([
 
         // Contacts Routes
         Route::prefix('contacts')->name('contacts.')->group(function () {
-            Route::get('/', [ContactsController::class, 'index'])->name('index');
-            Route::get('/data', [ContactsController::class, 'data'])->name('data');
+            Route::get('/', [ContactsController::class, 'index'])->name('index')->middleware('permission.module:Contacts,view');
+            Route::get('/data', [ContactsController::class, 'data'])->name('data')->middleware('permission.module:Contacts,view');
 
             // Import/Export
-            Route::get('/export', [ContactsController::class, 'export'])->name('export');
-            Route::get('/import', [ContactsController::class, 'importStep1'])->name('import.step1');
-            Route::post('/import/upload', [ContactsController::class, 'importStep2'])->name('import.step2');
-            Route::post('/import/process', [ContactsController::class, 'importProcess'])->name('import.process');
+            Route::get('/export', [ContactsController::class, 'export'])->name('export')->middleware('permission.module:Contacts,view');
+            Route::get('/import', [ContactsController::class, 'importStep1'])->name('import.step1')->middleware('permission.module:Contacts,create');
+            Route::post('/import/upload', [ContactsController::class, 'importStep2'])->name('import.step2')->middleware('permission.module:Contacts,create');
+            Route::post('/import/process', [ContactsController::class, 'importProcess'])->name('import.process')->middleware('permission.module:Contacts,create');
 
             // Duplicates & Merge
-            Route::get('/duplicates', [ContactsController::class, 'findDuplicates'])->name('duplicates.index');
-            Route::match(['get', 'post'], '/duplicates/search', [ContactsController::class, 'searchDuplicates'])->name('duplicates.search');
-            Route::match(['get', 'post'], '/duplicates/merge', [ContactsController::class, 'showMergeView'])->name('duplicates.merge');
-            Route::post('/duplicates/process-merge', [ContactsController::class, 'processMerge'])->name('duplicates.process-merge');
+            Route::get('/duplicates', [ContactsController::class, 'findDuplicates'])->name('duplicates.index')->middleware('permission.module:Contacts,view');
+            Route::match(['get', 'post'], '/duplicates/search', [ContactsController::class, 'searchDuplicates'])->name('duplicates.search')->middleware('permission.module:Contacts,view');
+            Route::match(['get', 'post'], '/duplicates/merge', [ContactsController::class, 'showMergeView'])->name('duplicates.merge')->middleware('permission.module:Contacts,edit');
+            Route::post('/duplicates/process-merge', [ContactsController::class, 'processMerge'])->name('duplicates.process-merge')->middleware('permission.module:Contacts,edit');
 
-            Route::get('/create', [ContactsController::class, 'create'])->name('create');
-            Route::post('/', [ContactsController::class, 'store'])->name('store');
+            Route::get('/create', [ContactsController::class, 'create'])->name('create')->middleware('permission.module:Contacts,create');
+            Route::post('/', [ContactsController::class, 'store'])->name('store')->middleware('permission.module:Contacts,create');
 
             // Contact CRUD routes with {id} parameter
-            Route::get('/{id}', [ContactsController::class, 'show'])->name('show');
-            Route::get('/{id}/edit', [ContactsController::class, 'edit'])->name('edit');
-            Route::put('/{id}', [ContactsController::class, 'update'])->name('update');
-            Route::delete('/{id}', [ContactsController::class, 'destroy'])->name('destroy');
-            Route::post('/{id}/delete-file', [ContactsController::class, 'deleteFile'])->name('delete-file');
+            Route::get('/{id}', [ContactsController::class, 'show'])->name('show')->middleware('permission.module:Contacts,view');
+            Route::get('/{id}/edit', [ContactsController::class, 'edit'])->name('edit')->middleware('permission.module:Contacts,edit');
+            Route::put('/{id}', [ContactsController::class, 'update'])->name('update')->middleware('permission.module:Contacts,edit');
+            Route::delete('/{id}', [ContactsController::class, 'destroy'])->name('destroy')->middleware('permission.module:Contacts,delete');
+            Route::post('/{id}/delete-file', [ContactsController::class, 'deleteFile'])->name('delete-file')->middleware('permission.module:Contacts,edit');
         });
 
         // Custom Fields Management (Generic for all modules)
