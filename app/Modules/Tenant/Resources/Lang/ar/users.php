@@ -179,4 +179,8 @@ return [
     'add_sub_role' => 'إضافة دور تابع',
     'role_management' => 'إدارة الأدوار',
     'module_name' => 'اسم الموديول',
+    'associated_role' => 'الدور المرتبط',
+    'role_specific' => 'مخصص للدور',
+    'global' => 'عام',
+    'not_assigned' => 'غير محدد',
 ];

@@ -179,4 +179,8 @@ return [
     'add_sub_role' => 'Add Sub-Role',
     'role_management' => 'Role Management',
     'module_name' => 'Module Name',
+    'associated_role' => 'Role',
+    'role_specific' => 'Role Specific',
+    'global' => 'Global',
+    'not_assigned' => 'No Role',
 ];

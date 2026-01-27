@@ -10,7 +10,18 @@ class ProfilesController extends Controller
 {
     public function index()
     {
-        $profiles = DB::connection('tenant')->table('vtiger_profile')->get();
+        $profiles = DB::connection('tenant')->table('vtiger_profile')
+            ->leftJoin('vtiger_role2profile', 'vtiger_profile.profileid', '=', 'vtiger_role2profile.profileid')
+            ->leftJoin('vtiger_role', 'vtiger_role2profile.roleid', '=', 'vtiger_role.roleid')
+            ->select(
+                'vtiger_profile.profileid',
+                'vtiger_profile.profilename',
+                'vtiger_profile.description',
+                'vtiger_profile.directly_related_to_role',
+                'vtiger_role.rolename as role_name'
+            )
+            ->get();
+
         return view('tenant::profiles.index', compact('profiles'));
     }
 
@@ -43,7 +54,13 @@ class ProfilesController extends Controller
 
     public function edit($id)
     {
-        $profile = DB::connection('tenant')->table('vtiger_profile')->where('profileid', $id)->first();
+        $profile = DB::connection('tenant')->table('vtiger_profile')
+            ->leftJoin('vtiger_role2profile', 'vtiger_profile.profileid', '=', 'vtiger_role2profile.profileid')
+            ->leftJoin('vtiger_role', 'vtiger_role2profile.roleid', '=', 'vtiger_role.roleid')
+            ->where('vtiger_profile.profileid', $id)
+            ->select('vtiger_profile.*', 'vtiger_role.rolename as role_name')
+            ->first();
+
         if (!$profile)
             abort(404);
 

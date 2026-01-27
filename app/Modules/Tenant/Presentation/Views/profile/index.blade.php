@@ -11,12 +11,23 @@
                             <img src="https://ui-avatars.com/api/?name={{ $user->user_name }}&background=6366f1&color=fff&size=128"
                                 class="rounded-circle shadow-sm border border-4 border-white" alt="Avatar">
                         </div>
-                        <h4 class="fw-bold mb-1">{{ $user->user_name }}</h4>
+                        <h4 class="fw-bold mb-1">{{ $user->user_name }} [{{ $role ? $role->rolename : 'NoRole' }}]</h4>
+
                         <p class="text-muted mb-4">{{ $user->title ?: __('tenant::tenant.administrator') }}</p>
 
-                        <div class="d-flex justify-content-center gap-2">
-                            <span
-                                class="badge bg-soft-primary px-3 py-2 rounded-pill">{{ $user->department ?: 'General' }}</span>
+                        <div class="d-flex justify-content-center gap-2 flex-wrap">
+                            <span class="badge bg-soft-primary px-3 py-2 rounded-pill">
+                                <i class="bi bi-building me-1"></i>{{ $user->department ?: 'General' }}
+                            </span>
+                            @if ($role)
+                                <span class="badge bg-soft-info px-3 py-2 rounded-pill">
+                                    <i class="bi bi-briefcase me-1"></i>{{ $role->rolename }}
+                                </span>
+                            @else
+                                <span class="badge bg-soft-warning px-3 py-2 rounded-pill">
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ __('tenant::users.not_assigned') ?? 'No Role' }}
+                                </span>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -30,13 +41,11 @@
                         <form action="{{ route('tenant.profile.password') }}" method="POST">
                             @csrf
                             <div class="mb-3">
-                                <label
-                                    class="form-label small fw-bold text-muted text-uppercase">{{ __('tenant::tenant.new_password') }}</label>
+                                <label class="form-label small fw-bold text-muted text-uppercase">{{ __('tenant::tenant.new_password') }}</label>
                                 <input type="password" name="password" class="form-control rounded-3" required>
                             </div>
                             <div class="mb-4">
-                                <label
-                                    class="form-label small fw-bold text-muted text-uppercase">{{ __('tenant::tenant.confirm_password') }}</label>
+                                <label class="form-label small fw-bold text-muted text-uppercase">{{ __('tenant::tenant.confirm_password') }}</label>
                                 <input type="password" name="password_confirmation" class="form-control rounded-3" required>
                             </div>
                             <button type="submit" class="btn btn-primary w-100 rounded-pill shadow-sm py-2">

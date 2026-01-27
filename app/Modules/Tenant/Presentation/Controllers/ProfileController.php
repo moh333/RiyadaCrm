@@ -6,13 +6,27 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class ProfileController extends Controller
 {
     public function index()
     {
         $user = Auth::guard('tenant')->user();
-        return view('tenant::profile.index', compact('user'));
+
+        // Fetch role via two steps to avoid join issues (collation/types)
+        $userRole = DB::connection('tenant')->table('vtiger_user2role')
+            ->where('userid', $user->id)
+            ->first();
+
+        $role = null;
+        if ($userRole) {
+            $role = DB::connection('tenant')->table('vtiger_role')
+                ->where('roleid', $userRole->roleid)
+                ->first();
+        }
+
+        return view('tenant::profile.index', compact('user', 'role'));
     }
 
     public function update(Request $request)

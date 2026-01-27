@@ -26,6 +26,21 @@
                         <label class="form-label fw-bold">{{ __('tenant::users.profile_name') ?? 'Profile Name' }}</label>
                         <input type="text" name="profilename" class="form-control rounded-3"
                             value="{{ $profile->profilename }}" required>
+                        @if ($profile->directly_related_to_role)
+                            <div class="mt-2">
+                                <span
+                                    class="badge bg-soft-info text-info border py-1">{{ __('tenant::users.role_specific') ?? 'Role Specific' }}</span>
+                                @if ($profile->role_name)
+                                    <span class="ms-2 text-muted small">{{ __('tenant::users.associated_role') ?? 'Role' }}:
+                                        <strong>{{ $profile->role_name }}</strong></span>
+                                @endif
+                            </div>
+                        @else
+                            <div class="mt-2">
+                                <span
+                                    class="badge bg-soft-secondary text-secondary border py-1">{{ __('tenant::users.global') ?? 'Global' }}</span>
+                            </div>
+                        @endif
                     </div>
                     <div class="mb-4">
                         <label class="form-label fw-bold">{{ __('tenant::users.description') ?? 'Description' }}</label>
