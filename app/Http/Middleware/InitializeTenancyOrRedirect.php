@@ -13,7 +13,11 @@ class InitializeTenancyOrRedirect
         try {
             return app(BaseInitialize::class)->handle($request, $next);
         } catch (TenantCouldNotBeIdentifiedOnDomainException $e) {
-            return redirect(env("APP_URL"));
+            $centralDomain = parse_url(config('app.url'), PHP_URL_HOST);
+            if ($request->getHost() !== $centralDomain) {
+                return redirect(config('app.url'));
+            }
+            throw $e;
         }
     }
 }

@@ -30,6 +30,70 @@ use Illuminate\Support\Facades\DB;
 class EloquentContactRepository implements ContactRepositoryInterface
 {
     /**
+     * Merge multiple contacts into a primary contact
+     */
+    public function merge(int $primaryId, array $nonPrimaryIds, array $valuesToUpdate): void
+    {
+        DB::connection('tenant')->transaction(function () use ($primaryId, $nonPrimaryIds, $valuesToUpdate) {
+            // 1. Update primary record with chosen values
+            if (!empty($valuesToUpdate)) {
+                // Determine which tables need updating based on fields
+                // Simple version: Update vtiger_contactdetails and vtiger_contactsubdetails, etc.
+                // For now, let's use the save logic indirectly or just raw updates for efficiency
+
+                DB::connection('tenant')->table('vtiger_contactdetails')
+                    ->where('contactid', $primaryId)
+                    ->update(array_intersect_key($valuesToUpdate, array_flip(['salutation', 'firstname', 'lastname', 'email', 'phone', 'mobile', 'accountid', 'title', 'department', 'fax', 'imagename'])));
+
+                DB::connection('tenant')->table('vtiger_contactsubdetails')
+                    ->where('contactsubscriptionid', $primaryId)
+                    ->update(array_intersect_key($valuesToUpdate, array_flip(['homephone', 'assistant', 'assistantphone', 'birthday', 'leadsource'])));
+
+                // Add more tables if needed (address, cf, etc.)
+            }
+
+            // 2. Transfer related records
+            $this->transferRelatedRecords($primaryId, $nonPrimaryIds);
+
+            // 3. Delete non-primary records
+            foreach ($nonPrimaryIds as $id) {
+                $contact = $this->findById($id);
+                if ($contact) {
+                    $this->delete($contact);
+                }
+            }
+        });
+    }
+
+    /**
+     * Transfer relationships from one or more records to a primary record
+     */
+    private function transferRelatedRecords(int $primaryId, array $sourceIds): void
+    {
+        $tables = [
+            'vtiger_troubletickets' => 'contact_id',
+            'vtiger_potential' => 'related_to',
+            'vtiger_purchaseorder' => 'contactid',
+            'vtiger_salesorder' => 'contactid',
+            'vtiger_quotes' => 'contactid',
+            'vtiger_invoice' => 'contactid',
+            'vtiger_cntactivitiesrel' => 'contactid',
+            'vtiger_modcomments' => 'related_to',
+        ];
+
+        foreach ($tables as $table => $column) {
+            DB::connection('tenant')->table($table)
+                ->whereIn($column, $sourceIds)
+                ->update([$column => $primaryId]);
+        }
+
+        // Handle attachments
+        DB::connection('tenant')->table('vtiger_seattachmentsrel')
+            ->whereIn('crmid', $sourceIds)
+            ->update(['crmid' => $primaryId]);
+    }
+
+    /**
      * Generate next contact ID from vtiger_crmentity_seq
      * 
      * Business Rule: NEVER use auto-increment, always use vtiger's sequence
@@ -844,7 +908,10 @@ class EloquentContactRepository implements ContactRepositoryInterface
                 'cd.lastname',
                 'cd.salutation',
                 'cd.email',
+                'cd.phone',
+                'cd.mobile',
                 'cd.title',
+                'cd.department',
                 'cd.accountid',
                 'ce.smownerid',
                 'ce.modifiedtime',

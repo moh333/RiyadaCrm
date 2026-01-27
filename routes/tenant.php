@@ -65,6 +65,19 @@ Route::middleware([
         Route::prefix('contacts')->name('contacts.')->group(function () {
             Route::get('/', [ContactsController::class, 'index'])->name('index');
             Route::get('/data', [ContactsController::class, 'data'])->name('data');
+
+            // Import/Export
+            Route::get('/export', [ContactsController::class, 'export'])->name('export');
+            Route::get('/import', [ContactsController::class, 'importStep1'])->name('import.step1');
+            Route::post('/import/upload', [ContactsController::class, 'importStep2'])->name('import.step2');
+            Route::post('/import/process', [ContactsController::class, 'importProcess'])->name('import.process');
+
+            // Duplicates & Merge
+            Route::get('/duplicates', [ContactsController::class, 'findDuplicates'])->name('duplicates.index');
+            Route::match(['get', 'post'], '/duplicates/search', [ContactsController::class, 'searchDuplicates'])->name('duplicates.search');
+            Route::match(['get', 'post'], '/duplicates/merge', [ContactsController::class, 'showMergeView'])->name('duplicates.merge');
+            Route::post('/duplicates/process-merge', [ContactsController::class, 'processMerge'])->name('duplicates.process-merge');
+
             Route::get('/create', [ContactsController::class, 'create'])->name('create');
             Route::post('/', [ContactsController::class, 'store'])->name('store');
 

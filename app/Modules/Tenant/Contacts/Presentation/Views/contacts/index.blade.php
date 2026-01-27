@@ -55,9 +55,17 @@
                                 <li><a class="dropdown-item" href="#">Portal Enabled</a></li>
                             </ul>
                         </div>
-                        <button class="btn btn-outline-secondary ms-2 rounded-3">
+                        <a href="{{ route('tenant.contacts.export') }}" class="btn btn-outline-secondary ms-2 rounded-3">
                             <i class="bi bi-download me-1"></i> Export
-                        </button>
+                        </a>
+                        <a href="{{ route('tenant.contacts.import.step1') }}"
+                            class="btn btn-outline-secondary ms-2 rounded-3">
+                            <i class="bi bi-upload me-1"></i> Import
+                        </a>
+                        <a href="{{ route('tenant.contacts.duplicates.index') }}"
+                            class="btn btn-outline-secondary ms-2 rounded-3">
+                            <i class="bi bi-intersect me-1"></i> Duplicates
+                        </a>
                     </div>
                 </div>
             </div>
@@ -82,20 +90,86 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
 
     <style>
-        .link-muted { color: #64748b; }
-        .link-muted:hover { color: #1e293b; }
-        .bg-soft-primary { background-color: #eef2ff; color: #6366f1; }
-        .bg-soft-success { background-color: #f0fdf4; color: #22c55e; }
-        .bg-soft-info { background-color: #ecfeff; color: #0891b2; }
-        .btn-soft-primary { background-color: #eef2ff; color: #6366f1; border: none; }
-        .btn-soft-primary:hover { background-color: #6366f1; color: white; }
-        .btn-soft-info { background-color: #ecfeff; color: #0891b2; border: none; }
-        .btn-soft-info:hover { background-color: #0891b2; color: white; }
-        .btn-soft-danger { background-color: #fef2f2; color: #ef4444; border: none; }
-        .btn-soft-danger:hover { background-color: #ef4444; color: white; }
-        .search-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.5rem 1rem; display: flex; align-items: center; transition: all 0.2s; }
-        .search-box:focus-within { background: white; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
-        .search-box input { background: transparent; border: none; outline: none; margin-left: 0.75rem; width: 100%; color: #1e293b; }
+        .link-muted {
+            color: #64748b;
+        }
+
+        .link-muted:hover {
+            color: #1e293b;
+        }
+
+        .bg-soft-primary {
+            background-color: #eef2ff;
+            color: #6366f1;
+        }
+
+        .bg-soft-success {
+            background-color: #f0fdf4;
+            color: #22c55e;
+        }
+
+        .bg-soft-info {
+            background-color: #ecfeff;
+            color: #0891b2;
+        }
+
+        .btn-soft-primary {
+            background-color: #eef2ff;
+            color: #6366f1;
+            border: none;
+        }
+
+        .btn-soft-primary:hover {
+            background-color: #6366f1;
+            color: white;
+        }
+
+        .btn-soft-info {
+            background-color: #ecfeff;
+            color: #0891b2;
+            border: none;
+        }
+
+        .btn-soft-info:hover {
+            background-color: #0891b2;
+            color: white;
+        }
+
+        .btn-soft-danger {
+            background-color: #fef2f2;
+            color: #ef4444;
+            border: none;
+        }
+
+        .btn-soft-danger:hover {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .search-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .search-box:focus-within {
+            background: white;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            outline: none;
+            margin-left: 0.75rem;
+            width: 100%;
+            color: #1e293b;
+        }
     </style>
 @endsection
 
@@ -121,13 +195,13 @@
                     @if(app()->getLocale() == 'ar')
                         url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/ar.json'
                     @endif
-                },
-                order: [[1, 'asc']]
-            });
+                    },
+            order: [[1, 'asc']]
+                });
 
-            $('#custom-search').keyup(function () {
-                table.search($(this).val()).draw();
-            });
+        $('#custom-search').keyup(function () {
+            table.search($(this).val()).draw();
         });
+            });
     </script>
 @endsection

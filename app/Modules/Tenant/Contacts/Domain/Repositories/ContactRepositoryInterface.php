@@ -212,5 +212,10 @@ interface ContactRepositoryInterface
      * Get Query Builder for DataTables
      */
     public function getDataTableQuery(): \Illuminate\Database\Query\Builder;
+
+    /**
+     * Merge multiple contacts into a primary contact
+     */
+    public function merge(int $primaryId, array $nonPrimaryIds, array $valuesToUpdate): void;
 }
 

@@ -420,4 +420,29 @@ class Contact
     {
         $this->customFields = $fields;
     }
+
+    public function toArray(): array
+    {
+        return array_merge([
+            'contactid' => $this->id,
+            'contact_no' => $this->contactNo,
+            'salutation' => $this->fullName->getSalutation(),
+            'firstname' => $this->fullName->getFirstName(),
+            'lastname' => $this->fullName->getLastName(),
+            'email' => $this->email?->getEmail(),
+            'accountid' => $this->accountId,
+            'phone' => $this->officePhone?->getNumber(),
+            'mobile' => $this->mobilePhone?->getNumber(),
+            'homephone' => $this->homePhone?->getNumber(),
+            'fax' => $this->fax?->getNumber(),
+            'title' => $this->title,
+            'department' => $this->department,
+            'description' => $this->description,
+            'assistant' => $this->assistant,
+            'assistantphone' => $this->assistantPhone?->getNumber(),
+            'birthday' => $this->birthday?->format('Y-m-d'),
+            'leadsource' => $this->leadSource,
+            'imagename' => $this->imageName,
+        ], $this->customFields);
+    }
 }

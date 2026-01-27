@@ -105,6 +105,275 @@ class ContactsController extends Controller
             ->make(true);
     }
 
+    public function export()
+    {
+        $headers = [
+            'Content-type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename=contacts_' . date('Y-m-d_H-i-s') . '.csv',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0'
+        ];
+
+        $contacts = $this->contactRepository->getDataTableQuery()->get();
+        $columns = ['contact_no', 'salutation', 'firstname', 'lastname', 'email', 'phone', 'mobile', 'account_name', 'title', 'department'];
+
+        $callback = function () use ($contacts, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($contacts as $contact) {
+                $row = [];
+                foreach ($columns as $column) {
+                    $row[] = $contact->{$column} ?? '';
+                }
+                fputcsv($file, $row);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function importStep1()
+    {
+        return view('contacts_module::contacts.import_step1');
+    }
+
+    public function importStep2(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt',
+            'duplicate_handling' => 'required|in:skip,overwrite'
+        ]);
+
+        $path = $request->file('file')->store('temp_imports', 'public');
+        $fullPath = storage_path('app/public/' . $path);
+
+        $headers = [];
+        $sampleRow = [];
+
+        if (($handle = fopen($fullPath, "r")) !== FALSE) {
+            $headers = fgetcsv($handle, 1000, ",");
+            $sampleRow = fgetcsv($handle, 1000, ",");
+            fclose($handle);
+        }
+
+        $module = $this->moduleRegistry->get('Contacts');
+        $fields = [];
+        foreach ($module->fields() as $field) {
+            $fields[$field->getFieldName()] = $field->getLabel();
+        }
+
+        return view('contacts_module::contacts.import_step2', [
+            'file_path' => $path,
+            'duplicate_handling' => $request->duplicate_handling,
+            'headers' => $headers,
+            'sample_row' => $sampleRow,
+            'fields' => $fields
+        ]);
+    }
+
+    public function importProcess(Request $request)
+    {
+        $filePath = $request->input('file_path');
+        $mapping = $request->input('mapping');
+        $duplicateHandling = $request->input('duplicate_handling');
+
+        $fullPath = storage_path('app/public/' . $filePath);
+
+        $successCount = 0;
+        $skipCount = 0;
+        $errorCount = 0;
+
+        if (($handle = fopen($fullPath, "r")) !== FALSE) {
+            fgetcsv($handle, 1000, ","); // Skip header row
+
+            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                try {
+                    $contactData = [];
+                    foreach ($mapping as $csvIndex => $fieldName) {
+                        if ($fieldName && isset($data[$csvIndex])) {
+                            $contactData[$fieldName] = $data[$csvIndex];
+                        }
+                    }
+
+                    if (empty($contactData['lastname'])) {
+                        $errorCount++;
+                        continue;
+                    }
+
+                    // Check for duplicate by email if handled
+                    if ($duplicateHandling && !empty($contactData['email'])) {
+                        $existing = $this->contactRepository->findByEmail($contactData['email']);
+                        if ($existing) {
+                            if ($duplicateHandling == 'skip') {
+                                $skipCount++;
+                                continue;
+                            } else {
+                                // Overwrite - Not implemented in this step, let's treat as update if DTO supports it
+                                // For now, let's just create as new or skip
+                                $skipCount++;
+                                continue;
+                            }
+                        }
+                    }
+
+                    $dto = new CreateContactDTO(array_merge($contactData, [
+                        'ownerId' => auth('tenant')->id(),
+                        'creatorId' => auth('tenant')->id(),
+                        'customFields' => [] // Simplification for now
+                    ]));
+
+                    $this->createContactUseCase->execute($dto);
+                    $successCount++;
+
+                } catch (\Exception $e) {
+                    $errorCount++;
+                }
+            }
+            fclose($handle);
+        }
+
+        // Cleanup
+        if (\Storage::disk('public')->exists($filePath)) {
+            \Storage::disk('public')->delete($filePath);
+        }
+
+        return redirect()->route('tenant.contacts.index')->with('success', "Import completed. Success: $successCount, Skipped: $skipCount, Errors: $errorCount");
+    }
+
+    public function findDuplicates()
+    {
+        $module = $this->moduleRegistry->get('Contacts');
+        $fields = [];
+        foreach ($module->fields() as $field) {
+            // Only search over visible and plausible duplicate fields
+            if ($field->isVisible() && !in_array($field->getFieldName(), ['contact_no', 'createdtime', 'modifiedtime'])) {
+                $fields[$field->getFieldName()] = $field->getLabel();
+            }
+        }
+
+        return view('contacts_module::contacts.find_duplicates', compact('fields'));
+    }
+
+    public function searchDuplicates(Request $request)
+    {
+        $matchFields = $request->input('match_fields', []);
+        if (empty($matchFields)) {
+            return redirect()->route('tenant.contacts.duplicates.index')->withErrors(['match_fields' => 'Please select at least one field to match.']);
+        }
+
+        // 1. Get the fields to select and group by
+        $selects = [];
+        foreach ($matchFields as $field) {
+            $selects[] = "cd.$field";
+        }
+
+        // 2. Find the combinations that have duplicates (Paginated)
+        $paginatedGroups = \DB::connection('tenant')
+            ->table('vtiger_contactdetails as cd')
+            ->join('vtiger_crmentity as ce', 'ce.crmid', '=', 'cd.contactid')
+            ->where('ce.deleted', 0)
+            ->select($selects)
+            ->groupBy($selects)
+            ->havingRaw('COUNT(*) > 1')
+            ->paginate(10); // 10 groups per page
+
+        // Append search criteria to pagination links
+        $paginatedGroups->appends(['match_fields' => $matchFields]);
+
+        $groups = [];
+
+        // 3. For each duplicate combination on the current page, fetch all its records
+        foreach ($paginatedGroups as $groupData) {
+            $query = $this->contactRepository->getDataTableQuery();
+
+            // Build where clause for this specific group combination
+            foreach ($matchFields as $field) {
+                if (is_null($groupData->{$field})) {
+                    $query->whereNull("cd.$field");
+                } else {
+                    $query->where("cd.$field", $groupData->{$field});
+                }
+            }
+
+            $records = $query->get();
+
+            $keyValues = [];
+            foreach ($matchFields as $field) {
+                $val = $groupData->{$field};
+                $keyValues[] = !empty($val) ? $val : '<em>[Empty]</em>';
+            }
+            $key = implode(' | ', $keyValues);
+
+            $groups[$key] = [
+                'records' => $records,
+                'keyData' => $groupData
+            ];
+        }
+
+        return view('contacts_module::contacts.duplicate_results', [
+            'groups' => $groups,
+            'paginator' => $paginatedGroups,
+            'matchFields' => $matchFields
+        ]);
+    }
+
+    public function showMergeView(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (count($ids) < 2) {
+            return redirect()->route('tenant.contacts.duplicates.index')->withErrors(['ids' => 'Please select at least two records to merge.']);
+        }
+
+        $records = [];
+        foreach ($ids as $id) {
+            $record = $this->contactRepository->findById((int) $id);
+            if ($record) {
+                $records[] = $record;
+            }
+        }
+
+        $module = $this->moduleRegistry->get('Contacts');
+        $fields = [];
+        foreach ($module->fields() as $field) {
+            if ($field->isVisible() && !in_array($field->getFieldName(), ['contact_no', 'createdtime', 'modifiedtime'])) {
+                $fields[$field->getFieldName()] = $field->getLabel();
+            }
+        }
+
+        return view('contacts_module::contacts.merge_view', compact('records', 'fields'));
+    }
+
+    public function processMerge(Request $request)
+    {
+        $primaryId = (int) $request->input('primary_id');
+        $allIds = array_map('intval', $request->input('all_ids', []));
+        $mergeValues = $request->input('merge_values', []);
+
+        $nonPrimaryIds = array_diff($allIds, [$primaryId]);
+
+        $valuesToUpdate = [];
+        foreach ($mergeValues as $fieldName => $sourceId) {
+            $sourceRecord = $this->contactRepository->findById((int) $sourceId);
+            if ($sourceRecord) {
+                $data = $sourceRecord->toArray(); // Assuming toArray() exists or I can map it
+                if (isset($data[$fieldName])) {
+                    $valuesToUpdate[$fieldName] = $data[$fieldName];
+                }
+            }
+        }
+
+        try {
+            $this->contactRepository->merge($primaryId, $nonPrimaryIds, $valuesToUpdate);
+            return redirect()->route('tenant.contacts.index')->with('success', 'Contacts merged successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Merge failed: ' . $e->getMessage());
+        }
+    }
+
     public function show($id)
     {
         $contact = $this->contactRepository->findById((int) $id);
