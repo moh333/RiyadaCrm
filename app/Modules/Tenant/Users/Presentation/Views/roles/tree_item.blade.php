@@ -39,6 +39,10 @@
         <!-- Actions -->
         <div style="width: 200px;" class="text-end pe-4">
             <div class="btn-group shadow-sm rounded-3 overflow-hidden">
+                <a href="{{ route('tenant.settings.users.roles.create', ['parent_role_id' => $role->roleid]) }}"
+                    class="btn btn-sm btn-white py-2 px-3 transition-all" title="Add Sub-Role">
+                    <i class="bi bi-plus-circle-fill text-success"></i>
+                </a>
                 <a href="{{ route('tenant.settings.users.roles.edit', $role->roleid) }}"
                     class="btn btn-sm btn-white py-2 px-3 transition-all" title="{{ __('tenant::users.update') }}">
                     <i class="bi bi-pencil-fill text-primary"></i>

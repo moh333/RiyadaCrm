@@ -140,6 +140,7 @@ Route::middleware([
             Route::delete('/{id}', [UsersController::class, 'destroy'])->name('destroy');
 
             // Roles
+            Route::get('roles/get-profile-privileges', [RolesController::class, 'getProfilePrivileges'])->name('roles.get-profile-privileges');
             Route::post('roles/reorder', [RolesController::class, 'reorder'])->name('roles.reorder');
             Route::resource('roles', RolesController::class);
 
