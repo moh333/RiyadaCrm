@@ -285,28 +285,48 @@
                     {{ __('tenant::tenant.dashboard') }}
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="{{ route('tenant.contacts.index') }}"
-                    class="nav-link {{ request()->routeIs('tenant.contacts.*') ? 'active' : '' }}">
-                    <i class="bi bi-people-fill"></i>
-                    {{ __('contacts::contacts.contacts') }}
-                </a>
+
+            <li class="nav-item mt-3">
+                <small
+                    class="text-muted fw-bold text-uppercase px-3">{{ __('tenant::tenant.modules') ?? 'Modules' }}</small>
             </li>
 
+            @foreach($groupedModules as $appName => $modules)            
+                <li class="nav-item">
+                    @php
+                        $groupId = 'submenu_' . strtolower(str_replace(' ', '_', $appName));
+                        $isActiveGroup = false;
+                        foreach ($modules as $m)
+                            if (request()->is('modules/' . $m->name . '*'))
+                                $isActiveGroup = true;
+                    @endphp
 
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="bi bi-briefcase-fill"></i>
-                    {{ __('tenant::tenant.opportunities') }}
-                </a>
-            </li>
+                    <a class="nav-link {{ $isActiveGroup ? '' : 'collapsed' }} d-flex justify-content-between align-items-center"
+                        data-bs-toggle="collapse" href="#{{ $groupId }}" role="button"
+                        aria-expanded="{{ $isActiveGroup ? 'true' : 'false' }}" aria-controls="{{ $groupId }}">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-folder-fill"></i>
+                            {{ $appName }}
+                        </div>
+                        <i class="bi bi-chevron-down small"></i>
+                    </a>
 
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="bi bi-file-earmark-bar-graph-fill"></i>
-                    {{ __('tenant::tenant.reports') }}
-                </a>
-            </li>
+                    <div class="collapse {{ $isActiveGroup ? 'show' : '' }}" id="{{ $groupId }}">
+                        <ul class="list-unstyled fw-normal pb-1 small bg-light rounded-bottom px-2 pt-1 mt-1">
+                            @foreach($modules as $module)
+                                <li>
+                                    <a href="{{ route('tenant.modules.index', $module->name) }}"
+                                        class="nav-link {{ request()->is('modules/' . $module->name . '*') ? 'active' : '' }} ps-4 py-2">
+                                        <i class="bi bi-layers me-2" style="font-size: 0.9rem;"></i>
+                                        {{ $module->label }}
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </li>
+            @endforeach
+
             <li class="nav-item mt-4">
                 <small class="text-muted fw-bold text-uppercase px-3">{{ __('tenant::tenant.administration') }}</small>
             </li>
@@ -324,10 +344,10 @@
                     id="moduleMgmtSubmenu">
                     <ul class="list-unstyled fw-normal pb-1 small bg-light rounded-bottom px-2 pt-1">
                         <li>
-                            <a href="{{ route('tenant.settings.modules.index') }}"
-                                class="nav-link {{ request()->routeIs('tenant.settings.modules.index') ? 'active' : '' }} ps-4"><i
-                                    class="bi bi-collection me-2"></i>
-                                {{ __('tenant::tenant.modules') ?? 'Modules' }}
+                            <a href="{{ route('tenant.settings.modules.menu') }}"
+                                class="nav-link {{ request()->routeIs('tenant.settings.modules.menu') ? 'active' : '' }} ps-4"><i
+                                    class="bi bi-list-task me-2"></i>
+                                {{ __('tenant::tenant.menu_management') ?? 'Menu Management' }}
                             </a>
                         </li>
 
@@ -371,10 +391,19 @@
                         <li><a href="{{ route('tenant.settings.users.roles.index') }}"
                                 class="nav-link {{ request()->routeIs('tenant.settings.users.roles.*') ? 'active' : '' }} ps-4"><i
                                     class="bi bi-diagram-3 me-2"></i> {{ __('tenant::users.roles') }}</a></li>
-                        <li><a href="{{ route('tenant.settings.users.profiles.index') }}" class="nav-link {{ request()->routeIs('tenant.settings.users.profiles.*') ? 'active' : '' }} ps-4"><i class="bi bi-person-badge me-2"></i> {{ __('tenant::users.profiles') }}</a></li>
-                        <li><a href="{{ route('tenant.settings.users.sharing-rules.index') }}" class="nav-link {{ request()->routeIs('tenant.settings.users.sharing-rules.*') ? 'active' : '' }} ps-4"><i class="bi bi-share me-2"></i> {{ __('tenant::users.sharing_rules') }}</a></li>
-                        <li><a href="{{ route('tenant.settings.users.groups.index') }}" class="nav-link {{ request()->routeIs('tenant.settings.users.groups.*') ? 'active' : '' }} ps-4"><i class="bi bi-people me-2"></i> {{ __('tenant::users.groups') }}</a></li>
-                        <li><a href="{{ route('tenant.settings.users.login-history.index') }}" class="nav-link {{ request()->routeIs('tenant.settings.users.login-history.*') ? 'active' : '' }} ps-4"><i class="bi bi-clock-history me-2"></i> {{ __('tenant::users.login_history') }}</a></li>
+                        <li><a href="{{ route('tenant.settings.users.profiles.index') }}"
+                                class="nav-link {{ request()->routeIs('tenant.settings.users.profiles.*') ? 'active' : '' }} ps-4"><i
+                                    class="bi bi-person-badge me-2"></i> {{ __('tenant::users.profiles') }}</a></li>
+                        <li><a href="{{ route('tenant.settings.users.sharing-rules.index') }}"
+                                class="nav-link {{ request()->routeIs('tenant.settings.users.sharing-rules.*') ? 'active' : '' }} ps-4"><i
+                                    class="bi bi-share me-2"></i> {{ __('tenant::users.sharing_rules') }}</a></li>
+                        <li><a href="{{ route('tenant.settings.users.groups.index') }}"
+                                class="nav-link {{ request()->routeIs('tenant.settings.users.groups.*') ? 'active' : '' }} ps-4"><i
+                                    class="bi bi-people me-2"></i> {{ __('tenant::users.groups') }}</a></li>
+                        <li><a href="{{ route('tenant.settings.users.login-history.index') }}"
+                                class="nav-link {{ request()->routeIs('tenant.settings.users.login-history.*') ? 'active' : '' }} ps-4"><i
+                                    class="bi bi-clock-history me-2"></i> {{ __('tenant::users.login_history') }}</a>
+                        </li>
                     </ul>
                 </div>
             </li>

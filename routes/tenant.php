@@ -86,7 +86,17 @@ Route::middleware([
             Route::get('/{id}/edit', [ContactsController::class, 'edit'])->name('edit')->middleware('permission.module:Contacts,edit');
             Route::put('/{id}', [ContactsController::class, 'update'])->name('update')->middleware('permission.module:Contacts,edit');
             Route::delete('/{id}', [ContactsController::class, 'destroy'])->name('destroy')->middleware('permission.module:Contacts,delete');
-            Route::post('/{id}/delete-file', [ContactsController::class, 'deleteFile'])->name('delete-file')->middleware('permission.module:Contacts,edit');
+        });
+
+        // Dynamic Modules (Metadata Engine)
+        Route::prefix('modules')->name('modules.')->group(function () {
+            Route::get('/{moduleName}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'index'])->name('index');
+            Route::get('/{moduleName}/create', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'create'])->name('create');
+            Route::post('/{moduleName}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'store'])->name('store');
+            Route::get('/{moduleName}/{id}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'show'])->name('show');
+            Route::get('/{moduleName}/{id}/edit', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'edit'])->name('edit');
+            Route::put('/{moduleName}/{id}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'update'])->name('update');
+            Route::delete('/{moduleName}/{id}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'destroy'])->name('destroy');
         });
 
         // Custom Fields Management (Generic for all modules)

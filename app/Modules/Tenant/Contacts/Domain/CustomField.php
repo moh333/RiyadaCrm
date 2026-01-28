@@ -295,6 +295,7 @@ class CustomField
             'generatedtype' => $this->generatedType,
             'uitype' => $this->uitype->value,
             'fieldname' => $this->fieldName,
+            'fieldlabel' => $this->labelEn,
             'fieldlabel_en' => $this->labelEn,
             'fieldlabel_ar' => $this->labelAr,
             'readonly' => $this->readonly ? 1 : 0,

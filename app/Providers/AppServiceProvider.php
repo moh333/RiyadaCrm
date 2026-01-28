@@ -6,6 +6,9 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Blade;
 use App\Listeners\AuthEventListener;
+use App\Modules\Tenant\Core\Domain\Repositories\ModuleMetadataRepositoryInterface;
+use App\Modules\Tenant\Core\Infrastructure\Repositories\VtigerModuleMetadataRepository;
+use App\Modules\Tenant\Core\Domain\Services\ModuleRegistry;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -14,7 +17,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(ModuleMetadataRepositoryInterface::class, VtigerModuleMetadataRepository::class);
+        $this->app->singleton(ModuleRegistry::class);
     }
 
     /**
@@ -22,6 +26,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register View Composers
+        \Illuminate\Support\Facades\View::composer('tenant::layout', \App\Http\ViewComposers\TenantSidebarComposer::class);
+
         // Register Auth Event Listener
         Event::subscribe(AuthEventListener::class);
 

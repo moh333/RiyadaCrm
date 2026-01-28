@@ -45,32 +45,85 @@ class ModuleManagementController extends Controller
      */
     public function menu()
     {
-        $modules = $this->moduleRegistry->all();
-        return view('tenant::module_mgmt.menu', compact('modules'));
+        // Get all modules from registry (unique by name)
+        $allModules = collect($this->moduleRegistry->all());
+
+        // Define standard apps to ensure they always show as columns (even if empty)
+        $standardApps = ['MARKETING', 'SALES', 'SUPPORT', 'INVENTORY', 'PROJECTS', 'TOOLS', 'OTHERS'];
+
+        // Group modules by their appName
+        $grouped = $allModules->groupBy(fn($m) => $m->getAppName());
+
+        // Build the final collection in the specific order, ensuring all standard apps exist
+        $groupedModules = collect();
+        foreach ($standardApps as $app) {
+            $groupedModules[$app] = $grouped->get($app, collect());
+        }
+
+        // Add any additional apps found in the database that aren't in standard list
+        foreach ($grouped as $app => $mods) {
+            if (!$groupedModules->has($app)) {
+                $groupedModules[$app] = $mods;
+            }
+        }
+
+        return view('tenant::module_mgmt.menu', compact('groupedModules'));
     }
 
     public function updateMenu(Request $request)
     {
         $validated = $request->validate([
-            'modules' => 'required|array',
-            'modules.*.tabid' => 'required|integer',
-            'modules.*.sequence' => 'required|integer',
-            'modules.*.visible' => 'nullable|boolean', // 1 or 0
+            'apps' => 'required|array',
+            'apps.*.name' => 'required|string',
+            'apps.*.modules' => 'nullable|array',
+            'apps.*.modules.*.tabid' => 'required|integer',
+            'apps.*.modules.*.sequence' => 'required|integer',
+            'apps.*.modules.*.visible' => 'nullable|boolean',
         ]);
 
         \DB::connection('tenant')->transaction(function () use ($validated) {
-            foreach ($validated['modules'] as $modData) {
-                // vtiger_tab: tabsequence determines order, presence=0 is visible, 1 is hidden
-                // Incoming visible=1 means we set presence=0. visible=0 or missing means presence=1.
-                $presence = isset($modData['visible']) && $modData['visible'] == 1 ? 0 : 1;
+            $globalSequence = 1;
 
-                \DB::connection('tenant')
-                    ->table('vtiger_tab')
-                    ->where('tabid', $modData['tabid'])
-                    ->update([
-                        'tabsequence' => $modData['sequence'],
-                        'presence' => $presence
-                    ]);
+            foreach ($validated['apps'] as $appData) {
+                $appName = $appData['name'];
+                $modules = $appData['modules'] ?? [];
+
+                // Sort modules by the sequence sent from frontend to be safe
+                usort($modules, fn($a, $b) => $a['sequence'] <=> $b['sequence']);
+
+                foreach ($modules as $modIndex => $modData) {
+                    $tabId = $modData['tabid'];
+                    $presence = (isset($modData['visible']) && ($modData['visible'] == "1" || $modData['visible'] === true)) ? 0 : 1;
+
+                    // 1. Update global vtiger_tab entry
+                    \DB::connection('tenant')
+                        ->table('vtiger_tab')
+                        ->where('tabid', $tabId)
+                        ->update([
+                            'tabsequence' => $globalSequence++,
+                            'presence' => $presence
+                        ]);
+
+                    // 2. Update app-specific mapping
+                    if ($appName !== 'OTHERS') {
+                        \DB::connection('tenant')
+                            ->table('vtiger_app2tab')
+                            ->updateOrInsert(
+                                ['tabid' => $tabId],
+                                [
+                                    'appname' => $appName,
+                                    'sequence' => $modIndex,
+                                    'visible' => $presence === 0 ? 1 : 0
+                                ]
+                            );
+                    } else {
+                        // If moved to OTHERS, remove app assignment so it defaults to OTHERS in loads
+                        \DB::connection('tenant')
+                            ->table('vtiger_app2tab')
+                            ->where('tabid', $tabId)
+                            ->delete();
+                    }
+                }
             }
         });
 

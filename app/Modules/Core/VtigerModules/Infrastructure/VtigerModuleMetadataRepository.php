@@ -41,8 +41,10 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
     {
         $modules = DB::connection($this->connection)
             ->table('vtiger_tab')
-            ->where('isentitytype', 1) // Only entity modules
-            ->orderBy('name')
+            ->leftJoin('vtiger_app2tab', 'vtiger_tab.tabid', '=', 'vtiger_app2tab.tabid')
+            ->select('vtiger_tab.*', 'vtiger_app2tab.appname', 'vtiger_app2tab.sequence as app_sequence')
+            ->where('vtiger_tab.isentitytype', 1) // Only entity modules
+            ->orderBy('vtiger_tab.tabsequence')
             ->get();
 
         return $modules->map(function ($row) {
@@ -61,8 +63,10 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
     {
         $row = DB::connection($this->connection)
             ->table('vtiger_tab')
-            ->where('name', $name)
-            ->where('isentitytype', 1)
+            ->leftJoin('vtiger_app2tab', 'vtiger_tab.tabid', '=', 'vtiger_app2tab.tabid')
+            ->select('vtiger_tab.*', 'vtiger_app2tab.appname', 'vtiger_app2tab.sequence as app_sequence')
+            ->where('vtiger_tab.name', $name)
+            ->where('vtiger_tab.isentitytype', 1)
             ->first();
 
         if (!$row) {
@@ -161,6 +165,7 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
             isCustom: (bool) ($row->customized ?? 0),
             ownedBy: (int) ($row->ownedby ?? 0),
             presence: (int) $row->presence,
+            appName: $row->appname ?? 'OTHERS',
         );
 
         // Load related data

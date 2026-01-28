@@ -139,5 +139,14 @@ return [
     'attach_files' => 'Attach Files',
     'private_comment' => 'Private',
     'post_comment' => 'Post Comment',
+    'details' => 'Details',
+    'system_info' => 'System Info',
+    'id' => 'ID',
+    'created_time' => 'Created Time',
+    'modified_time' => 'Modified Time',
+    'general_information' => 'General Information',
+    'add_new_record' => 'Add New',
+    'system' => 'System',
+    'menu_management' => 'Menu Management',
 ];
 

@@ -139,4 +139,13 @@ return [
     'attach_files' => 'إرفاق ملفات',
     'private_comment' => 'خاص',
     'post_comment' => 'نشر التعليق',
+    'details' => 'تفاصيل',
+    'system_info' => 'معلومات النظام',
+    'id' => 'المعرف',
+    'created_time' => 'تاريخ الإنشاء',
+    'modified_time' => 'تاريخ التعديل',
+    'general_information' => 'معلومات عامة',
+    'add_new_record' => 'إضافة جديد',
+    'system' => 'النظام',
+    'menu_management' => 'إدارة القائمة',
 ];

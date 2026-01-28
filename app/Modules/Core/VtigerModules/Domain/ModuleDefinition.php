@@ -30,6 +30,7 @@ class ModuleDefinition
         private readonly bool $isCustom,
         private readonly int $ownedBy,
         private readonly int $presence,
+        private readonly string $appName = 'OTHERS',
         private Collection $fields,
         private Collection $blocks,
         private Collection $relations,
@@ -59,6 +60,7 @@ class ModuleDefinition
         bool $isCustom = false,
         int $ownedBy = 0,
         int $presence = 0,
+        string $appName = 'OTHERS',
     ): self {
         return new self(
             id: $id,
@@ -70,6 +72,7 @@ class ModuleDefinition
             isCustom: $isCustom,
             ownedBy: $ownedBy,
             presence: $presence,
+            appName: $appName,
             fields: collect(),
             blocks: collect(),
             relations: collect(),
@@ -120,6 +123,11 @@ class ModuleDefinition
     public function getPresence(): int
     {
         return $this->presence;
+    }
+
+    public function getAppName(): string
+    {
+        return $this->appName;
     }
 
     /**
