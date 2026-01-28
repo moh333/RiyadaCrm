@@ -196,4 +196,5 @@ return [
     'administrator' => 'Administrator',
     'user' => 'User',
     'dashboard' => 'Dashboard',
+    'duplicate' => 'Duplicate',
 ];

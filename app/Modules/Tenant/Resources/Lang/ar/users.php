@@ -196,5 +196,5 @@ return [
     'administrator' => 'مدير النظام',
     'user' => 'مستخدم',
     'dashboard' => 'لوحة القيادة',
-
+    'duplicate' => 'تكرار',
 ];

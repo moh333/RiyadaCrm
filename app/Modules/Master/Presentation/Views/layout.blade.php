@@ -186,6 +186,13 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a href="{{ route('master.login-history.index') }}"
+                    class="nav-link {{ request()->routeIs('master.login-history.index') ? 'active' : '' }}">
+                    <i class="bi bi-clock-history"></i>
+                    {{ __('master::master.login_history') }}
+                </a>
+            </li>
+            <li class="nav-item">
                 <a href="#" class="nav-link">
                     <i class="bi bi-gear"></i>
                     {{ __('master::master.settings') }}

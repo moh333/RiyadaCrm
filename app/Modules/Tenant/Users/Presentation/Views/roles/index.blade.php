@@ -22,10 +22,7 @@
                 <button class="btn btn-outline-secondary rounded-pill px-3 shadow-sm transition-all" id="collapse-all">
                     <i class="bi bi-arrows-collapse me-1"></i> {{ __('tenant::users.collapse_all') }}
                 </button>
-                <a href="{{ route('tenant.settings.users.roles.create') }}"
-                    class="btn btn-primary rounded-pill px-4 shadow-sm hover-up">
-                    <i class="bi bi-plus-lg me-2"></i>{{ __('tenant::users.create_role') }}
-                </a>
+                
             </div>
         </div>
 

@@ -51,6 +51,9 @@ Route::prefix('admin')->name('master.')->group(function () {
         Route::put('tenants/{id}', [TenantController::class, 'update'])->name('tenants.update');
         Route::get('tenants/{id}/impersonate', [TenantController::class, 'impersonate'])->name('tenants.impersonate');
         Route::delete('tenants/{id}', [TenantController::class, 'destroy'])->name('tenants.destroy');
+
+        // Login History
+        Route::get('login-history', [\App\Modules\Master\Presentation\Controllers\LoginHistoryController::class, 'index'])->name('login-history.index');
     });
 });
 

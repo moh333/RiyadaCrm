@@ -13,7 +13,23 @@
 
         @if(session('success'))
             <div class="alert alert-success rounded-3 shadow-sm mb-4">
-                {{ session('success') }}
+                <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger rounded-3 shadow-sm mb-4">
+                <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
+            </div>
+        @endif
+
+        @if($errors->any())
+            <div class="alert alert-danger rounded-3 shadow-sm mb-4">
+                <ul class="mb-0">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
         @endif
 
@@ -56,17 +72,25 @@
                                     <td class="text-muted small">{{ $profile->description }}</td>
                                     <td class="text-end pe-4">
                                         <div class="d-flex justify-content-end gap-2">
+                                            <form
+                                                action="{{ route('tenant.settings.users.profiles.duplicate', $profile->profileid) }}"
+                                                method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-outline-info rounded-pill" title="{{ __('tenant::users.duplicate') ?? 'Duplicate' }}">
+                                                    <i class="bi bi-files"></i>
+                                                </button>
+                                            </form>
                                             <a href="{{ route('tenant.settings.users.profiles.edit', $profile->profileid) }}"
-                                                class="btn btn-sm btn-outline-primary rounded-pill">
+                                                class="btn btn-sm btn-outline-primary rounded-pill" title="{{ __('tenant::users.edit') }}">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
                                             <form
                                                 action="{{ route('tenant.settings.users.profiles.destroy', $profile->profileid) }}"
                                                 method="POST"
-                                                onsubmit="return confirm('{{ __('tenant::users.are_you_sure') }}')">
+                                                onsubmit="return confirm('{{ __('tenant::users.are_you_sure') }}')" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill" title="{{ __('tenant::users.delete') }}">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>

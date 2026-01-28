@@ -148,7 +148,7 @@ Route::middleware([
             Route::get('/', [UsersController::class, 'index'])->name('index');
             Route::get('/create', [UsersController::class, 'create'])->name('create');
             Route::post('/', [UsersController::class, 'store'])->name('store');
-            Route::get('/{id}', [UsersController::class, 'show'])->name('show');
+            Route::get('user/{id}', [UsersController::class, 'show'])->name('show');
             Route::get('/{id}/edit', [UsersController::class, 'edit'])->name('edit');
             Route::put('/{id}', [UsersController::class, 'update'])->name('update');
             Route::delete('/{id}', [UsersController::class, 'destroy'])->name('destroy');
@@ -161,6 +161,7 @@ Route::middleware([
             Route::resource('roles', RolesController::class);
 
             // Profiles
+            Route::post('profiles/{profile}/duplicate', [ProfilesController::class, 'duplicate'])->name('profiles.duplicate');
             Route::resource('profiles', ProfilesController::class);
 
             // Sharing Rules

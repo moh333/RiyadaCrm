@@ -78,4 +78,9 @@ return [
     'login' => 'Sign In',
     'password' => 'Password',
     'visit_dashboard' => 'Visit Dashboard',
+    'login_history' => 'Login History',
+    'user_name' => 'User Name',
+    'user_ip' => 'User IP',
+    'login_time' => 'Login Time',
+    'logout_time' => 'Logout Time',
 ];

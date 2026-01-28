@@ -78,4 +78,9 @@ return [
     'login' => 'تسجيل الدخول',
     'password' => 'كلمة المرور',
     'visit_dashboard' => 'زيارة لوحة التحكم',
+    'login_history' => 'سجل تسجيل الدخول',
+    'user_name' => 'اسم المستخدم',
+    'user_ip' => 'عنوان IP',
+    'login_time' => 'وقت الدخول',
+    'logout_time' => 'وقت الخروج',
 ];
