@@ -27,7 +27,7 @@
                     @php
                         $groupedFields = [];
                         foreach ($fields as $field) {
-                            if ($field->presence == 0) {
+                            if (in_array($field->presence, [0, 2])) {
                                 $bLabel = $field->blockLabel ? vtranslate($field->blockLabel, $metadata->name) : __('tenant::tenant.general_information');
                                 $groupedFields[$bLabel][] = $field;
                             }
@@ -42,46 +42,11 @@
                             <div class="card-body p-4">
                                 <div class="row">
                                     @foreach($blockFields as $field)
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold small text-uppercase">
-                                                {{ $field->getLabel($metadata->name) }}
-                                                @if($field->isMandatory) <span class="text-danger">*</span> @endif
-                                            </label>
-
-                                            @php
-                                                $value = isset($record) ? ($record->{$field->column} ?? '') : '';
-                                                $fieldName = $field->column;
-                                            @endphp
-
-                                            @if($field->uiType == 15 || $field->uiType == 16)
-                                                <select name="{{ $fieldName }}"
-                                                    class="form-select @error($fieldName) is-invalid @enderror" {{ $field->isMandatory ? 'required' : '' }}>
-                                                    <option value="">{{ __('tenant::tenant.select_option') ?? '-- Select --' }}</option>
-                                                    @foreach($field->picklistValues as $val)
-                                                        <option value="{{ $val }}" {{ $value == $val ? 'selected' : '' }}>
-                                                            {{ vtranslate($val, $metadata->name) }}</option>
-                                                    @endforeach
-                                                </select>
-                                            @elseif($field->uiType == 19 || $field->uiType == 21)
-                                                <textarea name="{{ $fieldName }}"
-                                                    class="form-control @error($fieldName) is-invalid @enderror" rows="3" {{ $field->isMandatory ? 'required' : '' }}>{{ $value }}</textarea>
-                                            @elseif($field->uiType == 5 || $field->uiType == 23)
-                                                <input type="date" name="{{ $fieldName }}"
-                                                    class="form-control @error($fieldName) is-invalid @enderror" value="{{ $value }}" {{ $field->isMandatory ? 'required' : '' }}>
-                                            @elseif($field->uiType == 56)
-                                                <div class="form-check form-switch mt-2">
-                                                    <input type="hidden" name="{{ $fieldName }}" value="0">
-                                                    <input class="form-check-input" type="checkbox" name="{{ $fieldName }}" value="1" {{ $value == 1 ? 'checked' : '' }}>
-                                                </div>
-                                            @else
-                                                <input type="text" name="{{ $fieldName }}"
-                                                    class="form-control @error($fieldName) is-invalid @enderror" value="{{ $value }}" {{ $field->isMandatory ? 'required' : '' }}>
-                                            @endif
-
-                                            @error($fieldName)
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                        @include('tenant::core.modules.partials.field_renderer', [
+                                            'field' => $field,
+                                            'metadata' => $metadata,
+                                            'record' => $record ?? null
+                                        ])
                                     @endforeach
                                 </div>
                             </div>
@@ -99,4 +64,81 @@
             </div>
         </form>
     </div>
+    @push('scripts')
+        <script>
+            $(document).ready(function() {
+                // Initialize Select2 for standard selects
+                $('.select2').each(function() {
+                    $(this).select2({
+                        theme: 'bootstrap-5',
+                        width: '100%',
+                        dropdownParent: $(this).parent()
+                    });
+                });
+
+                // Initialize AJAX Select2 for reference fields
+                $('.select2-ajax').each(function() {
+                    const module = $(this).data('module');
+                    const field = $(this).data('field');
+
+                    $(this).select2({
+                        theme: 'bootstrap-5',
+                        width: '100%',
+                        dropdownParent: $(this).parent(),
+                        ajax: {
+                            url: `{{ url('modules') }}/${module}/reference-search/${field}`,
+                            dataType: 'json',
+                            delay: 250,
+                            data: function (params) {
+                                return {
+                                    q: params.term, // search term
+                                    page: params.page
+                                };
+                            },
+                            processResults: function (data, params) {
+                                params.page = params.page || 1;
+                                return {
+                                    results: data.items,
+                                    pagination: {
+                                        more: (params.page * 30) < data.total_count
+                                    }
+                                };
+                            },
+                            cache: true
+                        },
+                        placeholder: '{{ __("tenant::tenant.search_placeholder") }}',
+                        minimumInputLength: 1,
+                    });
+                });
+
+                // File validation
+                $('form').on('submit', function (e) {
+                    const fileInputs = $(this).find('.file-upload-input');
+                    let hasError = false;
+
+                    fileInputs.each(function () {
+                        const acceptableTypes = $(this).data('acceptable-types');
+                        if (acceptableTypes && this.files.length > 0) {
+                            const allowedExtensions = acceptableTypes.split(/[\n,]+/).map(ext => ext.trim().toLowerCase()).filter(ext => ext);
+                            
+                            Array.from(this.files).forEach((file) => {
+                                const fileName = file.name;
+                                const fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+
+                                if (!allowedExtensions.includes(fileExtension)) {
+                                    hasError = true;
+                                    alert(`Invalid file extension: .${fileExtension}\nAllowed: ${allowedExtensions.join(', ')}`);
+                                    $(this).val(''); 
+                                }
+                            });
+                        }
+                    });
+
+                    if (hasError) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        </script>
+    @endpush
 @endsection

@@ -150,5 +150,7 @@ return [
     'menu_management' => 'Menu Management',
     'menu_management_subtitle' => 'Group entity modules into applications and organize their order',
     'back' => 'Back',
+    'select_option' => 'Select an option',
+
 ];
 

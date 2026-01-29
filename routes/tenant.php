@@ -97,6 +97,7 @@ Route::middleware([
             Route::get('/{moduleName}/{id}/edit', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'edit'])->name('edit');
             Route::put('/{moduleName}/{id}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'update'])->name('update');
             Route::delete('/{moduleName}/{id}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'destroy'])->name('destroy');
+            Route::get('/{moduleName}/reference-search/{field}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'referenceSearch'])->name('reference-search');
         });
 
         // Custom Fields Management (Generic for all modules)

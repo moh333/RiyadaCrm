@@ -17,7 +17,11 @@ class FieldDescriptor
         public readonly int $blockId,
         public readonly int $presence,
         public readonly ?string $blockLabel = null,
-        public readonly array $picklistValues = []
+        public readonly array $picklistValues = [],
+        public readonly ?string $helpInfo = null,
+        public readonly bool $allowMultipleFiles = false,
+        public readonly ?string $acceptableFileTypes = null,
+        public readonly bool $readonly = false,
     ) {
     }
 

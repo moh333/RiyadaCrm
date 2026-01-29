@@ -150,20 +150,55 @@ class GenericModuleController extends Controller
             $dataByTable = [];
             foreach ($fields as $field) {
                 if ($request->has($field->column)) {
-                    $dataByTable[$field->table][$field->column] = $request->input($field->column);
+                    $val = $request->input($field->column);
+                    // Handle multi-select picklists (uitype 33)
+                    if (is_array($val) && $field->uiType == 33) {
+                        $val = implode(' |##| ', $val);
+                    }
+                    $dataByTable[$field->table][$field->column] = $val;
                 }
             }
 
-            // 3. Insert into base table and other extension tables
+            // Handle file uploads
+            foreach ($request->allFiles() as $col => $file) {
+                $field = $fields->firstWhere('column', $col);
+                if ($field) {
+                    $path = $file->store('modules/' . $moduleName, 'tenancy');
+                    $dataByTable[$field->table][$col] = $path;
+                }
+            }
+
+            // 3. Update crmentity with form data if present (e.g. smownerid)
+            $crmentityData = [
+                'smownerid' => $userId, // Default
+            ];
+            if (isset($dataByTable['vtiger_crmentity'])) {
+                foreach ($dataByTable['vtiger_crmentity'] as $col => $val) {
+                    $crmentityData[$col] = $val;
+                }
+                // Map assigned_user_id to smownerid if it came from a field named so
+                if (isset($dataByTable['vtiger_crmentity']['assigned_user_id'])) {
+                    $crmentityData['smownerid'] = $dataByTable['vtiger_crmentity']['assigned_user_id'];
+                }
+            }
+
+            DB::connection('tenant')->table('vtiger_crmentity')
+                ->where('crmid', $crmId)
+                ->update($crmentityData);
+
+            // 4. Insert into base table and other extension tables
             foreach ($dataByTable as $table => $data) {
                 if ($table === 'vtiger_crmentity')
                     continue;
 
                 // Find primary key for extension table
                 $pk = $metadata->baseTableIndex;
+                if (!\Illuminate\Support\Facades\Schema::connection('tenant')->hasTable($table))
+                    continue;
+
                 if (!\Illuminate\Support\Facades\Schema::connection('tenant')->hasColumn($table, $pk)) {
                     $columns = \Illuminate\Support\Facades\Schema::connection('tenant')->getColumnListing($table);
-                    $pk = collect($columns)->first(fn($col) => str_contains($col, 'id')) ?: $metadata->baseTableIndex;
+                    $pk = collect($columns)->first(fn($col) => str_contains(strtolower($col), 'id')) ?: $metadata->baseTableIndex;
                 }
 
                 $data[$pk] = $crmId;
@@ -189,7 +224,30 @@ class GenericModuleController extends Controller
         if (!$record)
             abort(404);
 
+        // Resolve reference field labels
+        foreach ($fields as $field) {
+            $uitype = (int) $field->uiType;
+            if (in_array($uitype, [10, 51, 52, 57, 58, 59, 66, 68, 73, 75, 76, 78, 80, 81])) {
+                $val = $record->{$field->column} ?? null;
+                if ($val) {
+                    $record->{$field->column . '_label'} = $this->getEntityLabel($val);
+                }
+            }
+        }
+
         return view('tenant::core.modules.form', compact('metadata', 'fields', 'record'));
+    }
+
+    protected function getEntityLabel(int $id): ?string
+    {
+        $entity = DB::connection('tenant')->table('vtiger_crmentity')
+            ->where('crmid', $id)
+            ->first();
+
+        if (!$entity)
+            return null;
+
+        return $entity->label ?? "Record #$id";
     }
 
     public function update(string $moduleName, int $id, Request $request)
@@ -217,19 +275,57 @@ class GenericModuleController extends Controller
             $dataByTable = [];
             foreach ($fields as $field) {
                 if ($request->has($field->column)) {
-                    $dataByTable[$field->table][$field->column] = $request->input($field->column);
+                    $val = $request->input($field->column);
+                    // Handle multi-select picklists (uitype 33)
+                    if (is_array($val) && $field->uiType == 33) {
+                        $val = implode(' |##| ', $val);
+                    }
+                    $dataByTable[$field->table][$field->column] = $val;
                 }
             }
 
-            // 3. Update each table
+            // Handle file uploads
+            foreach ($request->allFiles() as $col => $file) {
+                $field = $fields->firstWhere('column', $col);
+                if ($field) {
+                    $path = $file->store('modules/' . $moduleName, 'tenancy');
+                    $dataByTable[$field->table][$col] = $path;
+                }
+            }
+
+            // 3. Update crmentity
+            $crmentityData = [
+                'modifiedtime' => $now,
+                'modifiedby' => auth('tenant')->id(),
+                'label' => $this->generateLabel($request, $fields)
+            ];
+
+            if (isset($dataByTable['vtiger_crmentity'])) {
+                foreach ($dataByTable['vtiger_crmentity'] as $col => $val) {
+                    $crmentityData[$col] = $val;
+                }
+                // Map assigned_user_id to smownerid
+                if (isset($dataByTable['vtiger_crmentity']['assigned_user_id'])) {
+                    $crmentityData['smownerid'] = $dataByTable['vtiger_crmentity']['assigned_user_id'];
+                }
+            }
+
+            DB::connection('tenant')->table('vtiger_crmentity')
+                ->where('crmid', $id)
+                ->update($crmentityData);
+
+            // 4. Update each module table
             foreach ($dataByTable as $table => $data) {
                 if ($table === 'vtiger_crmentity')
+                    continue;
+
+                if (!\Illuminate\Support\Facades\Schema::connection('tenant')->hasTable($table))
                     continue;
 
                 $pk = $metadata->baseTableIndex;
                 if (!\Illuminate\Support\Facades\Schema::connection('tenant')->hasColumn($table, $pk)) {
                     $columns = \Illuminate\Support\Facades\Schema::connection('tenant')->getColumnListing($table);
-                    $pk = collect($columns)->first(fn($col) => str_contains($col, 'id')) ?: $metadata->baseTableIndex;
+                    $pk = collect($columns)->first(fn($col) => str_contains(strtolower($col), 'id')) ?: $metadata->baseTableIndex;
                 }
 
                 DB::connection('tenant')->table($table)
@@ -344,5 +440,77 @@ class GenericModuleController extends Controller
         }
 
         return $moduleName . ' Record';
+    }
+    public function referenceSearch(string $moduleName, string $fieldName, Request $request)
+    {
+        $q = $request->input('q');
+
+        // 1. Find related modules for this field
+        $relModules = DB::connection('tenant')->table('vtiger_fieldmodulerel')
+            ->join('vtiger_field', 'vtiger_fieldmodulerel.fieldid', '=', 'vtiger_field.fieldid')
+            ->join('vtiger_tab', 'vtiger_field.tabid', '=', 'vtiger_tab.tabid')
+            ->where('vtiger_tab.name', $moduleName)
+            ->where('vtiger_field.fieldname', $fieldName)
+            ->pluck('relmodule')
+            ->toArray();
+
+        // Standard fallbacks for common Vtiger uitypes if not in rel table
+        // 51: Account, 52: Contact, 73: Account (HelpDesk), 81: Vendor (Product)
+        if (empty($relModules)) {
+            $fallbacks = [
+                'accountid' => ['Accounts'],
+                'account_id' => ['Accounts'],
+                'contactid' => ['Contacts'],
+                'contact_id' => ['Contacts'],
+                'parent_id' => ['Accounts', 'Contacts', 'Leads'],
+                'productid' => ['Products'],
+                'product_id' => ['Products'],
+                'vendorid' => ['Vendors'],
+                'vendor_id' => ['Vendors'],
+            ];
+            if (isset($fallbacks[$fieldName])) {
+                $relModules = $fallbacks[$fieldName];
+            }
+        }
+
+        $results = [];
+        foreach ($relModules as $relModule) {
+            $entityInfo = DB::connection('tenant')->table('vtiger_entityname')
+                ->where('modulename', $relModule)
+                ->first();
+
+            if (!$entityInfo)
+                continue;
+
+            $labelFields = explode(',', $entityInfo->fieldname);
+            $query = DB::connection('tenant')->table($entityInfo->tablename);
+
+            // Join crmentity to respect soft deletes
+            $query->join('vtiger_crmentity', "{$entityInfo->tablename}.{$entityInfo->entityidfield}", '=', 'vtiger_crmentity.crmid')
+                ->where('vtiger_crmentity.deleted', 0);
+
+            $query->where(function ($sub) use ($labelFields, $q) {
+                foreach ($labelFields as $f) {
+                    $sub->orWhere($f, 'like', "%$q%");
+                }
+            });
+
+            $items = $query->limit(15)->get();
+            foreach ($items as $item) {
+                $labels = [];
+                foreach ($labelFields as $f) {
+                    $labels[] = $item->{$f};
+                }
+                $results[] = [
+                    'id' => $item->{$entityInfo->entityidfield},
+                    'text' => '[' . vtranslate($relModule, 'Vtiger') . '] ' . implode(' ', $labels)
+                ];
+            }
+        }
+
+        return response()->json([
+            'items' => $results,
+            'total_count' => count($results)
+        ]);
     }
 }

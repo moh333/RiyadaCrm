@@ -150,4 +150,6 @@ return [
     'menu_management' => 'إدارة القائمة',
     'menu_management_subtitle' => 'تجميع مديولات النظام في تطبيقات وتنظيم ترتيبها',
     'back' => 'رجوع',
+    'select_option' => 'اختر خياراً',
+    
 ];

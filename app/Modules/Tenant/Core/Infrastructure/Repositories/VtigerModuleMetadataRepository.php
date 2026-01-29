@@ -44,12 +44,29 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
 
     public function getFieldsByModule(int $tabId): array
     {
-        $fields = DB::connection($this->connection)
+        $userId = auth('tenant')->id();
+        $profileId = DB::connection($this->connection)->table('vtiger_user2role')
+            ->join('vtiger_role2profile', 'vtiger_user2role.roleid', '=', 'vtiger_role2profile.roleid')
+            ->where('vtiger_user2role.userid', $userId)
+            ->value('profileid');
+
+        $query = DB::connection($this->connection)
             ->table('vtiger_field')
             ->leftJoin('vtiger_blocks', 'vtiger_field.block', '=', 'vtiger_blocks.blockid')
             ->where('vtiger_field.tabid', $tabId)
-            ->where('vtiger_field.presence', 0)
-            ->select('vtiger_field.*', 'vtiger_blocks.blocklabel')
+            ->whereIn('vtiger_field.presence', [0, 2])
+            ->whereIn('vtiger_field.displaytype', [1, 2, 3, 5]); // Include 2 (read-only)
+
+        // If not admin, filter by profile permissions
+        if ($userId != 1 && $profileId) {
+            $query->join('vtiger_profile2field', function ($join) use ($profileId, $tabId) {
+                $join->on('vtiger_field.fieldid', '=', 'vtiger_profile2field.fieldid')
+                    ->where('vtiger_profile2field.profileid', $profileId)
+                    ->where('vtiger_profile2field.visible', 0); // 0 = visible in Vtiger
+            });
+        }
+
+        $fields = $query->select('vtiger_field.*', 'vtiger_blocks.blocklabel')
             ->orderBy('vtiger_field.sequence')
             ->get();
 
@@ -57,22 +74,33 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
             $moduleName = DB::connection($this->connection)->table('vtiger_tab')->where('tabid', $tabId)->value('name');
             if ($moduleName === 'EmailTemplates') {
                 return [
-                    new FieldDescriptor(0, 'templatename', 'templatename', 'Template Name', 'vtiger_emailtemplates', 1, 'V~M', true, false, 0, 0, 'LBL_EMAIL_TEMPLATE_INFORMATION'),
-                    new FieldDescriptor(0, 'subject', 'subject', 'Subject', 'vtiger_emailtemplates', 1, 'V~O', false, false, 0, 0, 'LBL_EMAIL_TEMPLATE_INFORMATION'),
-                    new FieldDescriptor(0, 'description', 'description', 'Description', 'vtiger_emailtemplates', 1, 'V~O', false, false, 0, 0, 'LBL_EMAIL_TEMPLATE_INFORMATION'),
+                    new FieldDescriptor(0, 'templatename', 'templatename', 'Template Name', 'vtiger_emailtemplates', 1, 'V~M', true, false, 0, 0, 'LBL_EMAIL_TEMPLATE_INFORMATION', [], null, false, null, false),
+                    new FieldDescriptor(0, 'subject', 'subject', 'Subject', 'vtiger_emailtemplates', 1, 'V~O', false, false, 0, 0, 'LBL_EMAIL_TEMPLATE_INFORMATION', [], null, false, null, false),
+                    new FieldDescriptor(0, 'description', 'description', 'Description', 'vtiger_emailtemplates', 1, 'V~O', false, false, 0, 0, 'LBL_EMAIL_TEMPLATE_INFORMATION', [], null, false, null, false),
                 ];
             }
         }
 
         return $fields->map(function ($f) {
             $picklistValues = [];
-            if (in_array($f->uitype, [15, 16, 33])) {
-                // Try to fetch picklist values from vtiger_{fieldname} table
-                if (\Illuminate\Support\Facades\Schema::connection($this->connection)->hasTable('vtiger_' . $f->fieldname)) {
-                    $picklistValues = DB::connection($this->connection)
-                        ->table('vtiger_' . $f->fieldname)
-                        ->pluck($f->fieldname)
-                        ->toArray();
+            // Common picklist uitypes: 15 (standard), 16 (system), 33 (multi-select), 55 (salutation)
+            if (in_array($f->uitype, [15, 16, 33, 55])) {
+                $tableName = 'vtiger_' . $f->fieldname;
+                if (!\Illuminate\Support\Facades\Schema::connection($this->connection)->hasTable($tableName)) {
+                    // Try without vtiger_ prefix for some custom fields or quirks
+                    $tableName = $f->fieldname;
+                }
+
+                if (\Illuminate\Support\Facades\Schema::connection($this->connection)->hasTable($tableName)) {
+                    $query = DB::connection($this->connection)->table($tableName);
+
+                    if (\Illuminate\Support\Facades\Schema::connection($this->connection)->hasColumn($tableName, 'sortorderid')) {
+                        $query->orderBy('sortorderid');
+                    } else {
+                        $query->orderBy($f->fieldname);
+                    }
+
+                    $picklistValues = $query->pluck($f->fieldname)->toArray();
                 }
             }
 
@@ -89,7 +117,13 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
                 blockId: (int) $f->block,
                 presence: (int) $f->presence,
                 blockLabel: $f->blocklabel,
-                picklistValues: $picklistValues
+                picklistValues: $picklistValues,
+                helpInfo: $f->helpinfo ?? null,
+                allowMultipleFiles: (bool) ($f->allow_multiple_files ?? false),
+                acceptableFileTypes: $f->acceptable_file_types ?? null,
+                readonly: (bool) ($f->readonly ?? false) ||
+                in_array($f->displaytype, [2, 3]) ||
+                $f->uitype == 4 // 4 is auto-increment number
             );
         })->toArray();
     }
