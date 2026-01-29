@@ -148,4 +148,6 @@ return [
     'add_new_record' => 'إضافة جديد',
     'system' => 'النظام',
     'menu_management' => 'إدارة القائمة',
+    'menu_management_subtitle' => 'تجميع مديولات النظام في تطبيقات وتنظيم ترتيبها',
+    'back' => 'رجوع',
 ];

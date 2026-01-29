@@ -110,6 +110,10 @@ class FieldDefinition
 
     public function getLabel(): string
     {
+        if (function_exists('vtranslate')) {
+            return vtranslate($this->labelEn, $this->module);
+        }
+
         $locale = app()->getLocale();
         if ($locale === 'ar' && $this->labelAr) {
             return $this->labelAr;

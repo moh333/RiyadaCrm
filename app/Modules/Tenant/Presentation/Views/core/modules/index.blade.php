@@ -4,12 +4,13 @@
     <div class="container-fluid p-0">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="fw-bold mb-0">
-                <i class="bi bi-collection me-2 text-primary"></i>{{ $metadata->name }}
+                <i class="bi bi-collection me-2 text-primary"></i>{{ vtranslate($metadata->name, $metadata->name) }}
             </h3>
             @canModule($metadata->name, 'create')
             <a href="{{ route('tenant.modules.create', $metadata->name) }}"
                 class="btn btn-primary rounded-3 shadow-sm px-4">
-                <i class="bi bi-plus-lg me-2"></i>{{ __('tenant::tenant.add_new_record') }} {{ $metadata->name }}
+                <i class="bi bi-plus-lg me-2"></i>{{ __('tenant::tenant.add_new_record') }}
+                {{ vtranslate('SINGLE_' . $metadata->name, $metadata->name) }}
             </a>
             @endcanModule
         </div>
@@ -22,7 +23,7 @@
                             <tr>
                                 @foreach($fields as $field)
                                     @if($field->presence == 0)
-                                        <th>{{ $field->label }}</th>
+                                        <th>{{ $field->getLabel($metadata->name) }}</th>
                                     @endif
                                 @endforeach
                                 <th>{{ __('tenant::tenant.actions') }}</th>
@@ -58,22 +59,22 @@
                         searchable: false,
                         render: function (data) {
                             return `
-                                                            <div class="btn-group">
-                                                                <a href="/modules/{{ $metadata->name }}/${data}" class="btn btn-sm btn-outline-info rounded-3 me-1" title="{{ __('tenant::tenant.view') }}">
-                                                                    <i class="bi bi-eye"></i>
-                                                                </a>
-                                                                <a href="/modules/{{ $metadata->name }}/${data}/edit" class="btn btn-sm btn-outline-primary rounded-3 me-1" title="{{ __('tenant::tenant.edit') }}">
-                                                                    <i class="bi bi-pencil"></i>
-                                                                </a>
-                                                                <form action="/modules/{{ $metadata->name }}/${data}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('tenant::tenant.delete_block_confirm') }}')">
-                                                                    @csrf
-                                                                    @method('DELETE')
-                                                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-3">
-                                                                        <i class="bi bi-trash"></i>
-                                                                    </button>
-                                                                </form>
-                                                            </div>
-                                                        `;
+                                                                    <div class="btn-group">
+                                                                        <a href="/modules/{{ $metadata->name }}/${data}" class="btn btn-sm btn-outline-info rounded-3 me-1" title="{{ __('tenant::tenant.view') }}">
+                                                                            <i class="bi bi-eye"></i>
+                                                                        </a>
+                                                                        <a href="/modules/{{ $metadata->name }}/${data}/edit" class="btn btn-sm btn-outline-primary rounded-3 me-1" title="{{ __('tenant::tenant.edit') }}">
+                                                                            <i class="bi bi-pencil"></i>
+                                                                        </a>
+                                                                        <form action="/modules/{{ $metadata->name }}/${data}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('tenant::tenant.delete_block_confirm') }}')">
+                                                                            @csrf
+                                                                            @method('DELETE')
+                                                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-3">
+                                                                                <i class="bi bi-trash"></i>
+                                                                            </button>
+                                                                        </form>
+                                                                    </div>
+                                                                `;
                         }
                     }
                 ],

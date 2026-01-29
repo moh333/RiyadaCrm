@@ -8,7 +8,7 @@
                     <i
                         class="bi bi-layout-text-sidebar-reverse me-2"></i>{{ __('tenant::tenant.menu_management') ?? 'Menu Management' }}
                 </h3>
-                <p class="text-muted mb-0">Group entity modules into applications and organize their order</p>
+                <p class="text-muted mb-0">{{ __('tenant::tenant.menu_management_subtitle') ?? 'Group entity modules into applications and organize their order' }}</p>
             </div>
             <a href="{{ route('tenant.settings.modules.index') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-2"></i>{{ __('tenant::tenant.back') }}
@@ -33,7 +33,7 @@
                         <div class="card border-0 shadow-sm rounded-4 h-100 bg-light">
                             <div class="card-header bg-white border-bottom py-3 px-3 d-flex justify-content-between align-items-center rounded-top-4 sticky-top transition-all" style="top: 0; z-index: 10;">
                                 <h6 class="mb-0 fw-bold text-uppercase text-primary small d-flex align-items-center">
-                                    <i class="bi bi-grid-3x3-gap-fill me-2"></i>{{ $appName }}
+                                    <i class="bi bi-grid-3x3-gap-fill me-2"></i>{{ vtranslate($appName, 'Vtiger') }}
                                 </h6>
                                 <span class="badge bg-primary-subtle text-primary rounded-pill small">{{ count($modules) }}</span>
                                 <input type="hidden" name="apps[{{ $loop->index }}][name]" value="{{ $appName }}">
@@ -95,6 +95,11 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            if (typeof Sortable === 'undefined') {
+                console.error('SortableJS library failed to load from CDN.');
+                return;
+            }
+
             const moduleLists = document.querySelectorAll('.sortable-modules');
             const form = document.getElementById('menu-form');
 
@@ -104,6 +109,8 @@
                     handle: '.handle',
                     animation: 150,
                     ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    dragClass: 'sortable-drag',
                     onEnd: function () {
                         updateFormInputs();
                     }
@@ -115,7 +122,10 @@
                 if (e.target.classList.contains('visibility-toggle')) {
                     const moduleItem = e.target.closest('.module-item');
                     const visibleInput = moduleItem.querySelector('.input-visible');
-                    visibleInput.value = e.target.checked ? 1 : 0;
+                    if (visibleInput) {
+                        visibleInput.value = e.target.checked ? 1 : 0;
+                        updateFormInputs(); // Ensure form is updated on visibility change too
+                    }
                 }
             });
 
@@ -124,24 +134,29 @@
 
                 appGroups.forEach((appGroup, appIndex) => {
                     const modules = appGroup.querySelectorAll('.module-item');
-                    const appName = appGroup.dataset.app;
-
+                    
                     modules.forEach((module, modIndex) => {
-                        const tabId = module.querySelector('.input-tabid').value;
-                        const visible = module.querySelector('.input-visible').value;
+                        const tabIdInput = module.querySelector('.input-tabid');
+                        const sequenceInput = module.querySelector('.input-sequence');
+                        const visibleInput = module.querySelector('.input-visible');
 
-                        // Clear old hidden inputs and create new ones with correct names for Laravel binding
-                        const container = module.querySelector('.hidden-inputs');
-                        container.innerHTML = `
-                                    <input type="hidden" name="apps[${appIndex}][modules][${modIndex}][tabid]" value="${tabId}">
-                                    <input type="hidden" name="apps[${appIndex}][modules][${modIndex}][sequence]" value="${modIndex}">
-                                    <input type="hidden" name="apps[${appIndex}][modules][${modIndex}][visible]" value="${visible}">
-                                `;
+                        if (tabIdInput) {
+                            tabIdInput.name = `apps[${appIndex}][modules][${modIndex}][tabid]`;
+                        }
+                        
+                        if (sequenceInput) {
+                            sequenceInput.name = `apps[${appIndex}][modules][${modIndex}][sequence]`;
+                            sequenceInput.value = modIndex;
+                        }
+                        
+                        if (visibleInput) {
+                            visibleInput.name = `apps[${appIndex}][modules][${modIndex}][visible]`;
+                        }
                     });
                 });
             }
 
-            // Initial input update
+            // Initial input update to set names correctly
             updateFormInputs();
 
             form.addEventListener('submit', function () {
@@ -154,16 +169,29 @@
         .module-item {
             transition: all 0.2s;
             cursor: default;
+            border: 1px solid transparent !important;
         }
 
         .module-item:hover {
             background-color: #f8fafc;
+            border-color: #e2e8f0 !important;
         }
 
         .sortable-ghost {
-            opacity: 0.4;
+            opacity: 0.3;
+            background-color: #6366f1 !important;
+            border: 2px dashed #4338ca !important;
+        }
+
+        .sortable-chosen {
+            background-color: #f0f7ff !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        .selected-module {
             background-color: #eef2ff !important;
-            border: 2px dashed #6366f1 !important;
+            border: 1px solid #6366f1 !important;
+            z-index: 1;
         }
 
         .handle {
@@ -195,6 +223,10 @@
             margin-left: -2rem;
             margin-right: -2rem;
             margin-bottom: -2rem;
+        }
+
+        .min-h-100 {
+            min-height: 100px;
         }
     </style>
 @endsection

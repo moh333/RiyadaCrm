@@ -4,7 +4,8 @@
     <div class="container-fluid p-0">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="fw-bold mb-0">
-                <i class="bi bi-person-vcard me-2 text-primary"></i>{{ $metadata->name }} {{ __('tenant::tenant.details') }}
+                <i class="bi bi-person-vcard me-2 text-primary"></i>{{ vtranslate($metadata->name, $metadata->name) }}
+                {{ __('tenant::tenant.details') }}
             </h3>
             <div class="d-flex gap-2">
                 <a href="{{ route('tenant.modules.index', $metadata->name) }}"
@@ -25,7 +26,8 @@
                 @php
                     $groupedFields = [];
                     foreach ($fields as $field) {
-                        $groupedFields[$field->blockLabel ?: __('tenant::tenant.general_information')][] = $field;
+                        $bLabel = $field->blockLabel ? vtranslate($field->blockLabel, $metadata->name) : __('tenant::tenant.general_information');
+                        $groupedFields[$bLabel][] = $field;
                     }
                 @endphp
 
@@ -40,9 +42,10 @@
                                     @if($field->presence == 0)
                                         <div class="col-md-6 mb-3">
                                             <label
-                                                class="form-label text-muted small text-uppercase fw-bold">{{ $field->label }}</label>
+                                                class="form-label text-muted small text-uppercase fw-bold">{{ $field->getLabel($metadata->name) }}</label>
                                             <div class="p-2 border rounded bg-light">
-                                                {{ $record->{$field->column} ?? '-' }}
+                                                @php $val = $record->{$field->column} ?? '-'; @endphp
+                                                {{ in_array($field->uiType, [15, 16, 33]) ? vtranslate($val, $metadata->name) : $val }}
                                             </div>
                                         </div>
                                     @endif

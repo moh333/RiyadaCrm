@@ -5,7 +5,8 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="fw-bold mb-0">
                 <i class="bi bi-pencil-square me-2 text-primary"></i>
-                {{ isset($record) ? __('tenant::tenant.edit') : __('tenant::tenant.add_new_record') }} {{ $metadata->name }}
+                {{ isset($record) ? __('tenant::tenant.edit') : __('tenant::tenant.add_new_record') }}
+                {{ vtranslate('SINGLE_' . $metadata->name, $metadata->name) }}
             </h3>
             <a href="{{ route('tenant.modules.index', $metadata->name) }}"
                 class="btn btn-outline-secondary rounded-3 shadow-sm px-4">
@@ -27,7 +28,8 @@
                         $groupedFields = [];
                         foreach ($fields as $field) {
                             if ($field->presence == 0) {
-                                $groupedFields[$field->blockLabel ?: __('tenant::tenant.general_information')][] = $field;
+                                $bLabel = $field->blockLabel ? vtranslate($field->blockLabel, $metadata->name) : __('tenant::tenant.general_information');
+                                $groupedFields[$bLabel][] = $field;
                             }
                         }
                     @endphp
@@ -42,7 +44,7 @@
                                     @foreach($blockFields as $field)
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label fw-bold small text-uppercase">
-                                                {{ $field->label }}
+                                                {{ $field->getLabel($metadata->name) }}
                                                 @if($field->isMandatory) <span class="text-danger">*</span> @endif
                                             </label>
 
@@ -56,7 +58,8 @@
                                                     class="form-select @error($fieldName) is-invalid @enderror" {{ $field->isMandatory ? 'required' : '' }}>
                                                     <option value="">{{ __('tenant::tenant.select_option') ?? '-- Select --' }}</option>
                                                     @foreach($field->picklistValues as $val)
-                                                        <option value="{{ $val }}" {{ $value == $val ? 'selected' : '' }}>{{ $val }}</option>
+                                                        <option value="{{ $val }}" {{ $value == $val ? 'selected' : '' }}>
+                                                            {{ vtranslate($val, $metadata->name) }}</option>
                                                     @endforeach
                                                 </select>
                                             @elseif($field->uiType == 19 || $field->uiType == 21)

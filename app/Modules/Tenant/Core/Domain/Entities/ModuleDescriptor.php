@@ -16,4 +16,12 @@ class ModuleDescriptor
         public readonly ?string $customFieldTable = null
     ) {
     }
+
+    public function getLabel(): string
+    {
+        if (function_exists('vtranslate')) {
+            return vtranslate($this->label, $this->name);
+        }
+        return $this->label;
+    }
 }

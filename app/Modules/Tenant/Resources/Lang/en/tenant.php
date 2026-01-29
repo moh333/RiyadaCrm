@@ -148,5 +148,7 @@ return [
     'add_new_record' => 'Add New',
     'system' => 'System',
     'menu_management' => 'Menu Management',
+    'menu_management_subtitle' => 'Group entity modules into applications and organize their order',
+    'back' => 'Back',
 ];
 

@@ -20,4 +20,12 @@ class FieldDescriptor
         public readonly array $picklistValues = []
     ) {
     }
+
+    public function getLabel(string $moduleName = 'Vtiger'): string
+    {
+        if (function_exists('vtranslate')) {
+            return vtranslate($this->label, $moduleName);
+        }
+        return $this->label;
+    }
 }

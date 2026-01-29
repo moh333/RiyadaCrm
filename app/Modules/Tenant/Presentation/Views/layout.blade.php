@@ -291,7 +291,7 @@
                     class="text-muted fw-bold text-uppercase px-3">{{ __('tenant::tenant.modules') ?? 'Modules' }}</small>
             </li>
 
-            @foreach($groupedModules as $appName => $modules)            
+            @foreach($groupedModules as $appName => $modules)
                 <li class="nav-item">
                     @php
                         $groupId = 'submenu_' . strtolower(str_replace(' ', '_', $appName));
@@ -306,7 +306,7 @@
                         aria-expanded="{{ $isActiveGroup ? 'true' : 'false' }}" aria-controls="{{ $groupId }}">
                         <div class="d-flex align-items-center">
                             <i class="bi bi-folder-fill"></i>
-                            {{ $appName }}
+                            {{ vtranslate($appName, 'Vtiger') }}
                         </div>
                         <i class="bi bi-chevron-down small"></i>
                     </a>
@@ -318,7 +318,7 @@
                                     <a href="{{ route('tenant.modules.index', $module->name) }}"
                                         class="nav-link {{ request()->is('modules/' . $module->name . '*') ? 'active' : '' }} ps-4 py-2">
                                         <i class="bi bi-layers me-2" style="font-size: 0.9rem;"></i>
-                                        {{ $module->label }}
+                                        {{ $module->getLabel() }}
                                     </a>
                                 </li>
                             @endforeach
