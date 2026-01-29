@@ -155,12 +155,36 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
             ->where('tabid', $row->tabid)
             ->first();
 
+        // Manual mapping for core vtiger modules that share tables or have special primary keys
+        $quirks = [
+            'EmailTemplates' => ['table' => 'vtiger_emailtemplates', 'index' => 'templateid'],
+            'Documents' => ['table' => 'vtiger_notes', 'index' => 'notesid'],
+            'HelpDesk' => ['table' => 'vtiger_troubletickets', 'index' => 'ticketid'],
+            'Potentials' => ['table' => 'vtiger_potential', 'index' => 'potentialid'],
+            'Accounts' => ['table' => 'vtiger_account', 'index' => 'accountid'],
+            'Calendar' => ['table' => 'vtiger_activity', 'index' => 'activityid'],
+            'Events' => ['table' => 'vtiger_activity', 'index' => 'activityid'],
+            'ModComments' => ['table' => 'vtiger_modcomments', 'index' => 'modcommentsid'],
+        ];
+
+        $baseTable = $entityInfo->tablename ?? null;
+        $baseIndex = $entityInfo->entityidfield ?? null;
+
+        if (isset($quirks[$row->name])) {
+            if (empty($baseTable)) {
+                $baseTable = $quirks[$row->name]['table'];
+            }
+            if (empty($baseIndex)) {
+                $baseIndex = $quirks[$row->name]['index'];
+            }
+        }
+
         $module = ModuleDefinition::create(
             id: (int) $row->tabid,
             name: $row->name,
             label: $row->tablabel ?? $row->name,
-            baseTable: $entityInfo->tablename ?? null,
-            baseIndex: $entityInfo->entityidfield ?? null,
+            baseTable: $baseTable,
+            baseIndex: $baseIndex,
             isEntity: (bool) $row->isentitytype,
             isCustom: (bool) ($row->customized ?? 0),
             ownedBy: (int) ($row->ownedby ?? 0),
