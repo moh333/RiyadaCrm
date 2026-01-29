@@ -66,10 +66,18 @@ $languageStrings = array(
 	'LBL_ADD_EVENT' => 'اضافة حدث',
 	'LBL_ADD_TASK' => 'إضافة مهمة',
 	'LBL_MARKETING_AND_SALES' => 'التسويق و المبيعات',
+	'MARKETING' => 'التسويق',
+	'SALES' => 'المبيعات',
 	'LBL_TOOLS_HEADER' => 'ادوات',
+	'TOOLS' => 'الأدوات',
 	'LBL_SUPPORT' => 'الدعم',
+	'SUPPORT' => 'الدعم الفني',
 	'LBL_INVENTORY' => 'الجرد',
+	'INVENTORY' => 'المخزون',
 	'LBL_ANALYTICS' => 'التحليل',
+	'ANALYTICS' => 'التحليلات',
+	'PROJECTS' => 'المشاريع',
+	'OTHERS' => 'أخرى',
 	'LBL_HOME' => 'الرئيسية',
 
 	// Common Link Labels
