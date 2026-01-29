@@ -129,8 +129,12 @@ class GenericModuleController extends Controller
             $now = now()->format('Y-m-d H:i:s');
             $userId = auth('tenant')->id();
 
-            // 1. Insert into crmentity
-            $crmId = DB::connection('tenant')->table('vtiger_crmentity')->insertGetId([
+            // 1. Get next CRM ID
+            $crmId = vtiger_next_id('tenant');
+
+            // 2. Insert into crmentity
+            DB::connection('tenant')->table('vtiger_crmentity')->insert([
+                'crmid' => $crmId,
                 'smcreatorid' => $userId,
                 'smownerid' => $userId,
                 'setype' => $moduleName,
@@ -138,7 +142,8 @@ class GenericModuleController extends Controller
                 'modifiedtime' => $now,
                 'version' => 0,
                 'presence' => 0,
-                'deleted' => 0
+                'deleted' => 0,
+                'label' => $this->generateLabel($request, $fields)
             ]);
 
             // 2. Group data by table
@@ -305,5 +310,39 @@ class GenericModuleController extends Controller
         return $query->select($selects)
             ->where("{$metadata->baseTable}.{$metadata->baseTableIndex}", $id)
             ->first();
+    }
+    protected function generateLabel(Request $request, $fields): string
+    {
+        $moduleName = $request->route('moduleName');
+        $entityInfo = DB::connection('tenant')->table('vtiger_entityname')
+            ->where('modulename', $moduleName)
+            ->first();
+
+        if ($entityInfo) {
+            $labelFields = explode(',', $entityInfo->fieldname);
+            $labels = [];
+            foreach ($labelFields as $f) {
+                if ($request->has($f)) {
+                    $labels[] = $request->input($f);
+                }
+            }
+            if (!empty($labels)) {
+                return implode(' ', $labels);
+            }
+        }
+
+        // Fallback for modules like EmailTemplates not in entityname
+        if ($moduleName === 'EmailTemplates') {
+            return $request->input('templatename', 'New Email Template');
+        }
+
+        // Final fallback: use first non-empty value from request
+        foreach ($request->all() as $key => $value) {
+            if ($key !== '_token' && is_string($value) && !empty($value)) {
+                return $value;
+            }
+        }
+
+        return $moduleName . ' Record';
     }
 }

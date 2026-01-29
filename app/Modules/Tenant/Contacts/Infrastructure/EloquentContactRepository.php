@@ -100,25 +100,7 @@ class EloquentContactRepository implements ContactRepositoryInterface
      */
     public function nextIdentity(): int
     {
-        // Get next value from vtiger_crmentity_seq table
-        $query = DB::connection('tenant')->table('vtiger_crmentity_seq')->lockForUpdate();
-        $result = $query->first();
-
-        if (!$result) {
-            // Initialize if empty (standard vtiger behavior requires at least one row)
-            // Use current max crmid as base if exists, otherwise start at 1000 to avoid collisions
-            $maxId = DB::connection('tenant')->table('vtiger_crmentity')->max('crmid') ?? 1000;
-            $nextId = $maxId + 1;
-            DB::connection('tenant')->table('vtiger_crmentity_seq')->insert(['id' => $nextId]);
-            return $nextId;
-        }
-
-        $nextId = $result->id + 1;
-
-        DB::connection('tenant')->table('vtiger_crmentity_seq')
-            ->update(['id' => $nextId]);
-
-        return $nextId;
+        return vtiger_next_id('tenant');
     }
 
 

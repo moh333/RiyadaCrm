@@ -77,4 +77,29 @@ if (!function_exists('vtranslate')) {
 
         return $loader($path);
     }
+    /**
+     * Get the next CRM ID from vtiger_crmentity_seq
+     * 
+     * @param string $connection
+     * @return int
+     */
+    function vtiger_next_id(string $connection = 'tenant'): int
+    {
+        return \Illuminate\Support\Facades\DB::connection($connection)->transaction(function () use ($connection) {
+            $query = \Illuminate\Support\Facades\DB::connection($connection)->table('vtiger_crmentity_seq')->lockForUpdate();
+            $result = $query->first();
+
+            if (!$result) {
+                $maxId = \Illuminate\Support\Facades\DB::connection($connection)->table('vtiger_crmentity')->max('crmid') ?? 1000;
+                $nextId = $maxId + 1;
+                \Illuminate\Support\Facades\DB::connection($connection)->table('vtiger_crmentity_seq')->insert(['id' => $nextId]);
+                return (int) $nextId;
+            }
+
+            $nextId = $result->id + 1;
+            \Illuminate\Support\Facades\DB::connection($connection)->table('vtiger_crmentity_seq')->update(['id' => $nextId]);
+
+            return (int) $nextId;
+        });
+    }
 }
