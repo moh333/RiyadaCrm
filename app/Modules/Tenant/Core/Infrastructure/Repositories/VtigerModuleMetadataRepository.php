@@ -54,7 +54,7 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
             ->table('vtiger_field')
             ->leftJoin('vtiger_blocks', 'vtiger_field.block', '=', 'vtiger_blocks.blockid')
             ->where('vtiger_field.tabid', $tabId)
-            ->whereIn('vtiger_field.presence', [0, 2])
+            ->whereIn('vtiger_field.presence', [0, 1, 2])
             ->whereIn('vtiger_field.displaytype', [1, 2, 3, 4, 5]); // Include 2 (read-only) and 4 (auto-increment)
 
         $select = ['vtiger_field.*', 'vtiger_blocks.blocklabel', 'vtiger_blocks.label_en as block_label_en', 'vtiger_blocks.label_ar as block_label_ar'];

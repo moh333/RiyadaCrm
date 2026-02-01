@@ -102,4 +102,45 @@ if (!function_exists('vtranslate')) {
             return (int) $nextId;
         });
     }
+
+    /**
+     * Get the next module sequence number from vtiger_modentity_num
+     * 
+     * @param string $module
+     * @param string $connection
+     * @return string|null
+     */
+    function vtiger_next_no(string $module, string $connection = 'tenant'): ?string
+    {
+        return \Illuminate\Support\Facades\DB::connection($connection)->transaction(function () use ($module, $connection) {
+            $query = \Illuminate\Support\Facades\DB::connection($connection)->table('vtiger_modentity_num')
+                ->where('semodule', $module)
+                ->lockForUpdate();
+
+            $row = $query->first();
+
+            if (!$row) {
+                // Initialize if missing (Vtiger behavior)
+                $prefix = strtoupper(substr($module, 0, 3));
+                $nextSequence = 1;
+                \Illuminate\Support\Facades\DB::connection($connection)->table('vtiger_modentity_num')->insert([
+                    'semodule' => $module,
+                    'prefix' => $prefix,
+                    'start_id' => 1,
+                    'cur_id' => 1,
+                    'active' => '1',
+                ]);
+                return $prefix . $nextSequence;
+            }
+
+            $currentId = (int) $row->cur_id;
+            $nextSequence = $currentId + 1;
+
+            \Illuminate\Support\Facades\DB::connection($connection)->table('vtiger_modentity_num')
+                ->where('num_id', $row->num_id)
+                ->update(['cur_id' => $nextSequence]);
+
+            return $row->prefix . $nextSequence;
+        });
+    }
 }

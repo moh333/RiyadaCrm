@@ -151,11 +151,23 @@ class GenericModuleController extends Controller
             foreach ($fields as $field) {
                 if ($request->has($field->column)) {
                     $val = $request->input($field->column);
-                    // Handle multi-select picklists (uitype 33)
-                    if (is_array($val) && $field->uiType == 33) {
-                        $val = implode(' |##| ', $val);
+                    // Handle arrays (multi-select picklists, multi-checkboxes, etc.)
+                    if (is_array($val)) {
+                        if ($field->uiType == 33) {
+                            $val = implode(' |##| ', $val);
+                        } else {
+                            $val = json_encode($val);
+                        }
                     }
                     $dataByTable[$field->table][$field->column] = $val;
+                }
+
+                // Handle Auto-generated sequence numbering (uitype 4)
+                if ($field->uiType == 4 && empty($dataByTable[$field->table][$field->column])) {
+                    $nextNo = vtiger_next_no($metadata->name, 'tenant');
+                    if ($nextNo) {
+                        $dataByTable[$field->table][$field->column] = $nextNo;
+                    }
                 }
             }
 
@@ -163,8 +175,16 @@ class GenericModuleController extends Controller
             foreach ($request->allFiles() as $col => $file) {
                 $field = $fields->firstWhere('column', $col);
                 if ($field) {
-                    $path = $file->store('modules/' . $moduleName, 'tenancy');
-                    $dataByTable[$field->table][$col] = $path;
+                    if (is_array($file)) {
+                        $paths = [];
+                        foreach ($file as $singleFile) {
+                            $paths[] = $singleFile->store('modules/' . $moduleName, 'tenancy');
+                        }
+                        $dataByTable[$field->table][$col] = json_encode($paths);
+                    } else {
+                        $path = $file->store('modules/' . $moduleName, 'tenancy');
+                        $dataByTable[$field->table][$col] = $path;
+                    }
                 }
             }
 
@@ -202,6 +222,12 @@ class GenericModuleController extends Controller
                 }
 
                 $data[$pk] = $crmId;
+
+                // SPECIAL CASE: vtiger_crmentity_user_field needs userid
+                if ($table === 'vtiger_crmentity_user_field' && !isset($data['userid'])) {
+                    $data['userid'] = $userId;
+                }
+
                 DB::connection('tenant')->table($table)->insert($data);
             }
 
@@ -276,9 +302,13 @@ class GenericModuleController extends Controller
             foreach ($fields as $field) {
                 if ($request->has($field->column)) {
                     $val = $request->input($field->column);
-                    // Handle multi-select picklists (uitype 33)
-                    if (is_array($val) && $field->uiType == 33) {
-                        $val = implode(' |##| ', $val);
+                    // Handle arrays (multi-select picklists, multi-checkboxes, etc.)
+                    if (is_array($val)) {
+                        if ($field->uiType == 33) {
+                            $val = implode(' |##| ', $val);
+                        } else {
+                            $val = json_encode($val);
+                        }
                     }
                     $dataByTable[$field->table][$field->column] = $val;
                 }
@@ -288,8 +318,16 @@ class GenericModuleController extends Controller
             foreach ($request->allFiles() as $col => $file) {
                 $field = $fields->firstWhere('column', $col);
                 if ($field) {
-                    $path = $file->store('modules/' . $moduleName, 'tenancy');
-                    $dataByTable[$field->table][$col] = $path;
+                    if (is_array($file)) {
+                        $paths = [];
+                        foreach ($file as $singleFile) {
+                            $paths[] = $singleFile->store('modules/' . $moduleName, 'tenancy');
+                        }
+                        $dataByTable[$field->table][$col] = json_encode($paths);
+                    } else {
+                        $path = $file->store('modules/' . $moduleName, 'tenancy');
+                        $dataByTable[$field->table][$col] = $path;
+                    }
                 }
             }
 
@@ -328,9 +366,17 @@ class GenericModuleController extends Controller
                     $pk = collect($columns)->first(fn($col) => str_contains(strtolower($col), 'id')) ?: $metadata->baseTableIndex;
                 }
 
-                DB::connection('tenant')->table($table)
-                    ->where($pk, $id)
-                    ->update($data);
+                if ($table === 'vtiger_crmentity_user_field') {
+                    DB::connection('tenant')->table($table)
+                        ->updateOrInsert(
+                            ['recordid' => $id, 'userid' => auth('tenant')->id()],
+                            $data
+                        );
+                } else {
+                    DB::connection('tenant')->table($table)
+                        ->where($pk, $id)
+                        ->update($data);
+                }
             }
 
             return redirect()->route('tenant.modules.show', [$moduleName, $id])
