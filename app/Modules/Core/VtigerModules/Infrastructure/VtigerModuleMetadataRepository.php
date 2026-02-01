@@ -183,6 +183,8 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
             id: (int) $row->tabid,
             name: $row->name,
             label: $row->tablabel ?? $row->name,
+            labelEn: $row->tablabel_en ?? null,
+            labelAr: $row->tablabel_ar ?? null,
             baseTable: $baseTable,
             baseIndex: $baseIndex,
             isEntity: (bool) $row->isentitytype,

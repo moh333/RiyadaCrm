@@ -75,6 +75,14 @@ class BlockDefinition
 
     public function getLabel(): string
     {
+        $locale = app()->getLocale();
+        if ($locale === 'ar' && $this->labelAr) {
+            return $this->labelAr;
+        }
+        if ($locale === 'en' && $this->labelEn) {
+            return $this->labelEn;
+        }
+
         if (function_exists('vtranslate')) {
             return vtranslate($this->label, $this->module);
         }

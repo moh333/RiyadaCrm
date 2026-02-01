@@ -24,6 +24,8 @@ class ModuleDefinition
         private readonly int $id,
         private readonly string $name,
         private readonly string $label,
+        private readonly ?string $labelEn = null,
+        private readonly ?string $labelAr = null,
         private readonly ?string $baseTable,
         private readonly ?string $baseIndex,
         private readonly bool $isEntity,
@@ -54,6 +56,8 @@ class ModuleDefinition
         int $id,
         string $name,
         string $label,
+        ?string $labelEn = null,
+        ?string $labelAr = null,
         ?string $baseTable = null,
         ?string $baseIndex = null,
         bool $isEntity = true,
@@ -66,6 +70,8 @@ class ModuleDefinition
             id: $id,
             name: $name,
             label: $label,
+            labelEn: $labelEn,
+            labelAr: $labelAr,
             baseTable: $baseTable,
             baseIndex: $baseIndex,
             isEntity: $isEntity,
@@ -92,10 +98,28 @@ class ModuleDefinition
 
     public function getLabel(): string
     {
+        $locale = app()->getLocale();
+        if ($locale === 'ar' && $this->labelAr) {
+            return $this->labelAr;
+        }
+        if ($locale === 'en' && $this->labelEn) {
+            return $this->labelEn;
+        }
+
         if (function_exists('vtranslate')) {
             return vtranslate($this->label, $this->name);
         }
         return $this->label;
+    }
+
+    public function getLabelEn(): ?string
+    {
+        return $this->labelEn;
+    }
+
+    public function getLabelAr(): ?string
+    {
+        return $this->labelAr;
     }
 
     public function getBaseTable(): ?string

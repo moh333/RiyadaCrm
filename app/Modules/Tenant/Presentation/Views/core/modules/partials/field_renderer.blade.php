@@ -17,13 +17,15 @@
     }
 @endphp
 
+<!-- Debug: Field {{ $fieldName }} ({{ $columnName }}), Logic: {{ $field->readonly ? 'Readonly' : 'Editable' }} -->
+
 <div class="col-md-{{ in_array($uitype, [19, 21]) ? '12' : '6' }} mb-3">
     <label class="form-label fw-bold small text-uppercase">
         {{ $field->getLabel($metadata->name) }}
         @if($isMandatory) <span class="text-danger">*</span> @endif
     </label>
 
-    @if($uitype == 15 || $uitype == 16 || $uitype == 55) {{-- Picklist --}}
+    @if(($uitype == 15 || $uitype == 16 || $uitype == 55) && ($uitype != 55 || !empty($field->picklistValues))) {{-- Picklist --}}
         <select name="{{ $inputName }}" class="form-select select2 @error($columnName) is-invalid @enderror" {{ $isMandatory ? 'required' : '' }} {{ $field->readonly ? 'disabled' : '' }}>
             <option value="">{{ __('tenant::tenant.select_option') ?? '-- Select --' }}</option>
             @foreach($field->picklistValues as $val)
@@ -98,7 +100,7 @@
 
     @elseif($uitype == 53 || $uitype == 77 || $uitype == 101) {{-- Assigned To / Owner / User --}}
         <select name="{{ $inputName }}" class="form-select select2 @error($columnName) is-invalid @enderror" {{ $isMandatory ? 'required' : '' }} {{ $field->readonly ? 'disabled' : '' }}>
-            @if(!$isMandatory) <option value="">{{ __('tenant::tenant.none') }}</option> @endif
+            @if(!$isMandatory) <option value="">{{ __('tenant::tenant.select_option') }}</option> @endif
             <optgroup label="Users">
                 @php
                     $users = DB::connection('tenant')->table('vtiger_users')->where('status', 'Active')->get();

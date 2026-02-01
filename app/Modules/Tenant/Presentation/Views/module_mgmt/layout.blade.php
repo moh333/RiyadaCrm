@@ -23,7 +23,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h3 class="fw-bold mb-0">
-                    <i class="bi bi-layout-text-sidebar me-2"></i>{{ $moduleDefinition->getName() }} - {{ __('tenant::tenant.module_layouts_fields') }}
+                    <i class="bi bi-layout-text-sidebar me-2"></i>{{ $moduleDefinition->getLabel() }} - {{ __('tenant::tenant.module_layouts_fields') }}
                 </h3>
             </div>
             <div class="d-flex gap-2">

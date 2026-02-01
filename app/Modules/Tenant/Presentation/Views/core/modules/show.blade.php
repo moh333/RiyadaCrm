@@ -26,7 +26,10 @@
                 @php
                     $groupedFields = [];
                     foreach ($fields as $field) {
-                        $bLabel = $field->blockLabel ? vtranslate($field->blockLabel, $metadata->name) : __('tenant::tenant.general_information');
+                        $bLabel = $field->getBlockLabel($metadata->name);
+                        if (empty($bLabel)) {
+                            $bLabel = __('tenant::tenant.general_information');
+                        }
                         $groupedFields[$bLabel][] = $field;
                     }
                 @endphp

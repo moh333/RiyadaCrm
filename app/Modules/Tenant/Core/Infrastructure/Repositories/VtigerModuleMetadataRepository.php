@@ -55,7 +55,9 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
             ->leftJoin('vtiger_blocks', 'vtiger_field.block', '=', 'vtiger_blocks.blockid')
             ->where('vtiger_field.tabid', $tabId)
             ->whereIn('vtiger_field.presence', [0, 2])
-            ->whereIn('vtiger_field.displaytype', [1, 2, 3, 5]); // Include 2 (read-only)
+            ->whereIn('vtiger_field.displaytype', [1, 2, 3, 4, 5]); // Include 2 (read-only) and 4 (auto-increment)
+
+        $select = ['vtiger_field.*', 'vtiger_blocks.blocklabel', 'vtiger_blocks.label_en as block_label_en', 'vtiger_blocks.label_ar as block_label_ar'];
 
         // If not admin, filter by profile permissions
         if ($userId != 1 && $profileId) {
@@ -64,9 +66,10 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
                     ->where('vtiger_profile2field.profileid', $profileId)
                     ->where('vtiger_profile2field.visible', 0); // 0 = visible in Vtiger
             });
+            $select[] = 'vtiger_profile2field.readonly as profile_readonly';
         }
 
-        $fields = $query->select('vtiger_field.*', 'vtiger_blocks.blocklabel')
+        $fields = $query->select($select)
             ->orderBy('vtiger_field.sequence')
             ->get();
 
@@ -74,14 +77,14 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
             $moduleName = DB::connection($this->connection)->table('vtiger_tab')->where('tabid', $tabId)->value('name');
             if ($moduleName === 'EmailTemplates') {
                 return [
-                    new FieldDescriptor(0, 'templatename', 'templatename', 'Template Name', 'vtiger_emailtemplates', 1, 'V~M', true, false, 0, 0, 'LBL_EMAIL_TEMPLATE_INFORMATION', [], null, false, null, false),
-                    new FieldDescriptor(0, 'subject', 'subject', 'Subject', 'vtiger_emailtemplates', 1, 'V~O', false, false, 0, 0, 'LBL_EMAIL_TEMPLATE_INFORMATION', [], null, false, null, false),
-                    new FieldDescriptor(0, 'description', 'description', 'Description', 'vtiger_emailtemplates', 1, 'V~O', false, false, 0, 0, 'LBL_EMAIL_TEMPLATE_INFORMATION', [], null, false, null, false),
+                    new FieldDescriptor(0, 'templatename', 'templatename', 'Template Name', 'vtiger_emailtemplates', 1, 'V~M', true, false, 0, 0, 'LBL_EMAIL_TEMPLATE_INFORMATION', null, null, [], null, false, null, false),
+                    new FieldDescriptor(0, 'subject', 'subject', 'Subject', 'vtiger_emailtemplates', 1, 'V~O', false, false, 0, 0, 'LBL_EMAIL_TEMPLATE_INFORMATION', null, null, [], null, false, null, false),
+                    new FieldDescriptor(0, 'description', 'description', 'Description', 'vtiger_emailtemplates', 1, 'V~O', false, false, 0, 0, 'LBL_EMAIL_TEMPLATE_INFORMATION', null, null, [], null, false, null, false),
                 ];
             }
         }
 
-        return $fields->map(function ($f) {
+        return $fields->map(function ($f) use ($userId) {
             $picklistValues = [];
             // Common picklist uitypes: 15 (standard), 16 (system), 33 (multi-select), 55 (salutation)
             if (in_array($f->uitype, [15, 16, 33, 55])) {
@@ -104,11 +107,47 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
                 }
             }
 
+            // Determine if the field is readonly
+            $isReadonly = false;
+
+            if ($userId == 1) {
+                // Admin bypasses profile/explicit readonly, but respects system-level readonly
+                if (in_array($f->displaytype, [2, 3]) || $f->uitype == 4) {
+                    $isReadonly = true;
+                }
+            } else {
+                // 1. Mandatory readonly by display type
+                if (in_array($f->displaytype, [2, 3])) {
+                    $isReadonly = true;
+                }
+                // 2. Auto-increment fields (uitype 4) are always readonly
+                elseif ($f->uitype == 4) {
+                    $isReadonly = true;
+                }
+                // 3. Profile-based readonly
+                elseif (isset($f->profile_readonly) && $f->profile_readonly == 1) {
+                    $isReadonly = true;
+                }
+                // 4. Explicitly set on field record
+                elseif (isset($f->readonly) && $f->readonly == 1) {
+                    $isReadonly = true;
+                }
+            }
+
+            // Determine the label to use
+            $label = $f->fieldlabel;
+            $locale = app()->getLocale();
+            if ($locale === 'ar' && !empty($f->fieldlabel_ar)) {
+                $label = $f->fieldlabel_ar;
+            } elseif ($locale === 'en' && !empty($f->fieldlabel_en)) {
+                $label = $f->fieldlabel_en;
+            }
+
             return new FieldDescriptor(
                 id: $f->fieldid,
                 name: $f->fieldname,
                 column: $f->columnname,
-                label: $f->fieldlabel,
+                label: $label,
                 table: $f->tablename,
                 uiType: (int) $f->uitype,
                 typeofData: $f->typeofdata,
@@ -117,13 +156,13 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
                 blockId: (int) $f->block,
                 presence: (int) $f->presence,
                 blockLabel: $f->blocklabel,
+                blockLabelEn: $f->block_label_en ?? null,
+                blockLabelAr: $f->block_label_ar ?? null,
                 picklistValues: $picklistValues,
                 helpInfo: $f->helpinfo ?? null,
                 allowMultipleFiles: (bool) ($f->allow_multiple_files ?? false),
                 acceptableFileTypes: $f->acceptable_file_types ?? null,
-                readonly: (bool) ($f->readonly ?? false) ||
-                in_array($f->displaytype, [2, 3]) ||
-                $f->uitype == 4 // 4 is auto-increment number
+                readonly: $isReadonly
             );
         })->toArray();
     }
@@ -187,10 +226,19 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
             $presence = 1; // Mark as hidden if table is missing
         }
 
+        // Determine the label to use
+        $label = $tab->tablabel;
+        $locale = app()->getLocale();
+        if ($locale === 'ar' && !empty($tab->tablabel_ar)) {
+            $label = $tab->tablabel_ar;
+        } elseif ($locale === 'en' && !empty($tab->tablabel_en)) {
+            $label = $tab->tablabel_en;
+        }
+
         return new ModuleDescriptor(
             id: $tab->tabid,
             name: $name,
-            label: $tab->tablabel,
+            label: $label,
             baseTable: $baseTable,
             baseTableIndex: $baseTableIndex,
             isEntity: (bool) $tab->isentitytype,
