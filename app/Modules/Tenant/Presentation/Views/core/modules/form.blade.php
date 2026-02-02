@@ -28,23 +28,28 @@
                         $groupedFields = [];
                         foreach ($fields as $field) {
                             if (in_array($field->presence, [0, 2])) {
-                                $bLabel = $field->getBlockLabel($metadata->name);
-                                if (empty($bLabel)) {
-                                    $bLabel = __('tenant::tenant.general_information');
+                                $rawLabel = (string) ($field->blockLabel ?: 'LBL_GENERAL_INFORMATION');
+                                $translatedLabel = $field->getBlockLabel($metadata->name) ?: __('tenant::tenant.general_information');
+                                
+                                if (!isset($groupedFields[$rawLabel])) {
+                                    $groupedFields[$rawLabel] = [
+                                        'label' => $translatedLabel,
+                                        'fields' => []
+                                    ];
                                 }
-                                $groupedFields[$bLabel][] = $field;
+                                $groupedFields[$rawLabel]['fields'][] = $field;
                             }
                         }
                     @endphp
 
-                    @foreach($groupedFields as $blockLabel => $blockFields)
-                        <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    @foreach($groupedFields as $rawLabel => $blockData)
+                        <div class="card border-0 shadow-sm rounded-4 mb-4" data-block-label="{{ $rawLabel }}">
                             <div class="card-header bg-transparent border-bottom p-4">
-                                <h5 class="fw-bold mb-0 text-primary">{{ $blockLabel }}</h5>
+                                <h5 class="fw-bold mb-0 text-primary">{{ $blockData['label'] }}</h5>
                             </div>
                             <div class="card-body p-4">
                                 <div class="row">
-                                    @foreach($blockFields as $field)
+                                    @foreach($blockData['fields'] as $field)
                                         @include('tenant::core.modules.partials.field_renderer', [
                                             'field' => $field,
                                             'metadata' => $metadata,
@@ -78,6 +83,134 @@
                         dropdownParent: $(this).parent()
                     });
                 });
+
+                // Picklist Dependencies logic
+                const dependencies = @json($picklistDependencies ?? []);
+                if (dependencies.length > 0) {
+                    const groupedDeps = {};
+                    dependencies.forEach(dep => {
+                        const key = `${dep.sourcefield}__${dep.targetfield}`;
+                        if (!groupedDeps[key]) {
+                            groupedDeps[key] = {
+                                source: dep.sourcefield,
+                                target: dep.targetfield,
+                                mappings: {}
+                            };
+                        }
+                        try {
+                            groupedDeps[key].mappings[dep.sourcevalue] = JSON.parse(dep.targetvalues);
+                        } catch(e) {
+                            console.error('Failed to parse dependency target values', e);
+                        }
+                    });
+
+                    Object.values(groupedDeps).forEach(dep => {
+                        const $source = $(`[data-fieldname="${dep.source}"]`);
+                        const $target = $(`[data-fieldname="${dep.target}"]`);
+
+                        if ($source.length && $target.length) {
+                            $source.on('change', function() {
+                                const val = $(this).val();
+                                const allowedValues = dep.mappings[val];
+                                
+                                // Store current value to re-select if still allowed
+                                const currentVal = $target.val();
+
+                                if (val && allowedValues) {
+                                    $target.find('option').each(function() {
+                                        const optVal = $(this).val();
+                                        if (optVal === "" || allowedValues.includes(optVal)) {
+                                            $(this).prop('disabled', false).show();
+                                        } else {
+                                            $(this).prop('disabled', true).hide();
+                                        }
+                                    });
+                                } else {
+                                    // If source is empty, show all?
+                                    // In Vtiger, typically if source is empty, target is also restricted or empty depending on config.
+                                    // Let's show all for now if no specific mapping, or hide all if source has value but no mapping.
+                                    if (!val) {
+                                         $target.find('option').prop('disabled', false).show();
+                                    } else {
+                                         $target.find('option').each(function() {
+                                             if ($(this).val() === "") $(this).prop('disabled', false).show();
+                                             else $(this).prop('disabled', true).hide();
+                                         });
+                                    }
+                                }
+
+                                // Reset target if current value is now disabled
+                                if (currentVal && $target.find(`option[value="${currentVal}"]`).prop('disabled')) {
+                                    $target.val('').trigger('change.select2');
+                                } else {
+                                    $target.trigger('change.select2');
+                                }
+                                
+                                // Re-initialize select2 to reflect hidden options (some browsers/versions need this)
+                                if ($target.data('select2')) {
+                                    $target.select2('destroy');
+                                    $target.select2({
+                                        theme: 'bootstrap-5',
+                                        width: '100%',
+                                        dropdownParent: $target.parent()
+                                    });
+                                }
+                            });
+                            
+                            // Initialize on load
+                            $source.trigger('change');
+                        }
+                    });
+                }
+
+                // Block Dependencies logic
+                const blockDependencies = @json($blockDependencies ?? []);
+                if (blockDependencies.length > 0) {
+                    const blockDepsBySource = {};
+                    blockDependencies.forEach(dep => {
+                        if (!blockDepsBySource[dep.sourcefield]) {
+                            blockDepsBySource[dep.sourcefield] = [];
+                        }
+                        blockDepsBySource[dep.sourcefield].push(dep);
+                    });
+
+                    Object.keys(blockDepsBySource).forEach(sourceField => {
+                        const $source = $(`[data-fieldname="${sourceField}"]`);
+                        if ($source.length) {
+                            $source.on('change', function() {
+                                const val = $(this).val();
+                                const deps = blockDepsBySource[sourceField];
+                                
+                                // Group block labels by whether they should be shown or hidden for THIS value
+                                const blocksToProcess = {};
+                                deps.forEach(dep => {
+                                    // If same block has multiple rules, last one wins or we can combine.
+                                    // Usually it's: if value matches, show.
+                                    if (dep.sourcevalue === val) {
+                                        blocksToProcess[dep.blocklabel] = dep.display_status;
+                                    } else if (!blocksToProcess[dep.blocklabel]) {
+                                        // If no match found yet for this block, default to inverse of the rule?
+                                        // Or just hide if it's a "controlled" block.
+                                        blocksToProcess[dep.blocklabel] = !dep.display_status;
+                                    }
+                                });
+
+                                Object.keys(blocksToProcess).forEach(blockLabel => {
+                                    const $block = $(`[data-block-label="${blockLabel}"]`);
+                                    if ($block.length) {
+                                        if (blocksToProcess[blockLabel]) {
+                                            $block.show();
+                                        } else {
+                                            $block.hide();
+                                        }
+                                    }
+                                });
+                            });
+                            // Initialize on load
+                            $source.trigger('change');
+                        }
+                    });
+                }
 
                 // Initialize AJAX Select2 for reference fields
                 $('.select2-ajax').each(function() {

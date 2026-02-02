@@ -26,7 +26,11 @@
     </label>
 
     @if(($uitype == 15 || $uitype == 16 || $uitype == 55) && ($uitype != 55 || !empty($field->picklistValues))) {{-- Picklist --}}
-        <select name="{{ $inputName }}" class="form-select select2 @error($columnName) is-invalid @enderror" {{ $isMandatory ? 'required' : '' }} {{ $field->readonly ? 'disabled' : '' }}>
+        <select name="{{ $inputName }}" 
+            data-fieldname="{{ $fieldName }}"
+            class="form-select select2 @error($columnName) is-invalid @enderror" 
+            {{ $isMandatory ? 'required' : '' }} 
+            {{ $field->readonly ? 'disabled' : '' }}>
             <option value="">{{ __('tenant::tenant.select_option') ?? '-- Select --' }}</option>
             @foreach($field->picklistValues as $val)
                 <option value="{{ $val }}" {{ (string)$value === (string)$val ? 'selected' : '' }}>

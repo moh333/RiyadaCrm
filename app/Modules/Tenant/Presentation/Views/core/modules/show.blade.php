@@ -26,32 +26,37 @@
                 @php
                     $groupedFields = [];
                     foreach ($fields as $field) {
-                        $bLabel = $field->getBlockLabel($metadata->name);
-                        if (empty($bLabel)) {
-                            $bLabel = __('tenant::tenant.general_information');
+                        if (in_array($field->presence, [0, 2])) {
+                            $rawLabel = (string) ($field->blockLabel ?: 'LBL_GENERAL_INFORMATION');
+                            $translatedLabel = $field->getBlockLabel($metadata->name) ?: __('tenant::tenant.general_information');
+
+                            if (!isset($groupedFields[$rawLabel])) {
+                                $groupedFields[$rawLabel] = [
+                                    'label' => $translatedLabel,
+                                    'fields' => []
+                                ];
+                            }
+                            $groupedFields[$rawLabel]['fields'][] = $field;
                         }
-                        $groupedFields[$bLabel][] = $field;
                     }
                 @endphp
 
-                @foreach($groupedFields as $blockLabel => $blockFields)
-                    <div class="card border-0 shadow-sm rounded-4 mb-4">
+                @foreach($groupedFields as $rawLabel => $blockData)
+                    <div class="card border-0 shadow-sm rounded-4 mb-4" data-block-label="{{ $rawLabel }}">
                         <div class="card-header bg-transparent border-bottom p-4">
-                            <h5 class="fw-bold mb-0">{{ $blockLabel }}</h5>
+                            <h5 class="fw-bold mb-0 text-primary">{{ $blockData['label'] }}</h5>
                         </div>
                         <div class="card-body p-4">
                             <div class="row">
-                                @foreach($blockFields as $field)
-                                    @if($field->presence == 0)
-                                        <div class="col-md-6 mb-3">
-                                            <label
-                                                class="form-label text-muted small text-uppercase fw-bold">{{ $field->getLabel($metadata->name) }}</label>
-                                            <div class="p-2 border rounded bg-light">
-                                                @php $val = $record->{$field->column} ?? '-'; @endphp
-                                                {{ in_array($field->uiType, [15, 16, 33]) ? vtranslate($val, $metadata->name) : $val }}
-                                            </div>
+                                @foreach($blockData['fields'] as $field)
+                                    <div class="col-md-6 mb-3">
+                                        <label
+                                            class="form-label text-muted small text-uppercase fw-bold">{{ $field->getLabel($metadata->name) }}</label>
+                                        <div class="p-2 border rounded bg-light">
+                                            @php $val = $record->{$field->column} ?? '-'; @endphp
+                                            {{ in_array($field->uiType, [15, 16, 33]) ? vtranslate($val, $metadata->name) : $val }}
                                         </div>
-                                    @endif
+                                    </div>
                                 @endforeach
                             </div>
                         </div>

@@ -70,6 +70,7 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
         }
 
         $fields = $query->select($select)
+            ->orderBy('vtiger_blocks.sequence')
             ->orderBy('vtiger_field.sequence')
             ->get();
 

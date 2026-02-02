@@ -103,7 +103,18 @@ class GenericModuleController extends Controller
         $metadata = $module->metadata;
         $fields = ($module->fields)();
 
-        return view('tenant::core.modules.form', compact('metadata', 'fields'));
+        $picklistDependencies = DB::connection('tenant')->table('vtiger_picklist_dependency')
+            ->where('tabid', $metadata->id)
+            ->get();
+
+        $blockDependencies = [];
+        if (\Illuminate\Support\Facades\Schema::connection('tenant')->hasTable('vtiger_block_dependency')) {
+            $blockDependencies = DB::connection('tenant')->table('vtiger_block_dependency')
+                ->where('tabid', $metadata->id)
+                ->get();
+        }
+
+        return view('tenant::core.modules.form', compact('metadata', 'fields', 'picklistDependencies', 'blockDependencies'));
     }
 
     public function store(string $moduleName, Request $request)
@@ -261,7 +272,18 @@ class GenericModuleController extends Controller
             }
         }
 
-        return view('tenant::core.modules.form', compact('metadata', 'fields', 'record'));
+        $picklistDependencies = DB::connection('tenant')->table('vtiger_picklist_dependency')
+            ->where('tabid', $metadata->id)
+            ->get();
+
+        $blockDependencies = [];
+        if (\Illuminate\Support\Facades\Schema::connection('tenant')->hasTable('vtiger_block_dependency')) {
+            $blockDependencies = DB::connection('tenant')->table('vtiger_block_dependency')
+                ->where('tabid', $metadata->id)
+                ->get();
+        }
+
+        return view('tenant::core.modules.form', compact('metadata', 'fields', 'record', 'picklistDependencies', 'blockDependencies'));
     }
 
     protected function getEntityLabel(int $id): ?string
