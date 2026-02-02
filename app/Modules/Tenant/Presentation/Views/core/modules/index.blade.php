@@ -54,27 +54,27 @@
                         @endif
                     @endforeach
                     {
-                        data: '{{ $metadata->baseTableIndex }}',
+                        data: 'crmid',
                         orderable: false,
                         searchable: false,
                         render: function (data) {
                             return `
-                                                                    <div class="btn-group">
-                                                                        <a href="/modules/{{ $metadata->name }}/${data}" class="btn btn-sm btn-outline-info rounded-3 me-1" title="{{ __('tenant::tenant.view') }}">
-                                                                            <i class="bi bi-eye"></i>
-                                                                        </a>
-                                                                        <a href="/modules/{{ $metadata->name }}/${data}/edit" class="btn btn-sm btn-outline-primary rounded-3 me-1" title="{{ __('tenant::tenant.edit') }}">
-                                                                            <i class="bi bi-pencil"></i>
-                                                                        </a>
-                                                                        <form action="/modules/{{ $metadata->name }}/${data}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('tenant::tenant.delete_block_confirm') }}')">
-                                                                            @csrf
-                                                                            @method('DELETE')
-                                                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-3">
-                                                                                <i class="bi bi-trash"></i>
-                                                                            </button>
-                                                                        </form>
-                                                                    </div>
-                                                                `;
+                                                                        <div class="btn-group">
+                                                                            <a href="/modules/{{ $metadata->name }}/${data}" class="btn btn-sm btn-outline-info rounded-3 me-1" title="{{ __('tenant::tenant.view') }}">
+                                                                                <i class="bi bi-eye"></i>
+                                                                            </a>
+                                                                            <a href="/modules/{{ $metadata->name }}/${data}/edit" class="btn btn-sm btn-outline-primary rounded-3 me-1" title="{{ __('tenant::tenant.edit') }}">
+                                                                                <i class="bi bi-pencil"></i>
+                                                                            </a>
+                                                                            <form action="/modules/{{ $metadata->name }}/${data}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('tenant::tenant.delete_block_confirm') }}')">
+                                                                                @csrf
+                                                                                @method('DELETE')
+                                                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-3">
+                                                                                    <i class="bi bi-trash"></i>
+                                                                                </button>
+                                                                            </form>
+                                                                        </div>
+                                                                    `;
                         }
                     }
                 ],

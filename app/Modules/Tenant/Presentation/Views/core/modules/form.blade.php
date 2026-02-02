@@ -15,7 +15,7 @@
         </div>
 
         <form
-            action="{{ isset($record) ? route('tenant.modules.update', [$metadata->name, $record->{$metadata->baseTableIndex}]) : route('tenant.modules.store', $metadata->name) }}"
+            action="{{ isset($record) ? route('tenant.modules.update', [$metadata->name, $record->crmid ?? $record->{$metadata->baseTableIndex}]) : route('tenant.modules.store', $metadata->name) }}"
             method="POST" class="needs-validation" novalidate>
             @csrf
             @if(isset($record))

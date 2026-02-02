@@ -152,6 +152,7 @@ class ModuleManagementController extends Controller
             fn($type) => $type,
             CustomFieldType::getCustomFieldTypes()
         );
+
         return view('tenant::module_mgmt.layout', compact('moduleDefinition', 'fieldTypes'));
     }
 

@@ -13,7 +13,7 @@
                     <i class="bi bi-arrow-left me-2"></i>{{ __('tenant::tenant.cancel') }}
                 </a>
                 @canModule($metadata->name, 'edit')
-                <a href="{{ route('tenant.modules.edit', [$metadata->name, $record->{$metadata->baseTableIndex}]) }}"
+                <a href="{{ route('tenant.modules.edit', [$metadata->name, $record->crmid ?? $record->{$metadata->baseTableIndex}]) }}"
                     class="btn btn-primary rounded-3 shadow-sm px-4">
                     <i class="bi bi-pencil me-2"></i>{{ __('tenant::tenant.edit') }}
                 </a>
