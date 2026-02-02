@@ -209,6 +209,17 @@ Route::middleware([
             Route::get('/picklist-dependency/edit', [PicklistDependencyController::class, 'edit'])->name('picklist-dependency.edit');
             Route::post('/picklist-dependency/store', [PicklistDependencyController::class, 'store'])->name('picklist-dependency.store');
             Route::post('/picklist-dependency/delete', [PicklistDependencyController::class, 'destroy'])->name('picklist-dependency.delete');
+
+            // Automation - Workflows
+            Route::prefix('automation')->name('automation.')->group(function () {
+                Route::get('/workflows', [\App\Modules\Tenant\Settings\Presentation\Controllers\WorkflowController::class, 'index'])->name('workflows.index');
+                Route::get('/workflows/create', [\App\Modules\Tenant\Settings\Presentation\Controllers\WorkflowController::class, 'create'])->name('workflows.create');
+                Route::post('/workflows', [\App\Modules\Tenant\Settings\Presentation\Controllers\WorkflowController::class, 'store'])->name('workflows.store');
+                Route::get('/workflows/{id}/edit', [\App\Modules\Tenant\Settings\Presentation\Controllers\WorkflowController::class, 'edit'])->name('workflows.edit');
+                Route::put('/workflows/{id}', [\App\Modules\Tenant\Settings\Presentation\Controllers\WorkflowController::class, 'update'])->name('workflows.update');
+                Route::delete('/workflows/{id}', [\App\Modules\Tenant\Settings\Presentation\Controllers\WorkflowController::class, 'destroy'])->name('workflows.destroy');
+                Route::post('/workflows/{id}/toggle-status', [\App\Modules\Tenant\Settings\Presentation\Controllers\WorkflowController::class, 'toggleStatus'])->name('workflows.toggle-status');
+            });
         });
     });
 

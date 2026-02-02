@@ -10,13 +10,25 @@ class ComVtigerWorkflow extends Model
     use HasFactory;
 
     /**
+     * The primary key for the model.
+     *
+     * @var string
+     */
+    protected $primaryKey = 'workflow_id';
+
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $guarded = [];
-
-
 
     /**
      * Get the attributes that should be cast.
@@ -26,7 +38,12 @@ class ComVtigerWorkflow extends Model
     protected function casts(): array
     {
         return [
-            'id' => 'integer',
+            'workflow_id' => 'integer',
+            'execution_condition' => 'integer',
+            'status' => 'integer',
+            'defaultworkflow' => 'integer',
+            'filtersavedinnew' => 'integer',
+            'schtypeid' => 'integer',
         ];
     }
 }

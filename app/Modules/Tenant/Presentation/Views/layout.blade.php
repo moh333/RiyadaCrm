@@ -429,6 +429,28 @@
                                     class="bi bi-diagram-3 me-2"></i>
                                 {{ __('tenant::settings.picklist_dependency') ?? 'Picklist Dependency' }}</a>
                         </li>
+
+                        {{-- Automation Submenu --}}
+                        <li>
+                            <a class="nav-link collapsed d-flex justify-content-between align-items-center ps-4"
+                                data-bs-toggle="collapse" href="#automationSubmenu" role="button" aria-expanded="false"
+                                aria-controls="automationSubmenu">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-lightning-charge me-2"></i>
+                                    {{ __('tenant::settings.automation') ?? 'Automation' }}
+                                </div>
+                                <i class="bi bi-chevron-down small"></i>
+                            </a>
+                            <div class="collapse {{ request()->routeIs('tenant.settings.crm.automation.*') ? 'show' : '' }}"
+                                id="automationSubmenu">
+                                <ul class="list-unstyled fw-normal pb-1 small bg-white rounded-bottom px-2 pt-1 ms-3">
+                                    <li><a href="{{ route('tenant.settings.crm.automation.workflows.index') }}"
+                                            class="nav-link {{ request()->routeIs('tenant.settings.crm.automation.workflows.*') ? 'active' : '' }} ps-4"><i
+                                                class="bi bi-diagram-2 me-2"></i>
+                                            {{ __('tenant::settings.workflows') ?? 'Workflows' }}</a></li>
+                                </ul>
+                            </div>
+                        </li>
                     </ul>
                 </div>
             </li>
