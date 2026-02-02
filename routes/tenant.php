@@ -11,6 +11,8 @@ use App\Modules\Tenant\Presentation\Controllers\LoginController;
 use App\Modules\Tenant\Presentation\Controllers\ProfileController;
 use App\Modules\Tenant\Presentation\Controllers\SettingsController;
 use App\Modules\Tenant\Settings\Presentation\Controllers\ModuleManagementController;
+use App\Modules\Tenant\Settings\Presentation\Controllers\PicklistController;
+use App\Modules\Tenant\Settings\Presentation\Controllers\PicklistDependencyController;
 use App\Modules\Tenant\Users\Presentation\Controllers\GroupsController;
 use App\Modules\Tenant\Users\Presentation\Controllers\LoginHistoryController;
 use App\Modules\Tenant\Users\Presentation\Controllers\ProfilesController;
@@ -187,6 +189,26 @@ Route::middleware([
 
             // Login History
             Route::get('/login-history', [LoginHistoryController::class, 'index'])->name('login-history.index');
+        });
+
+        // CRM Settings Routes
+        Route::prefix('settings/crm')->name('settings.crm.')->group(function () {
+            // Picklist Management
+            Route::get('/picklist', [PicklistController::class, 'index'])->name('picklist.index');
+            Route::post('/picklist/fields', [PicklistController::class, 'getPicklistFields'])->name('picklist.fields');
+            Route::post('/picklist/values', [PicklistController::class, 'getPicklistValues'])->name('picklist.values');
+            Route::post('/picklist/add', [PicklistController::class, 'addValue'])->name('picklist.add');
+            Route::post('/picklist/update', [PicklistController::class, 'updateValue'])->name('picklist.update');
+            Route::post('/picklist/delete', [PicklistController::class, 'deleteValue'])->name('picklist.delete');
+            Route::post('/picklist/order', [PicklistController::class, 'updateOrder'])->name('picklist.order');
+
+            // Picklist Dependency Management
+            Route::get('/picklist-dependency', [PicklistDependencyController::class, 'index'])->name('picklist-dependency.index');
+            Route::get('/picklist-dependency/create', [PicklistDependencyController::class, 'create'])->name('picklist-dependency.create');
+            Route::post('/picklist-dependency/fields', [PicklistDependencyController::class, 'getAvailablePicklists'])->name('picklist-dependency.fields');
+            Route::get('/picklist-dependency/edit', [PicklistDependencyController::class, 'edit'])->name('picklist-dependency.edit');
+            Route::post('/picklist-dependency/store', [PicklistDependencyController::class, 'store'])->name('picklist-dependency.store');
+            Route::post('/picklist-dependency/delete', [PicklistDependencyController::class, 'destroy'])->name('picklist-dependency.delete');
         });
     });
 

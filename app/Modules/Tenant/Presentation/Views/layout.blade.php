@@ -408,6 +408,31 @@
                 </div>
             </li>
             <li class="nav-item">
+                <a class="nav-link collapsed d-flex justify-content-between align-items-center"
+                    data-bs-toggle="collapse" href="#crmSettingsSubmenu" role="button" aria-expanded="false"
+                    aria-controls="crmSettingsSubmenu">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-sliders"></i>
+                        {{ __('tenant::settings.crm_settings') ?? 'CRM Settings' }}
+                    </div>
+                    <i class="bi bi-chevron-down small"></i>
+                </a>
+                <div class="collapse {{ request()->routeIs('tenant.settings.crm.*') ? 'show' : '' }}"
+                    id="crmSettingsSubmenu">
+                    <ul class="list-unstyled fw-normal pb-1 small bg-light rounded-bottom px-2 pt-1">
+                        <li><a href="{{ route('tenant.settings.crm.picklist.index') }}"
+                                class="nav-link {{ request()->routeIs('tenant.settings.crm.picklist.*') ? 'active' : '' }} ps-4"><i
+                                    class="bi bi-list-ul me-2"></i>
+                                {{ __('tenant::settings.picklist') ?? 'Picklist' }}</a></li>
+                        <li><a href="{{ route('tenant.settings.crm.picklist-dependency.index') }}"
+                                class="nav-link {{ request()->routeIs('tenant.settings.crm.picklist-dependency.*') ? 'active' : '' }} ps-4"><i
+                                    class="bi bi-diagram-3 me-2"></i>
+                                {{ __('tenant::settings.picklist_dependency') ?? 'Picklist Dependency' }}</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
                 <a href="{{ route('tenant.settings') }}"
                     class="nav-link {{ request()->routeIs('tenant.settings') ? 'active' : '' }}">
                     <i class="bi bi-gear-fill"></i>
