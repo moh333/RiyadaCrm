@@ -15,6 +15,7 @@
         "laravel/tinker": "^2.10.1",
         "nativephp/mobile": "^3.0",
         "stancl/tenancy": "^3.9",
+        "stichoza/google-translate-php": "^5.3",
         "symfony/yaml": "^7.4",
         "yajra/laravel-datatables-oracle": "^12.6"
     },
