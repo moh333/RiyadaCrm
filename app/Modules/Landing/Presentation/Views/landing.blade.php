@@ -253,8 +253,10 @@
                     </li>
                 </ul>
                 <div class="d-flex gap-2">
-                    <a href="#" class="btn btn-outline-primary">{{ __('landing.nav.login') }}</a>
-                    <a href="#" class="btn btn-primary">{{ __('landing.nav.get_started') }}</a>
+                    <a href="{{ route('master.login') }}"
+                        class="btn btn-outline-primary">{{ __('landing.nav.login') }}</a>
+                    <a href="{{ route('master.login') }}"
+                        class="btn btn-primary">{{ __('landing.nav.get_started') }}</a>
                 </div>
             </div>
         </div>
@@ -273,7 +275,8 @@
                         {{ __('landing.hero.subtitle') }}
                     </p>
                     <div class="d-flex gap-3">
-                        <a href="#" class="btn btn-primary btn-lg px-4">{{ __('landing.hero.trial_btn') }}</a>
+                        <a href="{{ route('master.login') }}"
+                            class="btn btn-primary btn-lg px-4">{{ __('landing.hero.trial_btn') }}</a>
                         <a href="#features"
                             class="btn btn-outline-primary btn-lg px-4">{{ __('landing.hero.features_btn') }}</a>
                     </div>
@@ -570,7 +573,8 @@
                 <div class="col-lg-8">
                     <h2 class="display-5 fw-bold mb-4">{{ __('landing.cta.title') }}</h2>
                     <p class="lead text-muted mb-5">{{ __('landing.cta.desc') }}</p>
-                    <a href="#" class="btn btn-primary btn-lg px-5 py-3">{{ __('landing.cta.btn') }}</a>
+                    <a href="{{ route('master.login') }}"
+                        class="btn btn-primary btn-lg px-5 py-3">{{ __('landing.cta.btn') }}</a>
                     <p class="mt-3 small text-muted">{{ __('landing.cta.note') }}</p>
                 </div>
             </div>
