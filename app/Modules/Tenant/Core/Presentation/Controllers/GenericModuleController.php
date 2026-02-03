@@ -420,7 +420,155 @@ class GenericModuleController extends Controller
         if (!$record)
             abort(404);
 
-        return view('tenant::core.modules.show', compact('metadata', 'fields', 'record'));
+        // Fetch related lists metadata for tabs
+        $allRelatedLists = DB::connection('tenant')->table('vtiger_relatedlists as vrl')
+            ->join('vtiger_tab as vt', 'vrl.related_tabid', '=', 'vt.tabid')
+            ->where('vrl.tabid', $metadata->id)
+            ->where('vrl.presence', 0)
+            ->select('vrl.*', 'vt.name as target_module_name', 'vt.tablabel as target_module_label')
+            ->orderBy('vrl.sequence')
+            ->get();
+
+        $relatedLists = [];
+        foreach ($allRelatedLists as $rel) {
+            // Always keep Comments
+            if ($rel->target_module_name === 'ModComments') {
+                $relatedLists[] = $rel;
+                continue;
+            }
+
+            try {
+                $targetMod = $this->registry->get($rel->target_module_name);
+                if (!$targetMod || empty($targetMod->metadata->baseTable))
+                    continue;
+
+                $query = DB::connection('tenant')
+                    ->table($targetMod->metadata->baseTable . ' as base')
+                    ->join('vtiger_crmentity as ce', 'base.' . $targetMod->metadata->baseTableIndex, '=', 'ce.crmid')
+                    ->where('ce.deleted', 0);
+
+                // Use the same logic as the related-list component for detection
+                $linkingField = null;
+                if ($rel->relationfieldid) {
+                    $linkingField = DB::connection('tenant')
+                        ->table('vtiger_field')
+                        ->where('fieldid', $rel->relationfieldid)
+                        ->first();
+                }
+
+                if ($linkingField) {
+                    $query->where('base.' . $linkingField->columnname, $id);
+                } else {
+                    $baseIndex = $targetMod->metadata->baseTableIndex;
+                    $query->join('vtiger_crmentityrel as rel', function ($join) use ($id, $baseIndex) {
+                        $join->on('base.' . $baseIndex, '=', 'rel.relcrmid')
+                            ->where('rel.crmid', $id);
+                    });
+                }
+
+                if ($query->exists()) {
+                    $relatedLists[] = $rel;
+                }
+            } catch (\Exception $e) {
+                // Skip if error
+            }
+        }
+
+        // Fetch Recent Activities (ModTracker)
+        $activities = DB::connection('tenant')->table('vtiger_modtracker_basic as mb')
+            ->leftJoin('vtiger_users as vu', 'mb.whodid', '=', 'vu.id')
+            ->where('mb.crmid', $id)
+            ->select([
+                'mb.*',
+                DB::raw("CONCAT(vu.first_name, ' ', vu.last_name) as user_name")
+            ])
+            ->orderBy('mb.changedon', 'desc')
+            ->limit(50)
+            ->get();
+
+        foreach ($activities as $activity) {
+            $activity->details = DB::connection('tenant')->table('vtiger_modtracker_detail')
+                ->where('id', $activity->id)
+                ->get();
+        }
+
+        // Always add Activities as a virtual "relation" for the UI
+        $relatedLists[] = (object) [
+            'relation_id' => 'activities',
+            'label' => 'LBL_ACTIVITIES',
+            'target_module_name' => 'ModTracker',
+            'presence' => 0,
+            'sequence' => 999
+        ];
+
+        return view('tenant::core.modules.show', compact('metadata', 'fields', 'record', 'relatedLists', 'activities'));
+    }
+
+    public function relatedData(string $moduleName, int $id, int $relationId, Request $request)
+    {
+        $relation = DB::connection('tenant')->table('vtiger_relatedlists as vrl')
+            ->join('vtiger_tab as vt', 'vrl.related_tabid', '=', 'vt.tabid')
+            ->where('vrl.relation_id', $relationId)
+            ->select('vrl.*', 'vt.name as target_module_name', 'vt.tablabel as target_module_label')
+            ->first();
+
+        if (!$relation) {
+            return response()->json(['error' => 'Relation not found'], 404);
+        }
+
+        $targetModuleName = $relation->target_module_name;
+        $targetMod = $this->registry->get($targetModuleName);
+
+        if (!$targetMod || empty($targetMod->metadata->baseTable)) {
+            return response()->json(['error' => 'Target module not found'], 404);
+        }
+
+        $query = DB::connection('tenant')
+            ->table($targetMod->metadata->baseTable . ' as base')
+            ->join('vtiger_crmentity as ce', 'base.' . $targetMod->metadata->baseTableIndex, '=', 'ce.crmid')
+            ->where('ce.deleted', 0);
+
+        $linkingField = null;
+        if ($relation->relationfieldid) {
+            $linkingField = DB::connection('tenant')
+                ->table('vtiger_field')
+                ->where('fieldid', $relation->relationfieldid)
+                ->first();
+        }
+
+        if ($linkingField) {
+            $query->where('base.' . $linkingField->columnname, $id);
+        } else {
+            $baseIndex = $targetMod->metadata->baseTableIndex;
+            $query->join('vtiger_crmentityrel as rel', function ($join) use ($id, $baseIndex) {
+                $join->on('base.' . $baseIndex, '=', 'rel.relcrmid')
+                    ->where('rel.crmid', $id);
+            });
+        }
+
+        $query->select(['ce.crmid', 'ce.createdtime', 'ce.modifiedtime', 'base.*']);
+
+        return DataTables::query($query)
+            ->addColumn('actions', function ($row) use ($targetModuleName) {
+                $viewUrl = route('tenant.modules.show', [$targetModuleName, $row->crmid]);
+                return '
+                    <div class="btn-group btn-group-sm">
+                        <a href="' . $viewUrl . '" class="btn btn-outline-primary" title="View">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <button class="btn btn-outline-danger" title="Unlink" onclick="unlinkRecord(' . $row->crmid . ')">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                    </div>';
+            })
+            ->editColumn('createdtime', function ($row) {
+                return \Carbon\Carbon::parse($row->createdtime)->format('M d, Y');
+            })
+            ->editColumn('modifiedtime', function ($row) {
+                return \Carbon\Carbon::parse($row->modifiedtime)->diffForHumans();
+            })
+            ->rawColumns(['actions'])
+            ->make(true);
     }
 
     public function destroy(string $moduleName, int $id)

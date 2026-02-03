@@ -49,8 +49,12 @@ class EloquentCommentRepository implements CommentRepositoryInterface
         return Comment::fromDatabase((array) $data, $attachments);
     }
 
-    public function getCommentsForRecord(int $recordId): array
+    public function getCommentsForRecord(?int $recordId): array
     {
+        if (!$recordId) {
+            return [];
+        }
+
         $results = DB::connection('tenant')->table('vtiger_modcomments')
             ->join('vtiger_crmentity', 'vtiger_modcomments.modcommentsid', '=', 'vtiger_crmentity.crmid')
             ->leftJoin('vtiger_users', 'vtiger_modcomments.userid', '=', 'vtiger_users.id')
