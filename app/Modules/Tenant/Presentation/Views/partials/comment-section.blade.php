@@ -21,7 +21,7 @@
                 <div class="form-check form-switch mb-0">
                     <input class="form-check-input" type="checkbox" name="is_private" value="1" id="isPrivateSwitch">
                     <label class="form-check-label small text-muted"
-                        for="isPrivateSwitch">{{ __('tenant::tenant.private_comment') ?? 'Private' }}</label>
+                        for="isPrivateSwitch">{{ __('tenant::tenant.private_comment') }}</label>
                 </div>
             </div>
 
@@ -55,7 +55,7 @@
                                     class="text-muted ms-2">{{ \Carbon\Carbon::instance($comment->getCreatedTime())->diffForHumans() }}</small>
                                 @if($comment->isPrivate())
                                     <span class="badge bg-soft-warning text-warning ms-2 small rounded-pill px-2">
-                                        <i class="bi bi-lock-fill me-1"></i>Private
+                                        <i class="bi bi-lock-fill me-1"></i>{{ __('tenant::tenant.private') }}
                                     </span>
                                 @endif
                             </div>
@@ -69,7 +69,7 @@
                                         <li>
                                             <a class="dropdown-item py-2" href="#"
                                                 onclick="editComment({{ $comment->getId() }}, '{{ addslashes($comment->getContent()) }}')">
-                                                <i class="bi bi-pencil me-2"></i>Edit
+                                                <i class="bi bi-pencil me-2"></i>{{ __('tenant::tenant.edit') }}
                                             </a>
                                         </li>
                                         <li>
@@ -77,11 +77,12 @@
                                         </li>
                                         <li>
                                             <form action="{{ route('tenant.comments.destroy', $comment->getId()) }}"
-                                                method="POST" onsubmit="return confirm('Are you sure?')">
+                                                method="POST"
+                                                onsubmit="return confirm('{{ __('tenant::tenant.confirm_delete_comment') }}')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="dropdown-item py-2 text-danger">
-                                                    <i class="bi bi-trash me-2"></i>Delete
+                                                    <i class="bi bi-trash me-2"></i>{{ __('tenant::tenant.delete') }}
                                                 </button>
                                             </form>
                                         </li>
@@ -116,7 +117,7 @@
                             <div class="bg-light rounded-3 p-2 mt-2">
                                 <small class="text-muted font-italic">
                                     <i class="bi bi-info-circle me-1"></i>
-                                    Edited: {{ $comment->getReasonToEdit() }}
+                                    {{ __('tenant::tenant.edited') }}: {{ $comment->getReasonToEdit() }}
                                 </small>
                             </div>
                         @endif
@@ -126,7 +127,7 @@
         @empty
             <div class="text-center py-5">
                 <i class="bi bi-chat-dots text-muted opacity-25" style="font-size: 3rem;"></i>
-                <p class="text-muted mt-3">No comments yet. Start the conversation!</p>
+                <p class="text-muted mt-3">{{ __('tenant::tenant.no_comments_yet') }}</p>
             </div>
         @endforelse
     </div>
@@ -137,7 +138,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow">
             <div class="modal-header border-bottom py-3">
-                <h5 class="modal-title fw-bold">Edit Comment</h5>
+                <h5 class="modal-title fw-bold">{{ __('tenant::tenant.edit_comment') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form id="editCommentForm" method="POST">
@@ -145,19 +146,23 @@
                 @method('PUT')
                 <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">Comment Content</label>
+                        <label
+                            class="form-label fw-bold small text-muted">{{ __('tenant::tenant.comment_content') }}</label>
                         <textarea name="commentcontent" id="editCommentContent" class="form-control rounded-3" rows="4"
                             required></textarea>
                     </div>
                     <div class="mb-0">
-                        <label class="form-label fw-bold small text-muted">Reason for editing</label>
+                        <label
+                            class="form-label fw-bold small text-muted">{{ __('tenant::tenant.reason_for_editing') }}</label>
                         <input type="text" name="reasontoedit" class="form-control rounded-3"
-                            placeholder="e.g. Typos, Updated info" required>
+                            placeholder="{{ __('tenant::tenant.reason_placeholder') }}" required>
                     </div>
                 </div>
                 <div class="modal-footer border-0 p-4 pt-0">
-                    <button type="button" class="btn btn-light rounded-3 px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary rounded-3 px-4">Save Changes</button>
+                    <button type="button" class="btn btn-light rounded-3 px-4"
+                        data-bs-dismiss="modal">{{ __('tenant::tenant.cancel') }}</button>
+                    <button type="submit"
+                        class="btn btn-primary rounded-3 px-4">{{ __('tenant::tenant.save_changes') }}</button>
                 </div>
             </form>
         </div>
@@ -168,7 +173,7 @@
     function updateFileCount(input) {
         const space = document.getElementById('file-count');
         if (input.files.length > 0) {
-            space.innerText = `${input.files.length} file(s) selected`;
+            space.innerText = `${input.files.length} {{ __('tenant::tenant.files_selected') }}`;
         } else {
             space.innerText = '';
         }

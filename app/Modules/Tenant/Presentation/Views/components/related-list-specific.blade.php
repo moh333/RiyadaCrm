@@ -17,18 +17,7 @@
                     {{ $targetModuleName }}
                 </small>
             </div>
-            <div class="d-flex gap-2">
-                @if(str_contains($relation->actions ?? '', 'ADD'))
-                    <button class="btn btn-sm btn-primary rounded-3">
-                        <i class="bi bi-plus-circle me-1"></i>Add {{ vtranslate($targetModuleName, $targetModuleName) }}
-                    </button>
-                @endif
-                @if(str_contains($relation->actions ?? '', 'SELECT'))
-                    <button class="btn btn-sm btn-outline-primary rounded-3">
-                        <i class="bi bi-search me-1"></i>Select
-                    </button>
-                @endif
-            </div>
+           
         </div>
     </div>
     <div class="card-body p-0">
@@ -39,7 +28,7 @@
                 @if(empty($activities) || count($activities) == 0)
                     <div class="text-center text-muted py-5">
                         <i class="bi bi-clock-history" style="font-size: 3rem;"></i>
-                        <p class="mt-3 mb-0">No recent activities found</p>
+                        <p class="mt-3 mb-0">{{ __('tenant::tenant.no_activities_found') }}</p>
                     </div>
                 @else
                     <div class="timeline">
@@ -48,7 +37,7 @@
                                 <div class="timeline-marker"></div>
                                 <div class="d-flex justify-content-between">
                                     <h6 class="fw-bold mb-1">
-                                        <span class="text-primary">{{ $activity->user_name ?: 'System' }}</span>
+                                        <span class="text-primary">{{ $activity->user_name ?: __('tenant::tenant.system') }}</span>
                                         @php
                                             $action = match ((int) $activity->status) {
                                                 0 => 'updated',
@@ -75,11 +64,11 @@
                 <table class="table table-hover w-100" id="rel-table-{{ $relationId }}">
                     <thead class="bg-light text-uppercase small fw-bold">
                         <tr>
-                            <th>#ID</th>
-                            <th>Record</th>
-                            <th>Created</th>
-                            <th>Modified</th>
-                            <th class="text-end">Actions</th>
+                            <th>#{{ __('tenant::tenant.id') }}</th>
+                            <th>{{ __('tenant::tenant.record') }}</th>
+                            <th>{{ __('tenant::tenant.created') }}</th>
+                            <th>{{ __('tenant::tenant.modified') }}</th>
+                            <th class="text-end">{{ __('tenant::tenant.actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -149,7 +138,7 @@
             });
 
             function unlinkRecord(id) {
-                if (confirm('Are you sure you want to unlink this record?')) {
+                if (confirm('{{ __('tenant::tenant.confirm_unlink') }}')) {
                     // Unlink logic would go here
                     console.log('Unlinking:', id);
                 }

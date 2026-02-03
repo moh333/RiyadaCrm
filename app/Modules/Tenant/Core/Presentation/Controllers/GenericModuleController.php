@@ -519,14 +519,14 @@ class GenericModuleController extends Controller
             ->first();
 
         if (!$relation) {
-            return response()->json(['error' => 'Relation not found'], 404);
+            return response()->json(['error' => __('tenant::tenant.relation_not_found')], 404);
         }
 
         $targetModuleName = $relation->target_module_name;
         $targetMod = $this->registry->get($targetModuleName);
 
         if (!$targetMod || empty($targetMod->metadata->baseTable)) {
-            return response()->json(['error' => 'Target module not found'], 404);
+            return response()->json(['error' => __('tenant::tenant.target_module_not_found')], 404);
         }
 
         $query = DB::connection('tenant')
@@ -566,10 +566,10 @@ class GenericModuleController extends Controller
                 $viewUrl = route('tenant.modules.show', [$targetModuleName, $row->crmid]);
                 return '
                     <div class="btn-group btn-group-sm">
-                        <a href="' . $viewUrl . '" class="btn btn-outline-primary" title="View">
+                        <a href="' . $viewUrl . '" class="btn btn-outline-primary" title="' . __('tenant::tenant.view') . '">
                             <i class="bi bi-eye"></i>
                         </a>
-                        <button class="btn btn-outline-danger" title="Unlink" onclick="unlinkRecord(' . $row->crmid . ')">
+                        <button class="btn btn-outline-danger" title="' . __('tenant::tenant.unlink') . '" onclick="unlinkRecord(' . $row->crmid . ')">
                             <i class="bi bi-x-circle"></i>
                         </button>
                     </div>';
