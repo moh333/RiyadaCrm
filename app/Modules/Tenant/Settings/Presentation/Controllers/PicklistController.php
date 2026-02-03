@@ -5,6 +5,7 @@ namespace App\Modules\Tenant\Settings\Presentation\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * PicklistController
@@ -12,7 +13,6 @@ use Illuminate\Support\Facades\DB;
  * Manages picklist (dropdown) field values across all CRM modules:
  * - Add/Edit/Delete picklist values
  * - Role-based picklist value assignment
- * - Color coding for visual identification
  * - Drag-and-drop reordering
  */
 class PicklistController extends Controller
@@ -47,7 +47,7 @@ class PicklistController extends Controller
         // Get picklist fields for this module
         $fields = DB::table('vtiger_field')
             ->where('tabid', $module->tabid)
-            ->whereIn('uitype', [15, 16, 33]) // Picklist types
+            ->whereIn('uitype', [15, 16, 33, 55]) // Picklist types
             ->where('presence', '!=', 1) // Not deleted
             ->select('fieldid', 'fieldname', 'fieldlabel', 'uitype')
             ->get();
@@ -66,10 +66,13 @@ class PicklistController extends Controller
         $tableName = 'vtiger_' . $fieldName;
 
         try {
-            $values = DB::table($tableName)
-                ->where('presence', 1) // Active values only
-                ->orderBy('sortorderid')
-                ->get();
+            $sortColumn = Schema::hasColumn($tableName, 'sortorderid') ? 'sortorderid' : (Schema::hasColumn($tableName, 'sortid') ? 'sortid' : null);
+
+            $query = DB::table($tableName);
+            if ($sortColumn) {
+                $query->orderBy($sortColumn);
+            }
+            $values = $query->get();
 
             return response()->json(['values' => $values]);
         } catch (\Exception $e) {
@@ -85,26 +88,32 @@ class PicklistController extends Controller
         $request->validate([
             'fieldname' => 'required|string',
             'value' => 'required|string',
-            'color' => 'nullable|string',
         ]);
 
         $fieldName = $request->input('fieldname');
         $value = $request->input('value');
-        $color = $request->input('color', '');
 
         $tableName = 'vtiger_' . $fieldName;
 
         try {
+            $sortColumn = Schema::hasColumn($tableName, 'sortorderid') ? 'sortorderid' : (Schema::hasColumn($tableName, 'sortid') ? 'sortid' : null);
+
             // Get max sequence
-            $maxSequence = DB::table($tableName)->max('sortorderid') ?? 0;
+            $maxSequence = $sortColumn ? (DB::table($tableName)->max($sortColumn) ?? 0) : 0;
+            $maxpicklist_valueid = DB::table($tableName)->max('picklist_valueid') ?? 0;
 
             // Insert new value
-            DB::table($tableName)->insert([
+            $insertData = [
                 $fieldName => $value,
-                'sortorderid' => $maxSequence + 1,
+                'picklist_valueid' => $maxpicklist_valueid + 1,
                 'presence' => 1,
-                'color' => $color,
-            ]);
+            ];
+
+            if ($sortColumn) {
+                $insertData[$sortColumn] = $maxSequence + 1;
+            }
+
+            DB::table($tableName)->insert($insertData);
 
             return response()->json(['success' => true, 'message' => 'Picklist value added successfully']);
         } catch (\Exception $e) {
@@ -121,13 +130,11 @@ class PicklistController extends Controller
             'fieldname' => 'required|string',
             'old_value' => 'required|string',
             'new_value' => 'required|string',
-            'color' => 'nullable|string',
         ]);
 
         $fieldName = $request->input('fieldname');
         $oldValue = $request->input('old_value');
         $newValue = $request->input('new_value');
-        $color = $request->input('color', '');
 
         $tableName = 'vtiger_' . $fieldName;
 
@@ -136,7 +143,6 @@ class PicklistController extends Controller
                 ->where($fieldName, $oldValue)
                 ->update([
                     $fieldName => $newValue,
-                    'color' => $color,
                 ]);
 
             return response()->json(['success' => true, 'message' => 'Picklist value updated successfully']);
@@ -164,7 +170,7 @@ class PicklistController extends Controller
             // Mark as deleted (presence = 0)
             DB::table($tableName)
                 ->where($fieldName, $value)
-                ->update(['presence' => 0]);
+                ->delete();
 
             return response()->json(['success' => true, 'message' => 'Picklist value deleted successfully']);
         } catch (\Exception $e) {
@@ -188,10 +194,16 @@ class PicklistController extends Controller
         $tableName = 'vtiger_' . $fieldName;
 
         try {
+            $sortColumn = Schema::hasColumn($tableName, 'sortorderid') ? 'sortorderid' : (Schema::hasColumn($tableName, 'sortid') ? 'sortid' : null);
+
+            if (!$sortColumn) {
+                return response()->json(['error' => 'No sort column found for this table'], 400);
+            }
+
             foreach ($order as $index => $value) {
                 DB::table($tableName)
                     ->where($fieldName, $value)
-                    ->update(['sortorderid' => $index + 1]);
+                    ->update([$sortColumn => $index + 1]);
             }
 
             return response()->json(['success' => true, 'message' => 'Order updated successfully']);
