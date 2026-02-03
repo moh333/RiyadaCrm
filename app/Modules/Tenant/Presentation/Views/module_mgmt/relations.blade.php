@@ -29,65 +29,106 @@
             </div>
         @endif
 
-        <div class="card border-0 shadow-sm rounded-4">
-            <div class="card-header bg-white border-bottom py-3 px-4">
-                <h5 class="mb-0 fw-bold">{{ __('tenant::tenant.module_relations') }}</h5>
-                <small class="text-muted">Drag to reorder relations</small>
-            </div>
-            <div class="card-body p-0">
-                @if($relations->isEmpty())
-                    <div class="text-center py-5">
-                        <i class="bi bi-diagram-3 text-muted" style="font-size: 3rem;"></i>
-                        <p class="text-muted mt-3">No relations configured yet.</p>
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRelationModal">
-                            <i class="bi bi-plus-circle me-2"></i>Add First Relation
-                        </button>
+        <div class="row">
+            <!-- Many-to-One / One-to-One -->
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-header bg-white border-bottom py-3 px-4">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-box-arrow-in-right text-primary me-2"></i>One-one & Many-one Relationships
+                        </h5>
+                        <small class="text-muted">Fields in this module pointing to other modules</small>
                     </div>
-                @else
-                    <div id="sortable-relations" class="list-group list-group-flush">
-                        @foreach($relations as $relation)
-                            <div class="list-group-item border-0 py-3 px-4 sortable-item" data-id="{{ $relation->relation_id }}">
-                                <div class="row align-items-center">
-                                    <div class="col-auto">
-                                        <i class="bi bi-grip-vertical text-muted handle" style="cursor: move;"></i>
-                                    </div>
-                                    <div class="col">
-                                        <div class="d-flex align-items-center justify-content-between">
+                    <div class="card-body p-0">
+                        @if($lookupFields->isEmpty())
+                            <div class="text-center py-4">
+                                <p class="text-muted small">No lookup fields found.</p>
+                            </div>
+                        @else
+                            <div class="list-group list-group-flush">
+                                @foreach($lookupFields as $field)
+                                    <div class="list-group-item border-0 py-3 px-4">
+                                        <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="mb-1 fw-bold">{{ $relation->label }}</h6>
-                                                <div class="d-flex gap-2 align-items-center">
-                                                    <span class="badge bg-info">{{ $relation->target_module_name }}</span>
-                                                    <span class="badge bg-secondary">{{ $relation->relationtype ?? '1:N' }}</span>
-                                                    @if($relation->actions)
-                                                        @foreach(explode(',', $relation->actions) as $action)
-                                                            <span class="badge bg-success">{{ $action }}</span>
-                                                        @endforeach
-                                                    @endif
+                                                <h6 class="mb-1 fw-bold">{{ vtranslate($field->fieldlabel, $moduleDefinition->getName()) }}</h6>
+                                                <div class="d-flex gap-2 flex-wrap mt-1">
+                                                    @foreach($field->related_modules as $relMod)
+                                                        <span class="badge bg-light text-dark border">{{ $relMod }}</span>
+                                                    @endforeach
                                                 </div>
                                             </div>
-                                            <div class="d-flex gap-2">
-                                                <button type="button" class="btn btn-sm btn-outline-primary rounded-3"
-                                                    onclick="editRelation({{ json_encode($relation) }})">
-                                                    <i class="bi bi-pencil"></i>
-                                                </button>
-                                                <form
-                                                    action="{{ route('tenant.settings.modules.relations.destroy', [$moduleDefinition->getName(), $relation->relation_id]) }}"
-                                                    method="POST"
-                                                    onsubmit="return confirm('Are you sure you want to delete this relation?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-3">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </form>
+                                            <span class="badge bg-secondary">M:1</span>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <!-- One-to-Many / Many-to-Many -->
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-header bg-white border-bottom py-3 px-4">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-box-arrow-right text-success me-2"></i>One-many & Many-many Relationships
+                        </h5>
+                        <small class="text-muted">Related lists shown on the record view</small>
+                    </div>
+                    <div class="card-body p-0">
+                        @if($relatedLists->isEmpty())
+                            <div class="text-center py-4">
+                                <p class="text-muted small">No related lists configured.</p>
+                            </div>
+                        @else
+                            <div id="sortable-relations" class="list-group list-group-flush">
+                                @foreach($relatedLists as $relation)
+                                    <div class="list-group-item border-0 py-3 px-4 sortable-item @if($relation->presence == 1) opacity-50 @endif" 
+                                         data-id="{{ $relation->relation_id }}">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                                <i class="bi bi-grip-vertical text-muted handle" style="cursor: move;"></i>
+                                            </div>
+                                            <div class="col">
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <div>
+                                                        <h6 class="mb-1 fw-bold">
+                                                            {{ vtranslate($relation->label, $moduleDefinition->getName()) }}
+                                                            @if($relation->presence == 1)
+                                                                <span class="badge bg-warning ms-1" style="font-size: 0.6rem;">Hidden</span>
+                                                            @endif
+                                                        </h6>
+                                                        <div class="d-flex gap-2 align-items-center">
+                                                            <span class="badge bg-info">{{ $relation->target_module_name ?? $relation->name }}</span>
+                                                            <span class="badge bg-secondary">{{ $relation->relationtype ?? '1:N' }}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex gap-2">
+                                                        <button type="button" class="btn btn-sm btn-outline-primary rounded-3"
+                                                            onclick="editRelation({{ json_encode($relation) }})">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </button>
+                                                        <form
+                                                            action="{{ route('tenant.settings.modules.relations.destroy', [$moduleDefinition->getName(), $relation->relation_id]) }}"
+                                                            method="POST"
+                                                            onsubmit="return confirm('Are you sure you want to delete this relation?');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger @if($relation->presence == 1) disabled @endif rounded-3">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                @endforeach
                             </div>
-                        @endforeach
+                        @endif
                     </div>
-                @endif
+                </div>
             </div>
         </div>
     </div>

@@ -420,12 +420,12 @@ class ModuleManagementController extends Controller
     {
         $moduleDefinition = $this->moduleRegistry->get($module);
 
-        // Get all relations for this module
-        $relations = \DB::connection('tenant')
+        // 1. One-many & Many-many Relationships (Related Lists)
+        // Using leftJoin to include relations where related_tabid is 0 or doesn't exist in vtiger_tab
+        $relatedLists = \DB::connection('tenant')
             ->table('vtiger_relatedlists as vrl')
-            ->join('vtiger_tab as vt', 'vrl.related_tabid', '=', 'vt.tabid')
+            ->leftJoin('vtiger_tab as vt', 'vrl.related_tabid', '=', 'vt.tabid')
             ->where('vrl.tabid', $moduleDefinition->getId())
-            ->where('vrl.presence', 0) // Only visible relations
             ->select([
                 'vrl.relation_id',
                 'vrl.related_tabid',
@@ -434,17 +434,45 @@ class ModuleManagementController extends Controller
                 'vrl.label',
                 'vrl.actions',
                 'vrl.relationtype',
+                'vrl.presence',
                 'vt.name as target_module_name',
                 'vt.tablabel as target_module_label'
             ])
             ->orderBy('vrl.sequence')
             ->get();
 
+        // 2. One-one & Many-one Relationships (Lookup Fields)
+        $lookupFields = \DB::connection('tenant')
+            ->table('vtiger_field as vf')
+            ->where('vf.tabid', $moduleDefinition->getId())
+            ->whereIn('vf.uitype', [10, 51, 57, 58, 59, 73, 75, 76, 77, 78, 80, 81, 101, 117])
+            ->where('vf.presence', '!=', 1)
+            ->select([
+                'vf.fieldid',
+                'vf.fieldname',
+                'vf.fieldlabel',
+                'vf.uitype'
+            ])
+            ->get();
+
+        foreach ($lookupFields as $field) {
+            $field->related_modules = \DB::connection('tenant')
+                ->table('vtiger_fieldmodulerel')
+                ->where('fieldid', $field->fieldid)
+                ->pluck('relmodule')
+                ->toArray();
+        }
+
         // Get all available modules for adding new relations
         $availableModules = $this->moduleRegistry->getActive()
             ->filter(fn($m) => $m->getName() !== $module);
 
-        return view('tenant::module_mgmt.relations', compact('moduleDefinition', 'relations', 'availableModules'));
+        return view('tenant::module_mgmt.relations', compact(
+            'moduleDefinition',
+            'relatedLists',
+            'lookupFields',
+            'availableModules'
+        ));
     }
 
     /**
