@@ -95,7 +95,7 @@ Route::middleware([
             Route::get('/{moduleName}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'index'])->name('index');
             Route::get('/{moduleName}/create', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'create'])->name('create');
             Route::post('/{moduleName}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'store'])->name('store');
-            Route::get('/{moduleName}/{id}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'show'])->name('show');
+            Route::get('/{moduleName}/{id}/{tab?}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'show'])->name('show');
             Route::get('/{moduleName}/{id}/edit', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'edit'])->name('edit');
             Route::get('/{moduleName}/{id}/related/{relationId}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'relatedData'])->name('related-data');
             Route::put('/{moduleName}/{id}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'update'])->name('update');

@@ -406,7 +406,7 @@ class GenericModuleController extends Controller
         });
     }
 
-    public function show(string $moduleName, int $id)
+    public function show(string $moduleName, int $id, string $tab = 'details')
     {
         $module = $this->registry->get($moduleName);
         if (!$module || $module->metadata->presence != 0) {
@@ -420,7 +420,7 @@ class GenericModuleController extends Controller
         if (!$record)
             abort(404);
 
-        // Fetch related lists metadata for tabs
+        // Fetch related lists metadata
         $allRelatedLists = DB::connection('tenant')->table('vtiger_relatedlists as vrl')
             ->join('vtiger_tab as vt', 'vrl.related_tabid', '=', 'vt.tabid')
             ->where('vrl.tabid', $metadata->id)
@@ -429,11 +429,11 @@ class GenericModuleController extends Controller
             ->orderBy('vrl.sequence')
             ->get();
 
-        $relatedLists = [];
+        $relatedLists = collect();
         foreach ($allRelatedLists as $rel) {
-            // Always keep Comments
+            // Always keep ModComments or check if data exists
             if ($rel->target_module_name === 'ModComments') {
-                $relatedLists[] = $rel;
+                $relatedLists->push($rel);
                 continue;
             }
 
@@ -447,61 +447,67 @@ class GenericModuleController extends Controller
                     ->join('vtiger_crmentity as ce', 'base.' . $targetMod->metadata->baseTableIndex, '=', 'ce.crmid')
                     ->where('ce.deleted', 0);
 
-                // Use the same logic as the related-list component for detection
-                $linkingField = null;
+                // Existence check logic (mirroring relatedData)
                 if ($rel->relationfieldid) {
-                    $linkingField = DB::connection('tenant')
-                        ->table('vtiger_field')
-                        ->where('fieldid', $rel->relationfieldid)
-                        ->first();
-                }
-
-                if ($linkingField) {
-                    $query->where('base.' . $linkingField->columnname, $id);
+                    $linkingField = DB::connection('tenant')->table('vtiger_field')->where('fieldid', $rel->relationfieldid)->first();
+                    if ($linkingField) {
+                        $linkingTable = $linkingField->tablename;
+                        if ($linkingTable !== $targetMod->metadata->baseTable && $linkingTable !== 'vtiger_crmentity') {
+                            $query->join($linkingTable, 'base.' . $targetMod->metadata->baseTableIndex, '=', $linkingTable . '.' . $targetMod->metadata->baseTableIndex);
+                            $query->where($linkingTable . '.' . $linkingField->columnname, $id);
+                        } else {
+                            $tableAlias = ($linkingTable === 'vtiger_crmentity') ? 'ce' : 'base';
+                            $query->where($tableAlias . '.' . $linkingField->columnname, $id);
+                        }
+                    }
                 } else {
                     $baseIndex = $targetMod->metadata->baseTableIndex;
                     $query->join('vtiger_crmentityrel as rel', function ($join) use ($id, $baseIndex) {
-                        $join->on('base.' . $baseIndex, '=', 'rel.relcrmid')
-                            ->where('rel.crmid', $id);
+                        $join->on('base.' . $baseIndex, '=', 'rel.relcrmid')->where('rel.crmid', $id);
                     });
                 }
 
                 if ($query->exists()) {
-                    $relatedLists[] = $rel;
+                    $relatedLists->push($rel);
                 }
             } catch (\Exception $e) {
-                // Skip if error
+                // Skip on error
             }
         }
 
-        // Fetch Recent Activities (ModTracker)
-        $activities = DB::connection('tenant')->table('vtiger_modtracker_basic as mb')
-            ->leftJoin('vtiger_users as vu', 'mb.whodid', '=', 'vu.id')
-            ->where('mb.crmid', $id)
-            ->select([
-                'mb.*',
-                DB::raw("CONCAT(vu.first_name, ' ', vu.last_name) as user_name")
-            ])
-            ->orderBy('mb.changedon', 'desc')
-            ->limit(50)
-            ->get();
-
-        foreach ($activities as $activity) {
-            $activity->details = DB::connection('tenant')->table('vtiger_modtracker_detail')
-                ->where('id', $activity->id)
-                ->get();
-        }
-
-        // Always add Activities as a virtual "relation" for the UI
-        $relatedLists[] = (object) [
+        // Add Activities as a virtual "relation"
+        $relatedLists->push((object) [
             'relation_id' => 'activities',
             'label' => 'LBL_ACTIVITIES',
             'target_module_name' => 'ModTracker',
             'presence' => 0,
             'sequence' => 999
-        ];
+        ]);
 
-        return view('tenant::core.modules.show', compact('metadata', 'fields', 'record', 'relatedLists', 'activities'));
+        $activities = [];
+        if ($tab === 'activities') {
+            // Fetch Recent Activities (ModTracker) only if on that tab
+            $activities = DB::connection('tenant')->table('vtiger_modtracker_basic as mb')
+                ->leftJoin('vtiger_users as vu', 'mb.whodid', '=', 'vu.id')
+                ->where('mb.crmid', $id)
+                ->select([
+                    'mb.*',
+                    DB::raw("CONCAT(vu.first_name, ' ', vu.last_name) as user_name")
+                ])
+                ->orderBy('mb.changedon', 'desc')
+                ->limit(50)
+                ->get();
+
+            foreach ($activities as $activity) {
+                $activity->details = DB::connection('tenant')->table('vtiger_modtracker_detail')
+                    ->where('id', $activity->id)
+                    ->get();
+            }
+        }
+
+        $activeTab = $tab;
+
+        return view('tenant::core.modules.show', compact('metadata', 'fields', 'record', 'relatedLists', 'activities', 'activeTab'));
     }
 
     public function relatedData(string $moduleName, int $id, int $relationId, Request $request)
@@ -537,7 +543,14 @@ class GenericModuleController extends Controller
         }
 
         if ($linkingField) {
-            $query->where('base.' . $linkingField->columnname, $id);
+            $linkingTable = $linkingField->tablename;
+            if ($linkingTable !== $targetMod->metadata->baseTable && $linkingTable !== 'vtiger_crmentity') {
+                $query->join($linkingTable, 'base.' . $targetMod->metadata->baseTableIndex, '=', $linkingTable . '.' . $targetMod->metadata->baseTableIndex);
+                $query->where($linkingTable . '.' . $linkingField->columnname, $id);
+            } else {
+                $tableAlias = ($linkingTable === 'vtiger_crmentity') ? 'ce' : 'base';
+                $query->where($tableAlias . '.' . $linkingField->columnname, $id);
+            }
         } else {
             $baseIndex = $targetMod->metadata->baseTableIndex;
             $query->join('vtiger_crmentityrel as rel', function ($join) use ($id, $baseIndex) {
