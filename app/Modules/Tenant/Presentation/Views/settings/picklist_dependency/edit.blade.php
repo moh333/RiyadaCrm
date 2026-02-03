@@ -10,7 +10,8 @@
                         </h2>
                         <p class="text-muted">
                             {{ __('tenant::settings.dependency_for') ?? 'Dependency for' }}:
-                            <strong>{{ $sourceField }}</strong> → <strong>{{ $targetField }}</strong>
+                            <strong>{{ vtranslate($sourceFieldLabel, $module) }}</strong> →
+                            <strong>{{ vtranslate($targetFieldLabel, $module) }}</strong>
                         </p>
                     </div>
                     <a href="{{ route('tenant.settings.crm.picklist-dependency.index') }}"
@@ -39,9 +40,12 @@
                                 <table class="table table-bordered dependency-matrix">
                                     <thead>
                                         <tr>
-                                            <th class="bg-light">{{ $sourceField }} \ {{ $targetField }}</th>
+                                            <th class="bg-light">{{ vtranslate($sourceFieldLabel, $module) }} \
+                                                {{ vtranslate($targetFieldLabel, $module) }}
+                                            </th>
                                             @foreach($targetValues as $targetValue)
-                                                <th class="text-center bg-light">{{ $targetValue->{$targetField} }}</th>
+                                                <th class="text-center bg-light">
+                                                    {{ vtranslate($targetValue->{$targetField}, $module) }}</th>
                                             @endforeach
                                         </tr>
                                     </thead>
@@ -53,7 +57,7 @@
                                                 $selectedTargets = $existingMapping ? json_decode($existingMapping->targetvalues, true) : [];
                                             @endphp
                                             <tr>
-                                                <td class="bg-light fw-semibold">{{ $sourceVal }}</td>
+                                                <td class="bg-light fw-semibold">{{ vtranslate($sourceVal, $module) }}</td>
                                                 @foreach($targetValues as $targetValue)
                                                     @php
                                                         $targetVal = $targetValue->{$targetField};

@@ -16,6 +16,24 @@
         </div>
     </div>
 
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <form action="{{ route('tenant.settings.crm.picklist-dependency.index') }}" method="GET" id="filterForm">
+                <div class="input-group">
+                    <label class="input-group-text" for="moduleFilter"><i class="bi bi-filter me-1"></i> {{ __('tenant::settings.filter_by_module') ?? 'Filter by Module' }}</label>
+                    <select name="module" id="moduleFilter" class="form-select" onchange="document.getElementById('filterForm').submit()">
+                        <option value="">{{ __('tenant::settings.all_modules') ?? 'All Modules' }}</option>
+                        @foreach($activeModules as $m)
+                            <option value="{{ $m->name }}" {{ $selectedModule == $m->name ? 'selected' : '' }}>
+                                {{ vtranslate($m->tablabel, 'Vtiger') }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -44,8 +62,8 @@
                                     @foreach($dependencies as $dependency)
                                         <tr>
                                             <td>{{ vtranslate($dependency->module_label, 'Vtiger') }}</td>
-                                            <td><span class="badge bg-primary">{{ $dependency->sourcefield }}</span></td>
-                                            <td><span class="badge bg-success">{{ $dependency->targetfield }}</span></td>
+                                            <td><span class="badge bg-primary">{{ vtranslate($dependency->sourcefieldlabel, $dependency->module_name) }}</span></td>
+                                            <td><span class="badge bg-success">{{ vtranslate($dependency->targetfieldlabel, $dependency->module_name) }}</span></td>
                                             <td>
                                                 <a href="{{ route('tenant.settings.crm.picklist-dependency.edit', ['module' => $dependency->module_name, 'source_field' => $dependency->sourcefield, 'target_field' => $dependency->targetfield]) }}" 
                                                    class="btn btn-sm btn-outline-primary">
