@@ -15,6 +15,11 @@ use App\Modules\Tenant\Settings\Presentation\Controllers\PicklistController;
 use App\Modules\Tenant\Settings\Presentation\Controllers\PicklistDependencyController;
 use App\Modules\Tenant\Settings\Presentation\Controllers\SchedulerController;
 use App\Modules\Tenant\Settings\Presentation\Controllers\WorkflowController;
+use App\Modules\Tenant\Settings\Presentation\Controllers\CompanyDetailsController;
+use App\Modules\Tenant\Settings\Presentation\Controllers\CustomerPortalController;
+use App\Modules\Tenant\Settings\Presentation\Controllers\CurrencyController;
+use App\Modules\Tenant\Settings\Presentation\Controllers\OutgoingServerController;
+use App\Modules\Tenant\Settings\Presentation\Controllers\ConfigEditorController;
 use App\Modules\Tenant\Users\Presentation\Controllers\GroupsController;
 use App\Modules\Tenant\Users\Presentation\Controllers\LoginHistoryController;
 use App\Modules\Tenant\Users\Presentation\Controllers\ProfilesController;
@@ -246,6 +251,47 @@ Route::middleware([
                 Route::post('/scheduler/{id}/toggle-status', [SchedulerController::class, 'toggleStatus'])->name('scheduler.toggle-status');
                 Route::post('/scheduler/{id}/run-now', [SchedulerController::class, 'runNow'])->name('scheduler.run-now');
                 Route::get('/scheduler/{id}/details', [SchedulerController::class, 'getDetails'])->name('scheduler.details');
+            });
+
+            // Company Details
+            Route::prefix('company')->name('company.')->group(function () {
+                Route::get('/', [CompanyDetailsController::class, 'index'])->name('index');
+                Route::get('/edit', [CompanyDetailsController::class, 'edit'])->name('edit');
+                Route::post('/update', [CompanyDetailsController::class, 'update'])->name('update');
+                Route::post('/logo', [CompanyDetailsController::class, 'uploadLogo'])->name('logo');
+            });
+
+            // Customer Portal
+            Route::prefix('portal')->name('portal.')->group(function () {
+                Route::get('/', [CustomerPortalController::class, 'index'])->name('index');
+                Route::post('/save', [CustomerPortalController::class, 'save'])->name('save');
+                Route::get('/modules', [CustomerPortalController::class, 'getModules'])->name('modules');
+            });
+
+            // Currency Management
+            Route::prefix('currency')->name('currency.')->group(function () {
+                Route::get('/', [CurrencyController::class, 'index'])->name('index');
+                Route::get('/data', [CurrencyController::class, 'data'])->name('data');
+                Route::get('/create', [CurrencyController::class, 'create'])->name('create');
+                Route::post('/', [CurrencyController::class, 'store'])->name('store');
+                Route::get('/{id}/edit', [CurrencyController::class, 'edit'])->name('edit');
+                Route::put('/{id}', [CurrencyController::class, 'update'])->name('update');
+                Route::delete('/{id}', [CurrencyController::class, 'destroy'])->name('destroy');
+            });
+
+            // Outgoing Server (Mail)
+            Route::prefix('mail')->name('mail.')->group(function () {
+                Route::get('/', [OutgoingServerController::class, 'index'])->name('index');
+                Route::get('/edit', [OutgoingServerController::class, 'edit'])->name('edit');
+                Route::post('/save', [OutgoingServerController::class, 'save'])->name('save');
+                Route::post('/test', [OutgoingServerController::class, 'test'])->name('test');
+            });
+
+            // Config Editor
+            Route::prefix('config')->name('config.')->group(function () {
+                Route::get('/', [ConfigEditorController::class, 'index'])->name('index');
+                Route::get('/edit', [ConfigEditorController::class, 'edit'])->name('edit');
+                Route::post('/save', [ConfigEditorController::class, 'save'])->name('save');
             });
         });
     });

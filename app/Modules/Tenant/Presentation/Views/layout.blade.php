@@ -467,6 +467,28 @@
                                 </ul>
                             </div>
                         </li>
+
+                        {{-- Configuration Modules --}}
+                        <li><a href="{{ route('tenant.settings.crm.company.index') }}"
+                                class="nav-link {{ request()->routeIs('tenant.settings.crm.company.*') ? 'active' : '' }} ps-4"><i
+                                    class="bi bi-building me-2"></i>
+                                {{ __('tenant::settings.company_details') ?? 'Company Details' }}</a></li>
+                        <li><a href="{{ route('tenant.settings.crm.portal.index') }}"
+                                class="nav-link {{ request()->routeIs('tenant.settings.crm.portal.*') ? 'active' : '' }} ps-4"><i
+                                    class="bi bi-person-circle me-2"></i>
+                                {{ __('tenant::settings.customer_portal') ?? 'Customer Portal' }}</a></li>
+                        <li><a href="{{ route('tenant.settings.crm.currency.index') }}"
+                                class="nav-link {{ request()->routeIs('tenant.settings.crm.currency.*') ? 'active' : '' }} ps-4"><i
+                                    class="bi bi-currency-exchange me-2"></i>
+                                {{ __('tenant::settings.currencies') ?? 'Currencies' }}</a></li>
+                        <li><a href="{{ route('tenant.settings.crm.mail.index') }}"
+                                class="nav-link {{ request()->routeIs('tenant.settings.crm.mail.*') ? 'active' : '' }} ps-4"><i
+                                    class="bi bi-envelope-at me-2"></i>
+                                {{ __('tenant::settings.outgoing_server') ?? 'Outgoing Server' }}</a></li>
+                        <li><a href="{{ route('tenant.settings.crm.config.index') }}"
+                                class="nav-link {{ request()->routeIs('tenant.settings.crm.config.*') ? 'active' : '' }} ps-4"><i
+                                    class="bi bi-code-square me-2"></i>
+                                {{ __('tenant::settings.config_editor') ?? 'Config Editor' }}</a></li>
                     </ul>
                 </div>
             </li>
