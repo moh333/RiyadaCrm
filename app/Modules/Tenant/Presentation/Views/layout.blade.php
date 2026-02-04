@@ -37,6 +37,8 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
 
+    @stack('styles')
+
     <style>
         :root {
             --sidebar-width: 280px;
@@ -448,10 +450,20 @@
                             <div class="collapse {{ request()->routeIs('tenant.settings.crm.automation.*') ? 'show' : '' }}"
                                 id="automationSubmenu">
                                 <ul class="list-unstyled fw-normal pb-1 small bg-white rounded-bottom px-2 pt-1 ms-3">
-                                    <li><a href="{{ route('tenant.settings.crm.automation.workflows.index') }}"
+                                    <li>
+                                        <a href="{{ route('tenant.settings.crm.automation.scheduler.index') }}"
+                                            class="nav-link {{ request()->routeIs('tenant.settings.crm.automation.scheduler.*') ? 'active' : '' }} ps-4"><i
+                                                class="bi bi-clock-history me-2"></i>
+                                            {{ __('tenant::settings.scheduler') ?? 'Scheduler' }}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('tenant.settings.crm.automation.workflows.index') }}"
                                             class="nav-link {{ request()->routeIs('tenant.settings.crm.automation.workflows.*') ? 'active' : '' }} ps-4"><i
                                                 class="bi bi-diagram-2 me-2"></i>
-                                            {{ __('tenant::settings.workflows') ?? 'Workflows' }}</a></li>
+                                            {{ __('tenant::settings.workflows') ?? 'Workflows' }}
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                         </li>

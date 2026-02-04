@@ -13,6 +13,8 @@ use App\Modules\Tenant\Presentation\Controllers\SettingsController;
 use App\Modules\Tenant\Settings\Presentation\Controllers\ModuleManagementController;
 use App\Modules\Tenant\Settings\Presentation\Controllers\PicklistController;
 use App\Modules\Tenant\Settings\Presentation\Controllers\PicklistDependencyController;
+use App\Modules\Tenant\Settings\Presentation\Controllers\SchedulerController;
+use App\Modules\Tenant\Settings\Presentation\Controllers\WorkflowController;
 use App\Modules\Tenant\Users\Presentation\Controllers\GroupsController;
 use App\Modules\Tenant\Users\Presentation\Controllers\LoginHistoryController;
 use App\Modules\Tenant\Users\Presentation\Controllers\ProfilesController;
@@ -213,16 +215,41 @@ Route::middleware([
 
             // Automation - Workflows
             Route::prefix('automation')->name('automation.')->group(function () {
-                Route::get('/workflows', [\App\Modules\Tenant\Settings\Presentation\Controllers\WorkflowController::class, 'index'])->name('workflows.index');
-                Route::get('/workflows/create', [\App\Modules\Tenant\Settings\Presentation\Controllers\WorkflowController::class, 'create'])->name('workflows.create');
-                Route::post('/workflows', [\App\Modules\Tenant\Settings\Presentation\Controllers\WorkflowController::class, 'store'])->name('workflows.store');
-                Route::get('/workflows/{id}/edit', [\App\Modules\Tenant\Settings\Presentation\Controllers\WorkflowController::class, 'edit'])->name('workflows.edit');
-                Route::put('/workflows/{id}', [\App\Modules\Tenant\Settings\Presentation\Controllers\WorkflowController::class, 'update'])->name('workflows.update');
-                Route::delete('/workflows/{id}', [\App\Modules\Tenant\Settings\Presentation\Controllers\WorkflowController::class, 'destroy'])->name('workflows.destroy');
-                Route::post('/workflows/{id}/toggle-status', [\App\Modules\Tenant\Settings\Presentation\Controllers\WorkflowController::class, 'toggleStatus'])->name('workflows.toggle-status');
+                Route::get('/workflows', [WorkflowController::class, 'index'])->name('workflows.index');
+                Route::get('/workflows/data', [WorkflowController::class, 'data'])->name('workflows.data');
+                Route::get('/workflows/create', [WorkflowController::class, 'create'])->name('workflows.create');
+                Route::post('/workflows', [WorkflowController::class, 'store'])->name('workflows.store');
+                Route::get('/workflows/{id}/edit', [WorkflowController::class, 'edit'])->name('workflows.edit');
+                Route::put('/workflows/{id}', [WorkflowController::class, 'update'])->name('workflows.update');
+                Route::delete('/workflows/{id}', [WorkflowController::class, 'destroy'])->name('workflows.destroy');
+                Route::post('/workflows/{id}/toggle-status', [WorkflowController::class, 'toggleStatus'])->name('workflows.toggle-status');
+
+                // AJAX endpoints for workflow management
+                Route::get('/workflows/module-fields', [WorkflowController::class, 'getModuleFields'])->name('workflows.module-fields');
+                Route::get('/workflows/condition-operators', [WorkflowController::class, 'getConditionOperators'])->name('workflows.condition-operators');
+                Route::post('/workflows/{id}/conditions', [WorkflowController::class, 'updateConditions'])->name('workflows.update-conditions');
+                Route::post('/workflows/{id}/schedule', [WorkflowController::class, 'updateSchedule'])->name('workflows.update-schedule');
+
+                // Task management routes
+                Route::post('/workflows/{workflowId}/tasks', [WorkflowController::class, 'createTask'])->name('workflows.tasks.create');
+                Route::put('/workflows/{workflowId}/tasks/{taskId}', [WorkflowController::class, 'updateTask'])->name('workflows.tasks.update');
+                Route::delete('/workflows/{workflowId}/tasks/{taskId}', [WorkflowController::class, 'deleteTask'])->name('workflows.tasks.delete');
+
+                // Scheduler routes
+                Route::get('/scheduler', [SchedulerController::class, 'index'])->name('scheduler.index');
+                Route::get('/scheduler/data', [SchedulerController::class, 'data'])->name('scheduler.data');
+                Route::get('/scheduler/create', [SchedulerController::class, 'create'])->name('scheduler.create');
+                Route::post('/scheduler', [SchedulerController::class, 'store'])->name('scheduler.store');
+                Route::get('/scheduler/{id}/edit', [SchedulerController::class, 'edit'])->name('scheduler.edit');
+                Route::put('/scheduler/{id}', [SchedulerController::class, 'update'])->name('scheduler.update');
+                Route::delete('/scheduler/{id}', [SchedulerController::class, 'destroy'])->name('scheduler.destroy');
+                Route::post('/scheduler/{id}/toggle-status', [SchedulerController::class, 'toggleStatus'])->name('scheduler.toggle-status');
+                Route::post('/scheduler/{id}/run-now', [SchedulerController::class, 'runNow'])->name('scheduler.run-now');
+                Route::get('/scheduler/{id}/details', [SchedulerController::class, 'getDetails'])->name('scheduler.details');
             });
         });
     });
 
 
 });
+

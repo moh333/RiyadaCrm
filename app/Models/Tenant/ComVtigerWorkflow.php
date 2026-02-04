@@ -28,7 +28,26 @@ class ComVtigerWorkflow extends Model
      *
      * @var array
      */
-    protected $guarded = [];
+    protected $fillable = [
+        'module_name',
+        'summary',
+        'test',
+        'execution_condition',
+        'defaultworkflow',
+        'type',
+        'filtersavedinnew',
+        'schtypeid',
+        'schtime',
+        'schdayofmonth',
+        'schdayofweek',
+        'schannualdates',
+        'nexttrigger_time',
+        'status',
+        'workflowname',
+        'schdayofweekexclude',
+        'timefrom',
+        'timeto',
+    ];
 
     /**
      * Get the attributes that should be cast.
