@@ -20,6 +20,11 @@ use App\Modules\Tenant\Settings\Presentation\Controllers\CustomerPortalControlle
 use App\Modules\Tenant\Settings\Presentation\Controllers\CurrencyController;
 use App\Modules\Tenant\Settings\Presentation\Controllers\OutgoingServerController;
 use App\Modules\Tenant\Settings\Presentation\Controllers\ConfigEditorController;
+use App\Modules\Tenant\Settings\Presentation\Controllers\TaxController;
+use App\Modules\Tenant\Settings\Presentation\Controllers\TermsConditionsController;
+use App\Modules\Tenant\Settings\Presentation\Controllers\UserPreferencesController;
+use App\Modules\Tenant\Settings\Presentation\Controllers\CalendarSettingsController;
+use App\Modules\Tenant\Settings\Presentation\Controllers\MyTagsController;
 use App\Modules\Tenant\Users\Presentation\Controllers\GroupsController;
 use App\Modules\Tenant\Users\Presentation\Controllers\LoginHistoryController;
 use App\Modules\Tenant\Users\Presentation\Controllers\ProfilesController;
@@ -293,6 +298,49 @@ Route::middleware([
                 Route::get('/edit', [ConfigEditorController::class, 'edit'])->name('edit');
                 Route::post('/save', [ConfigEditorController::class, 'save'])->name('save');
             });
+
+            // Tax Management
+            Route::prefix('tax')->name('tax.')->group(function () {
+                Route::get('/', [TaxController::class, 'index'])->name('index');
+                Route::get('/data', [TaxController::class, 'data'])->name('data');
+                Route::get('/create', [TaxController::class, 'create'])->name('create');
+                Route::post('/', [TaxController::class, 'store'])->name('store');
+                Route::get('/{id}/edit', [TaxController::class, 'edit'])->name('edit');
+                Route::put('/{id}', [TaxController::class, 'update'])->name('update');
+                Route::delete('/{id}', [TaxController::class, 'destroy'])->name('destroy');
+                Route::post('/check-duplicate', [TaxController::class, 'checkDuplicate'])->name('check-duplicate');
+            });
+
+            // Terms and Conditions
+            Route::prefix('terms')->name('terms.')->group(function () {
+                Route::get('/', [TermsConditionsController::class, 'index'])->name('index');
+                Route::get('/{module}/edit', [TermsConditionsController::class, 'edit'])->name('edit');
+                Route::post('/save', [TermsConditionsController::class, 'save'])->name('save');
+            });
+        });
+
+        // My Preferences (under settings)
+        Route::prefix('settings/preferences')->name('settings.preferences.')->group(function () {
+            Route::get('/', [UserPreferencesController::class, 'index'])->name('index');
+            Route::get('/edit', [UserPreferencesController::class, 'edit'])->name('edit');
+            Route::post('/update', [UserPreferencesController::class, 'update'])->name('update');
+        });
+
+        // Calendar Settings (under settings)
+        Route::prefix('settings/calendar')->name('settings.calendar.')->group(function () {
+            Route::get('/', [CalendarSettingsController::class, 'index'])->name('index');
+            Route::get('/edit', [CalendarSettingsController::class, 'edit'])->name('edit');
+            Route::post('/update', [CalendarSettingsController::class, 'update'])->name('update');
+        });
+
+        // My Tags (under settings)
+        Route::prefix('settings/tags')->name('settings.tags.')->group(function () {
+            Route::get('/', [MyTagsController::class, 'index'])->name('index');
+            Route::get('/data', [MyTagsController::class, 'data'])->name('data');
+            Route::post('/', [MyTagsController::class, 'store'])->name('store');
+            Route::put('/{id}', [MyTagsController::class, 'update'])->name('update');
+            Route::delete('/{id}', [MyTagsController::class, 'destroy'])->name('destroy');
+            Route::post('/tag-cloud', [MyTagsController::class, 'updateTagCloud'])->name('tag-cloud');
         });
     });
 

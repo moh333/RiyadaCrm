@@ -35,7 +35,7 @@
                     <div class="card-body p-4 text-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-white-50 mb-2">{{ __('tenant::settings.total_tasks') }}</h6>
+                                <h6 class="text-white-50 mb-2">{{ __('tenant::settings.total_currencies') }}</h6>
                                 <h2 class="mb-0 fw-bold">5</h2>
                             </div>
                             <div class="bg-white bg-opacity-25 rounded-circle p-3">
@@ -51,7 +51,7 @@
                     <div class="card-body p-4 text-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-white-50 mb-2">{{ __('tenant::settings.active_tasks') }}</h6>
+                                <h6 class="text-white-50 mb-2">{{ __('tenant::settings.active_currencies') }}</h6>
                                 <h2 class="mb-0 fw-bold">4</h2>
                             </div>
                             <div class="bg-white bg-opacity-25 rounded-circle p-3">
@@ -194,17 +194,17 @@
                     className: 'text-end',
                     render: function (data, type, row) {
                         return `
-                                    <div class="btn-group btn-group-sm">
-                                        <a href="/settings/crm/currency/${row.id}/edit" 
-                                           class="btn btn-outline-primary rounded-start-pill">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <button class="btn btn-outline-danger rounded-end-pill delete-btn" 
-                                                data-id="${row.id}">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                `;
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="/settings/crm/currency/${row.id}/edit" 
+                                               class="btn btn-outline-primary rounded-start-pill">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button class="btn btn-outline-danger rounded-end-pill delete-btn" 
+                                                    data-id="${row.id}">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    `;
                     }
                 }
                 ],
@@ -240,11 +240,11 @@
 
                             // Show success message
                             const alert = `
-                                    <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm" role="alert">
-                                        <i class="bi bi-check-circle me-2"></i>${response.message}
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                    </div>
-                                `;
+                                        <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+                                            <i class="bi bi-check-circle me-2"></i>${response.message}
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                        </div>
+                                    `;
                             $('.container-fluid').prepend(alert);
 
                             setTimeout(() => {
