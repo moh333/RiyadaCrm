@@ -44,22 +44,19 @@
                                         {{ __('tenant::settings.hour_format') }}
                                     </td>
                                     <td>
-                                        {{-- TODO: Load from user --}}
-                                        <span class="badge bg-primary">12 Hour (AM/PM)</span>
+                                        <span class="badge bg-primary">{{ $user->hour_format ?? '12' }} Hour</span>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted fw-semibold">{{ __('tenant::settings.start_hour') }}</td>
                                     <td>
-                                        {{-- TODO: Load from user --}}
-                                        08:00 AM
+                                        {{ $user->start_hour ?? '08:00' }}
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted fw-semibold">{{ __('tenant::settings.end_hour') }}</td>
                                     <td>
-                                        {{-- TODO: Load from user --}}
-                                        06:00 PM
+                                        {{ $user->end_hour ?? '18:00' }}
                                     </td>
                                 </tr>
                             </tbody>
@@ -84,30 +81,26 @@
                                         {{ __('tenant::settings.default_activity_type') }}
                                     </td>
                                     <td>
-                                        {{-- TODO: Load from user --}}
-                                        Call
+                                        {{ $user->defaultactivitytype ?? 'Call' }}
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted fw-semibold">{{ __('tenant::settings.default_event_status') }}
                                     </td>
                                     <td>
-                                        {{-- TODO: Load from user --}}
-                                        Planned
+                                        {{ $user->defaulteventstatus ?? 'Planned' }}
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted fw-semibold">{{ __('tenant::settings.call_duration') }}</td>
                                     <td>
-                                        {{-- TODO: Load from user --}}
-                                        5 minutes
+                                        {{ $user->callduration ?? 5 }} minutes
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted fw-semibold">{{ __('tenant::settings.event_duration') }}</td>
                                     <td>
-                                        {{-- TODO: Load from user --}}
-                                        60 minutes
+                                        {{ $user->othereventduration ?? 60 }} minutes
                                     </td>
                                 </tr>
                             </tbody>
@@ -132,15 +125,13 @@
                                         {{ __('tenant::settings.calendar_view') }}
                                     </td>
                                     <td>
-                                        {{-- TODO: Load from user --}}
-                                        Calendar View
+                                        {{ $user->activity_view ?? 'Calendar View' }}
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted fw-semibold">{{ __('tenant::settings.reminder_interval') }}</td>
                                     <td>
-                                        {{-- TODO: Load from user --}}
-                                        15 Minutes
+                                        {{ $user->reminder_interval ?? '15 Minutes' }}
                                     </td>
                                 </tr>
                             </tbody>

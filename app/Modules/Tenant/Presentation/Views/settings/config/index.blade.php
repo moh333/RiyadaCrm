@@ -52,7 +52,7 @@
                                         <label class="form-label text-muted small mb-1">
                                             {{ __('tenant::settings.default_module') }}
                                         </label>
-                                        <p class="fw-semibold mb-0">Dashboard</p>
+                                        <p class="fw-semibold mb-0">{{ $config['default_module'] ?? 'Dashboard' }}</p>
                                     </div>
                                     <i class="bi bi-grid-3x3-gap fs-4 text-muted"></i>
                                 </div>
@@ -64,7 +64,7 @@
                                         <label class="form-label text-muted small mb-1">
                                             {{ __('tenant::settings.max_entries_per_page') }}
                                         </label>
-                                        <p class="fw-semibold mb-0">20</p>
+                                        <p class="fw-semibold mb-0">{{ $config['max_entries_per_page'] ?? '20' }}</p>
                                     </div>
                                     <i class="bi bi-list-ol fs-4 text-muted"></i>
                                 </div>
@@ -76,7 +76,8 @@
                                         <label class="form-label text-muted small mb-1">
                                             {{ __('tenant::settings.max_text_length_listview') }}
                                         </label>
-                                        <p class="fw-semibold mb-0">50 characters</p>
+                                        <p class="fw-semibold mb-0">{{ $config['max_text_length_listview'] ?? '50' }}
+                                            characters</p>
                                     </div>
                                     <i class="bi bi-text-paragraph fs-4 text-muted"></i>
                                 </div>
@@ -103,7 +104,7 @@
                                         <label class="form-label text-muted small mb-1">
                                             {{ __('tenant::settings.max_upload_size') }}
                                         </label>
-                                        <p class="fw-semibold mb-0">5 MB</p>
+                                        <p class="fw-semibold mb-0">{{ $config['max_upload_size'] ?? '5' }} MB</p>
                                     </div>
                                     <i class="bi bi-file-earmark-arrow-up fs-4 text-muted"></i>
                                 </div>
@@ -148,7 +149,8 @@
                                         <label class="form-label text-muted small mb-1">
                                             {{ __('tenant::settings.helpdesk_support_email') }}
                                         </label>
-                                        <p class="fw-semibold mb-0">support@example.com</p>
+                                        <p class="fw-semibold mb-0">{{ $config['helpdesk_support_email'] ??
+                                            'support@example.com' }}</p>
                                     </div>
                                     <i class="bi bi-envelope fs-4 text-muted"></i>
                                 </div>
@@ -160,7 +162,8 @@
                                         <label class="form-label text-muted small mb-1">
                                             {{ __('tenant::settings.helpdesk_support_name') }}
                                         </label>
-                                        <p class="fw-semibold mb-0">Support Team</p>
+                                        <p class="fw-semibold mb-0">{{ $config['helpdesk_support_name'] ?? 'Support Team' }}
+                                        </p>
                                     </div>
                                     <i class="bi bi-person-badge fs-4 text-muted"></i>
                                 </div>
@@ -184,27 +187,28 @@
                             <div class="col-12">
                                 <div class="p-3 bg-light rounded-3">
                                     <label class="form-label text-muted small mb-2">
-                                        Display Options
+                                        {{ __('tenant::settings.display_options') }}
                                     </label>
                                     <div class="d-flex flex-column gap-2">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="show_icons" checked
-                                                disabled>
+                                            <input class="form-check-input" type="checkbox" id="show_icons"
+                                                {{ ($config['show_icons'] ?? '1') == '1' ? 'checked' : '' }} disabled>
                                             <label class="form-check-label" for="show_icons">
-                                                Show module icons
+                                                {{ __('tenant::settings.show_module_icons') }}
                                             </label>
                                         </div>
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="show_colors" checked
-                                                disabled>
+                                            <input class="form-check-input" type="checkbox" id="show_colors"
+                                                {{ ($config['show_colors'] ?? '1') == '1' ? 'checked' : '' }} disabled>
                                             <label class="form-check-label" for="show_colors">
-                                                Enable color coding
+                                                {{ __('tenant::settings.enable_color_coding') }}
                                             </label>
                                         </div>
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="compact_view" disabled>
+                                            <input class="form-check-input" type="checkbox" id="compact_view"
+                                                {{ ($config['compact_view'] ?? '0') == '1' ? 'checked' : '' }} disabled>
                                             <label class="form-check-label" for="compact_view">
-                                                Compact view mode
+                                                {{ __('tenant::settings.compact_view_short') }}
                                             </label>
                                         </div>
                                     </div>

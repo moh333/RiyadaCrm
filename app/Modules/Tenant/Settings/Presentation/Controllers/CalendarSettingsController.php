@@ -15,10 +15,13 @@ class CalendarSettingsController
     {
         $userId = $request->get('user_id', auth()->id());
 
-        // TODO: Load user calendar settings
+        $user = \DB::connection('tenant')
+            ->table('vtiger_users')
+            ->where('id', $userId)
+            ->first();
 
         return view('tenant::settings.calendar.index', [
-            'user' => null // TODO: Load user model
+            'user' => $user
         ]);
     }
 
@@ -29,10 +32,13 @@ class CalendarSettingsController
     {
         $userId = $request->get('user_id', auth()->id());
 
-        // TODO: Load user calendar settings
+        $user = \DB::connection('tenant')
+            ->table('vtiger_users')
+            ->where('id', $userId)
+            ->first();
 
         return view('tenant::settings.calendar.edit', [
-            'user' => null, // TODO: Load user model
+            'user' => $user,
             'hourFormats' => $this->getHourFormats(),
             'startHours' => $this->getStartHours(),
             'endHours' => $this->getEndHours(),
@@ -50,20 +56,26 @@ class CalendarSettingsController
     {
         $userId = $request->get('user_id', auth()->id());
 
-        // TODO: Validate and update calendar settings
-        // - hour_format
-        // - start_hour
-        // - end_hour
-        // - defaultactivitytype
-        // - defaulteventstatus
-        // - callduration
-        // - othereventduration
-        // - activity_view
-        // - defaultcalendarview
-        // - reminder_interval
+        $validated = $request->validate([
+            'hour_format' => 'required|string|max:10',
+            'start_hour' => 'required|string|max:10',
+            'end_hour' => 'required|string|max:10',
+            'defaultactivitytype' => 'nullable|string|max:100',
+            'defaulteventstatus' => 'nullable|string|max:100',
+            'callduration' => 'nullable|integer',
+            'othereventduration' => 'nullable|integer',
+            'activity_view' => 'nullable|string|max:100',
+            'defaultcalendarview' => 'nullable|string|max:100',
+            'reminder_interval' => 'nullable|string|max:100',
+        ]);
+
+        \DB::connection('tenant')
+            ->table('vtiger_users')
+            ->where('id', $userId)
+            ->update($validated);
 
         return redirect()->route('tenant.settings.calendar.index', ['user_id' => $userId])
-            ->with('success', 'Calendar settings updated successfully');
+            ->with('success', __('tenant::settings.calendar_settings_updated'));
     }
 
     /**

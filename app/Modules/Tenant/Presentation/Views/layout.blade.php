@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ __('tenant::tenant.dashboard') }} - Riyada CRM</title>
     <link rel="icon" type="image/svg+xml" href="{{ global_asset('favicon.svg') }}">
 
@@ -415,7 +416,8 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link collapsed d-flex justify-content-between align-items-center"
-                    data-bs-toggle="collapse" href="#crmSettingsSubmenu" role="button" aria-expanded="false"
+                    data-bs-toggle="collapse" href="#crmSettingsSubmenu" role="button"
+                    aria-expanded="{{ request()->is('settings/crm*') || request()->is('settings/preferences*') || request()->is('settings/calendar*') || request()->is('settings/tags*') ? 'true' : 'false' }}"
                     aria-controls="crmSettingsSubmenu">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-sliders"></i>
@@ -423,23 +425,63 @@
                     </div>
                     <i class="bi bi-chevron-down small"></i>
                 </a>
-                <div class="collapse {{ request()->routeIs('tenant.settings.crm.*') ? 'show' : '' }}"
+                <div class="collapse {{ request()->is('settings/crm*') || request()->is('settings/preferences*') || request()->is('settings/calendar*') || request()->is('settings/tags*') ? 'show' : '' }}"
                     id="crmSettingsSubmenu">
                     <ul class="list-unstyled fw-normal pb-1 small bg-light rounded-bottom px-2 pt-1">
-                        <li><a href="{{ route('tenant.settings.crm.picklist.index') }}"
-                                class="nav-link {{ request()->routeIs('tenant.settings.crm.picklist.*') ? 'active' : '' }} ps-4"><i
-                                    class="bi bi-list-ul me-2"></i>
-                                {{ __('tenant::settings.picklist') ?? 'Picklist' }}</a></li>
-                        <li><a href="{{ route('tenant.settings.crm.picklist-dependency.index') }}"
-                                class="nav-link {{ request()->routeIs('tenant.settings.crm.picklist-dependency.*') ? 'active' : '' }} ps-4"><i
-                                    class="bi bi-diagram-3 me-2"></i>
-                                {{ __('tenant::settings.picklist_dependency') ?? 'Picklist Dependency' }}</a>
+
+                        {{-- Configuration Submenu --}}
+                        <li>
+                            <a class="nav-link collapsed d-flex justify-content-between align-items-center ps-4"
+                                data-bs-toggle="collapse" href="#configurationSubmenu" role="button"
+                                aria-expanded="{{ request()->routeIs('tenant.settings.crm.company.*') || request()->routeIs('tenant.settings.crm.portal.*') || request()->routeIs('tenant.settings.crm.currency.*') || request()->routeIs('tenant.settings.crm.mail.*') || request()->routeIs('tenant.settings.crm.config.*') || request()->routeIs('tenant.settings.crm.picklist.*') || request()->routeIs('tenant.settings.crm.picklist-dependency.*') ? 'true' : 'false' }}"
+                                aria-controls="configurationSubmenu">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-gear-wide-connected me-2"></i>
+                                    {{ __('tenant::settings.configuration') ?? 'Configuration' }}
+                                </div>
+                                <i class="bi bi-chevron-down small"></i>
+                            </a>
+                            <div class="collapse {{ request()->routeIs('tenant.settings.crm.company.*') || request()->routeIs('tenant.settings.crm.portal.*') || request()->routeIs('tenant.settings.crm.currency.*') || request()->routeIs('tenant.settings.crm.mail.*') || request()->routeIs('tenant.settings.crm.config.*') || request()->routeIs('tenant.settings.crm.picklist.*') || request()->routeIs('tenant.settings.crm.picklist-dependency.*') ? 'show' : '' }}"
+                                id="configurationSubmenu">
+                                <ul class="list-unstyled fw-normal pb-1 small bg-white rounded-bottom px-2 pt-1 ms-3">
+                                    <li><a href="{{ route('tenant.settings.crm.company.index') }}"
+                                            class="nav-link {{ request()->routeIs('tenant.settings.crm.company.*') ? 'active' : '' }} ps-4"><i
+                                                class="bi bi-building me-2"></i>
+                                            {{ __('tenant::settings.company_details') ?? 'Company Details' }}</a></li>
+                                    <li><a href="{{ route('tenant.settings.crm.portal.index') }}"
+                                            class="nav-link {{ request()->routeIs('tenant.settings.crm.portal.*') ? 'active' : '' }} ps-4"><i
+                                                class="bi bi-person-circle me-2"></i>
+                                            {{ __('tenant::settings.customer_portal') ?? 'Customer Portal' }}</a></li>
+                                    <li><a href="{{ route('tenant.settings.crm.currency.index') }}"
+                                            class="nav-link {{ request()->routeIs('tenant.settings.crm.currency.*') ? 'active' : '' }} ps-4"><i
+                                                class="bi bi-currency-exchange me-2"></i>
+                                            {{ __('tenant::settings.currencies') ?? 'Currencies' }}</a></li>
+                                    <li><a href="{{ route('tenant.settings.crm.mail.index') }}"
+                                            class="nav-link {{ request()->routeIs('tenant.settings.crm.mail.*') ? 'active' : '' }} ps-4"><i
+                                                class="bi bi-envelope-at me-2"></i>
+                                            {{ __('tenant::settings.outgoing_server') ?? 'Outgoing Server' }}</a></li>
+                                    <li><a href="{{ route('tenant.settings.crm.config.index') }}"
+                                            class="nav-link {{ request()->routeIs('tenant.settings.crm.config.*') ? 'active' : '' }} ps-4"><i
+                                                class="bi bi-code-square me-2"></i>
+                                            {{ __('tenant::settings.config_editor') ?? 'Config Editor' }}</a></li>
+                                    <li><a href="{{ route('tenant.settings.crm.picklist.index') }}"
+                                            class="nav-link {{ request()->routeIs('tenant.settings.crm.picklist.*') ? 'active' : '' }} ps-4"><i
+                                                class="bi bi-list-ul me-2"></i>
+                                            {{ __('tenant::settings.picklist') ?? 'Picklist' }}</a></li>
+                                    <li><a href="{{ route('tenant.settings.crm.picklist-dependency.index') }}"
+                                            class="nav-link {{ request()->routeIs('tenant.settings.crm.picklist-dependency.*') ? 'active' : '' }} ps-4"><i
+                                                class="bi bi-diagram-3 me-2"></i>
+                                            {{ __('tenant::settings.picklist_dependency') ?? 'Picklist Dependency' }}</a>
+                                    </li>
+                                </ul>
+                            </div>
                         </li>
 
                         {{-- Automation Submenu --}}
                         <li>
                             <a class="nav-link collapsed d-flex justify-content-between align-items-center ps-4"
-                                data-bs-toggle="collapse" href="#automationSubmenu" role="button" aria-expanded="false"
+                                data-bs-toggle="collapse" href="#automationSubmenu" role="button"
+                                aria-expanded="{{ request()->routeIs('tenant.settings.crm.automation.*') ? 'true' : 'false' }}"
                                 aria-controls="automationSubmenu">
                                 <div class="d-flex align-items-center">
                                     <i class="bi bi-lightning-charge me-2"></i>
@@ -468,51 +510,31 @@
                             </div>
                         </li>
 
-                        {{-- Configuration Modules --}}
-                        <li><a href="{{ route('tenant.settings.crm.company.index') }}"
-                                class="nav-link {{ request()->routeIs('tenant.settings.crm.company.*') ? 'active' : '' }} ps-4"><i
-                                    class="bi bi-building me-2"></i>
-                                {{ __('tenant::settings.company_details') ?? 'Company Details' }}</a></li>
-                        <li><a href="{{ route('tenant.settings.crm.portal.index') }}"
-                                class="nav-link {{ request()->routeIs('tenant.settings.crm.portal.*') ? 'active' : '' }} ps-4"><i
-                                    class="bi bi-person-circle me-2"></i>
-                                {{ __('tenant::settings.customer_portal') ?? 'Customer Portal' }}</a></li>
-                        <li><a href="{{ route('tenant.settings.crm.currency.index') }}"
-                                class="nav-link {{ request()->routeIs('tenant.settings.crm.currency.*') ? 'active' : '' }} ps-4"><i
-                                    class="bi bi-currency-exchange me-2"></i>
-                                {{ __('tenant::settings.currencies') ?? 'Currencies' }}</a></li>
-                        <li><a href="{{ route('tenant.settings.crm.mail.index') }}"
-                                class="nav-link {{ request()->routeIs('tenant.settings.crm.mail.*') ? 'active' : '' }} ps-4"><i
-                                    class="bi bi-envelope-at me-2"></i>
-                                {{ __('tenant::settings.outgoing_server') ?? 'Outgoing Server' }}</a></li>
-                        <li><a href="{{ route('tenant.settings.crm.config.index') }}"
-                                class="nav-link {{ request()->routeIs('tenant.settings.crm.config.*') ? 'active' : '' }} ps-4"><i
-                                    class="bi bi-code-square me-2"></i>
-                                {{ __('tenant::settings.config_editor') ?? 'Config Editor' }}</a></li>
-
                         {{-- Inventory Settings --}}
-                        <li class="nav-item">
+                        <li>
                             <a class="nav-link collapsed d-flex justify-content-between align-items-center ps-4"
                                 data-bs-toggle="collapse" href="#inventorySubmenu" role="button"
                                 aria-expanded="{{ request()->routeIs('tenant.settings.crm.tax.*') || request()->routeIs('tenant.settings.crm.terms.*') ? 'true' : 'false' }}"
                                 aria-controls="inventorySubmenu">
-                                <span><i class="bi bi-box-seam me-2"></i>
-                                    {{ __('tenant::settings.inventory_settings') ?? 'Inventory Settings' }}</span>
-                                <i class="bi bi-chevron-down"></i>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-box-seam me-2"></i>
+                                    {{ __('tenant::settings.inventory_settings') ?? 'Inventory Settings' }}
+                                </div>
+                                <i class="bi bi-chevron-down small"></i>
                             </a>
                             <div class="collapse {{ request()->routeIs('tenant.settings.crm.tax.*') || request()->routeIs('tenant.settings.crm.terms.*') ? 'show' : '' }}"
                                 id="inventorySubmenu">
-                                <ul class="list-unstyled fw-normal pb-1 small bg-light rounded-bottom px-2 pt-1">
+                                <ul class="list-unstyled fw-normal pb-1 small bg-white rounded-bottom px-2 pt-1 ms-3">
                                     <li>
                                         <a href="{{ route('tenant.settings.crm.tax.index') }}"
-                                            class="nav-link {{ request()->routeIs('tenant.settings.crm.tax.*') ? 'active' : '' }} ps-5"><i
+                                            class="nav-link {{ request()->routeIs('tenant.settings.crm.tax.*') ? 'active' : '' }} ps-4"><i
                                                 class="bi bi-percent me-2"></i>
                                             {{ __('tenant::settings.tax_management') ?? 'Tax Management' }}
                                         </a>
                                     </li>
                                     <li>
                                         <a href="{{ route('tenant.settings.crm.terms.index') }}"
-                                            class="nav-link {{ request()->routeIs('tenant.settings.crm.terms.*') ? 'active' : '' }} ps-5"><i
+                                            class="nav-link {{ request()->routeIs('tenant.settings.crm.terms.*') ? 'active' : '' }} ps-4"><i
                                                 class="bi bi-file-text me-2"></i>
                                             {{ __('tenant::settings.terms_conditions') ?? 'Terms & Conditions' }}
                                         </a>
@@ -520,35 +542,39 @@
                                 </ul>
                             </div>
                         </li>
-                    </ul>
-                </div>
-            </li>
 
-            {{-- My Preferences --}}
-            <li class="nav-item">
-                <a class="nav-link collapsed d-flex justify-content-between align-items-center"
-                    data-bs-toggle="collapse" href="#preferencesMenu" role="button"
-                    aria-expanded="{{ request()->routeIs('tenant.settings.preferences.*') || request()->routeIs('tenant.settings.calendar.*') || request()->routeIs('tenant.settings.tags.*') ? 'true' : 'false' }}"
-                    aria-controls="preferencesMenu">
-                    <span><i class="bi bi-person-gear"></i>
-                        {{ __('tenant::settings.my_preferences') ?? 'My Preferences' }}</span>
-                    <i class="bi bi-chevron-down"></i>
-                </a>
-                <div class="collapse {{ request()->routeIs('tenant.settings.preferences.*') || request()->routeIs('tenant.settings.calendar.*') || request()->routeIs('tenant.settings.tags.*') ? 'show' : '' }}"
-                    id="preferencesMenu">
-                    <ul class="list-unstyled fw-normal pb-1 small bg-light rounded-bottom px-2 pt-1">
-                        <li><a href="{{ route('tenant.settings.preferences.index') }}"
-                                class="nav-link {{ request()->routeIs('tenant.settings.preferences.*') ? 'active' : '' }} ps-4"><i
-                                    class="bi bi-sliders me-2"></i>
-                                {{ __('tenant::settings.user_preferences') ?? 'User Preferences' }}</a></li>
-                        <li><a href="{{ route('tenant.settings.calendar.index') }}"
-                                class="nav-link {{ request()->routeIs('tenant.settings.calendar.*') ? 'active' : '' }} ps-4"><i
-                                    class="bi bi-calendar3 me-2"></i>
-                                {{ __('tenant::settings.calendar_settings') ?? 'Calendar Settings' }}</a></li>
-                        <li><a href="{{ route('tenant.settings.tags.index') }}"
-                                class="nav-link {{ request()->routeIs('tenant.settings.tags.*') ? 'active' : '' }} ps-4"><i
-                                    class="bi bi-tags me-2"></i>
-                                {{ __('tenant::settings.my_tags') ?? 'My Tags' }}</a></li>
+                        {{-- My Preferences Submenu --}}
+                        <li>
+                            <a class="nav-link collapsed d-flex justify-content-between align-items-center ps-4"
+                                data-bs-toggle="collapse" href="#preferencesMenu" role="button"
+                                aria-expanded="{{ request()->routeIs('tenant.settings.preferences.*') || request()->routeIs('tenant.settings.calendar.*') || request()->routeIs('tenant.settings.tags.*') ? 'true' : 'false' }}"
+                                aria-controls="preferencesMenu">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-person-gear me-2"></i>
+                                    {{ __('tenant::settings.my_preferences') ?? 'My Preferences' }}
+                                </div>
+                                <i class="bi bi-chevron-down small"></i>
+                            </a>
+                            <div class="collapse {{ request()->routeIs('tenant.settings.preferences.*') || request()->routeIs('tenant.settings.calendar.*') || request()->routeIs('tenant.settings.tags.*') ? 'show' : '' }}"
+                                id="preferencesMenu">
+                                <ul class="list-unstyled fw-normal pb-1 small bg-white rounded-bottom px-2 pt-1 ms-3">
+                                    <li><a href="{{ route('tenant.settings.preferences.index') }}"
+                                            class="nav-link {{ request()->routeIs('tenant.settings.preferences.*') ? 'active' : '' }} ps-4"><i
+                                                class="bi bi-sliders me-2"></i>
+                                            {{ __('tenant::settings.user_preferences') ?? 'User Preferences' }}</a></li>
+                                    <li><a href="{{ route('tenant.settings.calendar.index') }}"
+                                            class="nav-link {{ request()->routeIs('tenant.settings.calendar.*') ? 'active' : '' }} ps-4"><i
+                                                class="bi bi-calendar3 me-2"></i>
+                                            {{ __('tenant::settings.calendar_settings') ?? 'Calendar Settings' }}</a>
+                                    </li>
+                                    <li><a href="{{ route('tenant.settings.tags.index') }}"
+                                            class="nav-link {{ request()->routeIs('tenant.settings.tags.*') ? 'active' : '' }} ps-4"><i
+                                                class="bi bi-tags me-2"></i>
+                                            {{ __('tenant::settings.my_tags') ?? 'My Tags' }}</a></li>
+                                </ul>
+                            </div>
+                        </li>
+
                     </ul>
                 </div>
             </li>

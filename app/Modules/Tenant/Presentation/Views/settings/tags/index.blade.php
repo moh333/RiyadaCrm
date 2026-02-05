@@ -56,7 +56,7 @@
                             <i class="bi bi-cloud text-primary me-2"></i>{{ __('tenant::settings.tag_cloud') }}
                         </h6>
                         <div class="form-check form-switch mb-3">
-                            <input class="form-check-input" type="checkbox" id="enableTagCloud" checked>
+                            <input class="form-check-input" type="checkbox" id="enableTagCloud" {{ $showTagCloud ? 'checked' : '' }}>
                             <label class="form-check-label fw-semibold" for="enableTagCloud">
                                 {{ __('tenant::settings.enable_tag_cloud') }}
                             </label>
@@ -214,15 +214,15 @@
                     className: 'text-end',
                     render: function (data, type, row) {
                         return `
-                                    <button class="btn btn-sm btn-outline-primary rounded-pill me-1 edit-tag" 
-                                            data-id="${row.id}" data-name="${row.tag}">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger rounded-pill delete-tag" 
-                                            data-id="${row.id}">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                `;
+                                        <button class="btn btn-sm btn-outline-primary rounded-pill me-1 edit-tag" 
+                                                data-id="${row.id}" data-name="${row.tag}">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger rounded-pill delete-tag" 
+                                                data-id="${row.id}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    `;
                     }
                 }
                 ],
@@ -327,11 +327,11 @@
 
             function showAlert(type, message) {
                 const alert = `
-                        <div class="alert alert-${type} alert-dismissible fade show rounded-4 shadow-sm" role="alert">
-                            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>${message}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    `;
+                            <div class="alert alert-${type} alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+                                <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>${message}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        `;
                 $('.container-fluid').prepend(alert);
                 setTimeout(() => {
                     $('.alert').fadeOut();

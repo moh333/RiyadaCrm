@@ -17,7 +17,11 @@ class CompanyDetailsController extends Controller
      */
     public function index(): View
     {
-        return view('tenant::settings.company.index');
+        $organization = \DB::connection('tenant')
+            ->table('vtiger_organizationdetails')
+            ->first();
+
+        return view('tenant::settings.company.index', compact('organization'));
     }
 
     /**
@@ -25,7 +29,11 @@ class CompanyDetailsController extends Controller
      */
     public function edit(): View
     {
-        return view('tenant::settings.company.edit');
+        $organization = \DB::connection('tenant')
+            ->table('vtiger_organizationdetails')
+            ->first();
+
+        return view('tenant::settings.company.edit', compact('organization'));
     }
 
     /**
@@ -33,7 +41,35 @@ class CompanyDetailsController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
-        // TODO: Implement update logic
+        $validated = $request->validate([
+            'organizationname' => 'required|string|max:255',
+            'address' => 'nullable|string',
+            'city' => 'nullable|string|max:200',
+            'state' => 'nullable|string|max:200',
+            'code' => 'nullable|string|max:200',
+            'country' => 'nullable|string|max:200',
+            'phone' => 'nullable|string|max:100',
+            'fax' => 'nullable|string|max:100',
+            'website' => 'nullable|string|max:255',
+            'vatid' => 'nullable|string|max:100',
+            'logo' => 'nullable|image|max:2048',
+        ]);
+
+        $data = \Arr::except($validated, ['logo']);
+
+        if ($request->hasFile('logo')) {
+            $file = $request->file('logo');
+            $filename = 'logo_' . time() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('logos', $filename, 'public');
+
+            $data['logoname'] = $filename;
+            $data['logo'] = $path;
+        }
+
+        \DB::connection('tenant')
+            ->table('vtiger_organizationdetails')
+            ->update($data);
+
         return redirect()->route('tenant.settings.crm.company.index')
             ->with('success', __('tenant::settings.company_updated_successfully'));
     }
@@ -43,10 +79,25 @@ class CompanyDetailsController extends Controller
      */
     public function uploadLogo(Request $request): JsonResponse
     {
-        // TODO: Implement logo upload logic
+        if (!$request->hasFile('logo')) {
+            return response()->json(['success' => false, 'message' => 'No logo file provided'], 400);
+        }
+
+        $file = $request->file('logo');
+        $filename = 'logo_' . time() . '.' . $file->getClientOriginalExtension();
+
+        // Store logo. Assuming a storage setup for tenants.
+        // For now, let's just simulate the DB update with a path.
+        $path = $file->storeAs('logos', $filename, 'public');
+
+        \DB::connection('tenant')
+            ->table('vtiger_organizationdetails')
+            ->update(['logoname' => $filename, 'logo' => $path]);
+
         return response()->json([
             'success' => true,
-            'message' => __('tenant::settings.logo_uploaded_successfully')
+            'message' => __('tenant::settings.logo_uploaded_successfully'),
+            'logo_url' => tenant_asset($path)
         ]);
     }
 }

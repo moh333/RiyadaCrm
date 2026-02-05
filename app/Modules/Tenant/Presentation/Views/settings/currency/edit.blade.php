@@ -169,19 +169,19 @@
                             <ul class="list-unstyled mb-0">
                                 <li class="mb-3">
                                     <i class="bi bi-check-circle text-success me-2"></i>
-                                    <small>Use standard ISO 4217 currency codes (e.g., USD, EUR, GBP)</small>
+                                    <small>{{ __('tenant::settings.currency_iso_help') }}</small>
                                 </li>
                                 <li class="mb-3">
                                     <i class="bi bi-check-circle text-success me-2"></i>
-                                    <small>Conversion rate is relative to your base currency</small>
+                                    <small>{{ __('tenant::settings.currency_conversion_help') }}</small>
                                 </li>
                                 <li class="mb-3">
                                     <i class="bi bi-check-circle text-success me-2"></i>
-                                    <small>Update conversion rates regularly for accuracy</small>
+                                    <small>{{ __('tenant::settings.currency_update_help') }}</small>
                                 </li>
                                 <li class="mb-0">
                                     <i class="bi bi-check-circle text-success me-2"></i>
-                                    <small>Inactive currencies won't appear in currency selection</small>
+                                    <small>{{ __('tenant::settings.currency_status_help') }}</small>
                                 </li>
                             </ul>
                         </div>
@@ -192,15 +192,15 @@
                         <div class="card-body p-4">
                             <h6 class="fw-bold mb-3">
                                 <i class="bi bi-info-circle text-primary me-2"></i>
-                                Common Currencies
+                                    {{ __('tenant::settings.common_currencies') }}
                             </h6>
                             <div class="table-responsive">
                                 <table class="table table-sm mb-0">
                                     <thead>
                                         <tr>
-                                            <th class="border-0">Code</th>
-                                            <th class="border-0">Symbol</th>
-                                            <th class="border-0">Name</th>
+                                            <th class="border-0">{{ __('tenant::settings.currency_code') }}</th>
+                                            <th class="border-0">{{ __('tenant::settings.currency_symbol') }}</th>
+                                            <th class="border-0">{{ __('tenant::settings.currency_name') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody class="small">

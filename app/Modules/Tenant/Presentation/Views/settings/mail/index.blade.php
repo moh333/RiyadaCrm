@@ -56,7 +56,7 @@
                                         <label class="form-label text-muted small mb-1">
                                             {{ __('tenant::settings.smtp_server') }}
                                         </label>
-                                        <p class="fw-semibold mb-0">smtp.example.com</p>
+                                        <p class="fw-semibold mb-0">{{ $server->server ?? 'smtp.example.com' }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -70,7 +70,7 @@
                                         <label class="form-label text-muted small mb-1">
                                             {{ __('tenant::settings.smtp_port') }}
                                         </label>
-                                        <p class="fw-semibold mb-0">587</p>
+                                        <p class="fw-semibold mb-0">{{ $server->server_port ?? '587' }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -92,7 +92,7 @@
                                         <label class="form-label text-muted small mb-1">
                                             {{ __('tenant::settings.smtp_username') }}
                                         </label>
-                                        <p class="fw-semibold mb-0">user@example.com</p>
+                                        <p class="fw-semibold mb-0">{{ $server->server_username ?? 'user@example.com' }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -106,7 +106,8 @@
                                         <label class="form-label text-muted small mb-1">
                                             {{ __('tenant::settings.smtp_password') }}
                                         </label>
-                                        <p class="fw-semibold mb-0">••••••••</p>
+                                        <p class="fw-semibold mb-0">{{ $server->server_password ? '••••••••' : 'Not Set' }}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -120,7 +121,8 @@
                                         <label class="form-label text-muted small mb-1">
                                             {{ __('tenant::settings.from_email') }}
                                         </label>
-                                        <p class="fw-semibold mb-0">noreply@example.com</p>
+                                        <p class="fw-semibold mb-0">{{ $server->from_email_field ?? 'noreply@example.com' }}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -135,10 +137,17 @@
                                             {{ __('tenant::settings.smtp_auth') }}
                                         </label>
                                         <p class="mb-0">
-                                            <span class="badge bg-success-subtle text-success rounded-pill">
-                                                <i class="bi bi-check-circle me-1"></i>
-                                                {{ __('tenant::settings.enabled') }}
-                                            </span>
+                                            @if($server && $server->smtp_auth == 'true')
+                                                <span class="badge bg-success-subtle text-success rounded-pill">
+                                                    <i class="bi bi-check-circle me-1"></i>
+                                                    {{ __('tenant::settings.enabled') }}
+                                                </span>
+                                            @else
+                                                <span class="badge bg-danger-subtle text-danger rounded-pill">
+                                                    <i class="bi bi-x-circle me-1"></i>
+                                                    {{ __('tenant::settings.disabled') }}
+                                                </span>
+                                            @endif
                                         </p>
                                     </div>
                                 </div>
@@ -159,7 +168,7 @@
                             </div>
                         </div>
                         <h5 class="fw-bold mb-2">{{ __('tenant::settings.status') }}</h5>
-                        <p class="text-muted mb-0">SMTP server is configured</p>
+                        <p class="text-muted mb-0">{{ __('tenant::settings.smtp_configured') }}</p>
                     </div>
                 </div>
 
@@ -173,7 +182,7 @@
                     </div>
                     <div class="card-body p-4">
                         <p class="text-muted small mb-3">
-                            Send a test email to verify your SMTP configuration is working correctly.
+                            {{ __('tenant::settings.test_email_help') }}
                         </p>
                         <form id="testEmailForm">
                             @csrf
@@ -197,20 +206,20 @@
                     <div class="card-body p-4">
                         <h6 class="fw-bold mb-3">
                             <i class="bi bi-info-circle text-primary me-2"></i>
-                            Common SMTP Ports
+                            {{ __('tenant::settings.common_smtp_ports') }}
                         </h6>
                         <ul class="list-unstyled mb-0 small">
                             <li class="mb-2">
                                 <span class="badge bg-secondary me-2">25</span>
-                                Plain (Not recommended)
+                                {{ __('tenant::settings.port_plain') }}
                             </li>
                             <li class="mb-2">
                                 <span class="badge bg-primary me-2">587</span>
-                                TLS (Recommended)
+                                {{ __('tenant::settings.port_tls') }}
                             </li>
                             <li class="mb-0">
                                 <span class="badge bg-success me-2">465</span>
-                                SSL
+                                {{ __('tenant::settings.port_ssl') }}
                             </li>
                         </ul>
                     </div>
@@ -248,27 +257,27 @@
                 .then(data => {
                     if (data.success) {
                         resultDiv.innerHTML = `
-                                <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
-                                    <i class="bi bi-check-circle me-2"></i>${data.message}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            `;
+                                        <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+                                            <i class="bi bi-check-circle me-2"></i>${data.message}
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                        </div>
+                                    `;
                     } else {
                         resultDiv.innerHTML = `
-                                <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
-                                    <i class="bi bi-exclamation-triangle me-2"></i>${data.message}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            `;
+                                        <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+                                            <i class="bi bi-exclamation-triangle me-2"></i>${data.message}
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                        </div>
+                                    `;
                     }
                 })
                 .catch(error => {
                     resultDiv.innerHTML = `
-                            <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
-                                <i class="bi bi-exclamation-triangle me-2"></i>{{ __('tenant::settings.test_email_failed') }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        `;
+                                    <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>{{ __('tenant::settings.test_email_failed') }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                `;
                 })
                 .finally(() => {
                     submitBtn.disabled = false;

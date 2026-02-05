@@ -16,10 +16,16 @@ class TermsConditionsController
         // Get all inventory modules
         $modules = ['Quotes', 'SalesOrder', 'PurchaseOrder', 'Invoice'];
 
-        // TODO: Load terms for each module
+        // Load terms for each module
+        $termsMap = \DB::connection('tenant')
+            ->table('vtiger_inventory_termsandconditions')
+            ->whereIn('module', $modules)
+            ->get()
+            ->pluck('terms', 'module');
 
         return view('tenant::settings.terms.index', [
-            'modules' => $modules
+            'modules' => $modules,
+            'termsMap' => $termsMap
         ]);
     }
 
@@ -28,11 +34,15 @@ class TermsConditionsController
      */
     public function edit(string $module): View
     {
-        // TODO: Load terms for module
+        // Load terms for module
+        $terms = \DB::connection('tenant')
+            ->table('vtiger_inventory_termsandconditions')
+            ->where('module', $module)
+            ->first();
 
         return view('tenant::settings.terms.edit', [
             'module' => $module,
-            'terms' => null // TODO: Load from database
+            'terms' => $terms ? $terms->terms : ''
         ]);
     }
 
@@ -44,11 +54,14 @@ class TermsConditionsController
         $module = $request->get('module');
         $terms = $request->get('terms');
 
-        // TODO: Save or update terms
-        // - Check if exists
-        // - Insert or update
+        \DB::connection('tenant')
+            ->table('vtiger_inventory_termsandconditions')
+            ->updateOrInsert(
+                ['module' => $module],
+                ['terms' => $terms, 'updated_at' => now()]
+            );
 
         return redirect()->route('tenant.settings.crm.terms.index')
-            ->with('success', 'Terms and conditions saved successfully');
+            ->with('success', __('tenant::settings.terms_saved_successfully'));
     }
 }

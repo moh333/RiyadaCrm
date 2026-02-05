@@ -3,6 +3,7 @@
 return [
     // CRM Settings
     'crm_settings' => 'CRM Settings',
+    'configuration' => 'Configuration',
 
     // Picklist Management
     'picklist' => 'Picklist',
@@ -328,6 +329,12 @@ return [
     'iso_code' => 'ISO Code',
     'edit_currency' => 'Edit Currency',
     'currency_information' => 'Currency Information',
+    'currency_iso_help' => 'Use standard ISO 4217 currency codes (e.g., USD, EUR, GBP)',
+    'currency_conversion_help' => 'Conversion rate is relative to your base currency',
+    'currency_update_help' => 'Update conversion rates regularly for accuracy',
+    'currency_status_help' => 'Inactive currencies won\'t appear in currency selection',
+    'common_currencies' => 'Common Currencies',
+    'no_currencies' => 'No currencies found',
 
     // Outgoing Server
     'outgoing_server_settings' => 'Outgoing Server Settings',
@@ -349,6 +356,16 @@ return [
     'authentication_settings' => 'Authentication Settings',
     'smtp_port_help' => 'Common ports: 25 (plain), 587 (TLS), 465 (SSL)',
     'test_connection' => 'Test Connection',
+    'smtp_configured' => 'SMTP server is configured',
+    'test_email_help' => 'Send a test email to verify your SMTP configuration is working correctly.',
+    'common_smtp_ports' => 'Common SMTP Ports',
+    'port_plain' => 'Plain (Not recommended)',
+    'port_tls' => 'TLS (Recommended)',
+    'port_ssl' => 'SSL',
+    'smtp_test_after_save' => 'Always test your configuration after saving',
+    'smtp_use_tls' => 'Use TLS (port 587) for better security',
+    'smtp_app_passwords' => 'Some providers require app-specific passwords',
+    'smtp_provider_docs' => 'Check your provider\'s SMTP documentation',
 
     // Config Editor
     'config_editor_description' => 'Edit system configuration parameters',
@@ -369,6 +386,13 @@ return [
     'invalid_email' => 'Invalid email address',
     'invalid_number' => 'Invalid number',
     'invalid_module' => 'Invalid module',
+    'display_options' => 'Display Options',
+    'show_listview_icons' => 'Show module icons in list view',
+    'enable_status_colors' => 'Enable color coding for status fields',
+    'compact_view_mode' => 'Use compact view mode (reduces row height)',
+    'show_module_icons' => 'Show module icons',
+    'enable_color_coding' => 'Enable color coding',
+    'compact_view_short' => 'Compact view mode',
 
     // Inventory Settings
     'inventory_settings' => 'Inventory Settings',

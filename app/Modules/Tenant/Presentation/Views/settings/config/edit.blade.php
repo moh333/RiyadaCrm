@@ -73,11 +73,11 @@
                                     </label>
                                     <select class="form-select @error('default_module') is-invalid @enderror"
                                         id="default_module" name="default_module" required>
-                                        <option value="Dashboard" selected>Dashboard</option>
-                                        <option value="Contacts">Contacts</option>
-                                        <option value="Leads">Leads</option>
-                                        <option value="Accounts">Accounts</option>
-                                        <option value="HelpDesk">HelpDesk</option>
+                                        <option value="Dashboard" {{ ($config['default_module'] ?? 'Dashboard') == 'Dashboard' ? 'selected' : '' }}>Dashboard</option>
+                                        <option value="Contacts" {{ ($config['default_module'] ?? '') == 'Contacts' ? 'selected' : '' }}>Contacts</option>
+                                        <option value="Leads" {{ ($config['default_module'] ?? '') == 'Leads' ? 'selected' : '' }}>Leads</option>
+                                        <option value="Accounts" {{ ($config['default_module'] ?? '') == 'Accounts' ? 'selected' : '' }}>Accounts</option>
+                                        <option value="HelpDesk" {{ ($config['default_module'] ?? '') == 'HelpDesk' ? 'selected' : '' }}>HelpDesk</option>
                                     </select>
                                     <div class="form-text">
                                         <i class="bi bi-info-circle me-1"></i>
@@ -96,8 +96,8 @@
                                     </label>
                                     <input type="number"
                                         class="form-control @error('max_entries_per_page') is-invalid @enderror"
-                                        id="max_entries_per_page" name="max_entries_per_page" value="20" min="5" max="100"
-                                        required>
+                                        id="max_entries_per_page" name="max_entries_per_page"
+                                        value="{{ $config['max_entries_per_page'] ?? '20' }}" min="5" max="100" required>
                                     @error('max_entries_per_page')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -110,7 +110,8 @@
                                         <span class="text-danger">*</span>
                                     </label>
                                     <input type="number" class="form-control @error('max_text_length') is-invalid @enderror"
-                                        id="max_text_length" name="max_text_length" value="50" min="10" max="200" required>
+                                        id="max_text_length" name="max_text_length"
+                                        value="{{ $config['max_text_length'] ?? '50' }}" min="10" max="200" required>
                                     @error('max_text_length')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -138,8 +139,8 @@
                                     <div class="input-group">
                                         <input type="number"
                                             class="form-control @error('max_upload_size') is-invalid @enderror"
-                                            id="max_upload_size" name="max_upload_size" value="5" min="1" max="100"
-                                            required>
+                                            id="max_upload_size" name="max_upload_size"
+                                            value="{{ $config['max_upload_size'] ?? '5' }}" min="1" max="100" required>
                                         <span class="input-group-text">MB</span>
                                         @error('max_upload_size')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -157,7 +158,8 @@
                                         Allowed File Types
                                     </label>
                                     <input type="text" class="form-control" id="allowed_file_types"
-                                        name="allowed_file_types" value="pdf,doc,docx,xls,xlsx,jpg,png,gif">
+                                        name="allowed_file_types"
+                                        value="{{ $config['allowed_file_types'] ?? 'pdf,doc,docx,xls,xlsx,jpg,png,gif' }}">
                                     <div class="form-text">
                                         <i class="bi bi-info-circle me-1"></i>
                                         Comma-separated file extensions
@@ -189,7 +191,7 @@
                                     <input type="email"
                                         class="form-control @error('helpdesk_support_email') is-invalid @enderror"
                                         id="helpdesk_support_email" name="helpdesk_support_email"
-                                        value="support@example.com" required>
+                                        value="{{ $config['helpdesk_support_email'] ?? 'support@example.com' }}" required>
                                     @error('helpdesk_support_email')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -203,8 +205,8 @@
                                     </label>
                                     <input type="text"
                                         class="form-control @error('helpdesk_support_name') is-invalid @enderror"
-                                        id="helpdesk_support_name" name="helpdesk_support_name" value="Support Team"
-                                        required>
+                                        id="helpdesk_support_name" name="helpdesk_support_name"
+                                        value="{{ $config['helpdesk_support_name'] ?? 'Support Team' }}" required>
                                     @error('helpdesk_support_name')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -224,29 +226,29 @@
                         <div class="card-body p-4">
                             <div class="row g-3">
                                 <div class="col-12">
-                                    <label class="form-label fw-semibold mb-3">Display Options</label>
+                                    <label class="form-label fw-semibold mb-3">{{ __('tenant::settings.display_options') }}</label>
 
                                     <div class="form-check form-switch mb-3">
                                         <input class="form-check-input" type="checkbox" id="show_icons" name="show_icons"
-                                            value="1" checked>
+                                            value="1" {{ ($config['show_icons'] ?? '1') == '1' ? 'checked' : '' }}>
                                         <label class="form-check-label" for="show_icons">
-                                            Show module icons in list view
+                                            {{ __('tenant::settings.show_listview_icons') }}
                                         </label>
                                     </div>
 
                                     <div class="form-check form-switch mb-3">
                                         <input class="form-check-input" type="checkbox" id="show_colors" name="show_colors"
-                                            value="1" checked>
+                                            value="1" {{ ($config['show_colors'] ?? '1') == '1' ? 'checked' : '' }}>
                                         <label class="form-check-label" for="show_colors">
-                                            Enable color coding for status fields
+                                                {{ __('tenant::settings.enable_status_colors') }}
                                         </label>
                                     </div>
 
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="compact_view"
-                                            name="compact_view" value="1">
+                                            name="compact_view" value="1" {{ ($config['compact_view'] ?? '0') == '1' ? 'checked' : '' }}>
                                         <label class="form-check-label" for="compact_view">
-                                            Use compact view mode (reduces row height)
+                                                {{ __('tenant::settings.compact_view_mode') }}
                                         </label>
                                     </div>
                                 </div>

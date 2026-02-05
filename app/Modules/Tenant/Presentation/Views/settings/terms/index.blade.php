@@ -40,8 +40,11 @@
                     <div class="card-body p-4">
                         <div class="terms-preview bg-light p-3 rounded-3"
                             style="min-height: 150px; max-height: 200px; overflow-y: auto;">
-                            {{-- TODO: Load from database --}}
-                            <p class="small text-muted mb-0">No terms and conditions set for Quotes.</p>
+                            @if(isset($termsMap['Quotes']) && !empty($termsMap['Quotes']))
+                                {!! nl2br(e($termsMap['Quotes'])) !!}
+                            @else
+                                <p class="small text-muted mb-0">No terms and conditions set for Quotes.</p>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -64,8 +67,11 @@
                     <div class="card-body p-4">
                         <div class="terms-preview bg-light p-3 rounded-3"
                             style="min-height: 150px; max-height: 200px; overflow-y: auto;">
-                            {{-- TODO: Load from database --}}
-                            <p class="small text-muted mb-0">No terms and conditions set for Sales Orders.</p>
+                            @if(isset($termsMap['SalesOrder']) && !empty($termsMap['SalesOrder']))
+                                {!! nl2br(e($termsMap['SalesOrder'])) !!}
+                            @else
+                                <p class="small text-muted mb-0">No terms and conditions set for Sales Orders.</p>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -88,8 +94,11 @@
                     <div class="card-body p-4">
                         <div class="terms-preview bg-light p-3 rounded-3"
                             style="min-height: 150px; max-height: 200px; overflow-y: auto;">
-                            {{-- TODO: Load from database --}}
-                            <p class="small text-muted mb-0">No terms and conditions set for Purchase Orders.</p>
+                            @if(isset($termsMap['PurchaseOrder']) && !empty($termsMap['PurchaseOrder']))
+                                {!! nl2br(e($termsMap['PurchaseOrder'])) !!}
+                            @else
+                                <p class="small text-muted mb-0">No terms and conditions set for Purchase Orders.</p>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -112,8 +121,11 @@
                     <div class="card-body p-4">
                         <div class="terms-preview bg-light p-3 rounded-3"
                             style="min-height: 150px; max-height: 200px; overflow-y: auto;">
-                            {{-- TODO: Load from database --}}
-                            <p class="small text-muted mb-0">No terms and conditions set for Invoices.</p>
+                            @if(isset($termsMap['Invoice']) && !empty($termsMap['Invoice']))
+                                {!! nl2br(e($termsMap['Invoice'])) !!}
+                            @else
+                                <p class="small text-muted mb-0">No terms and conditions set for Invoices.</p>
+                            @endif
                         </div>
                     </div>
                 </div>

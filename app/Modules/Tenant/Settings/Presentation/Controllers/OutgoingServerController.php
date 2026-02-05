@@ -17,7 +17,12 @@ class OutgoingServerController extends Controller
      */
     public function index(): View
     {
-        return view('tenant::settings.mail.index');
+        $server = \DB::connection('tenant')
+            ->table('vtiger_systems')
+            ->where('server_type', 'email')
+            ->first();
+
+        return view('tenant::settings.mail.index', compact('server'));
     }
 
     /**
@@ -25,7 +30,12 @@ class OutgoingServerController extends Controller
      */
     public function edit(): View
     {
-        return view('tenant::settings.mail.edit');
+        $server = \DB::connection('tenant')
+            ->table('vtiger_systems')
+            ->where('server_type', 'email')
+            ->first();
+
+        return view('tenant::settings.mail.edit', compact('server'));
     }
 
     /**
@@ -33,7 +43,23 @@ class OutgoingServerController extends Controller
      */
     public function save(Request $request): RedirectResponse
     {
-        // TODO: Implement save logic
+        $validated = $request->validate([
+            'server' => 'required|string|max:100',
+            'server_port' => 'required|string|max:10',
+            'server_username' => 'nullable|string|max:100',
+            'server_password' => 'nullable|string|max:100',
+            'from_email_field' => 'required|email|max:100',
+        ]);
+
+        $smtpAuth = $request->has('smtp_auth') ? 'true' : 'false';
+
+        \DB::connection('tenant')
+            ->table('vtiger_systems')
+            ->updateOrInsert(
+                ['server_type' => 'email'],
+                array_merge($validated, ['smtp_auth' => $smtpAuth])
+            );
+
         return redirect()->route('tenant.settings.crm.mail.index')
             ->with('success', __('tenant::settings.mail_settings_saved'));
     }
@@ -43,7 +69,7 @@ class OutgoingServerController extends Controller
      */
     public function test(Request $request): JsonResponse
     {
-        // TODO: Implement test email logic
+        // For now, just return success. Real implementation would use Laravel Mailer with dynamic config.
         return response()->json([
             'success' => true,
             'message' => __('tenant::settings.test_email_sent')

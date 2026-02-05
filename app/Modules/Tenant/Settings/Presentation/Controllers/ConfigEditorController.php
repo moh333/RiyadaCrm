@@ -16,7 +16,12 @@ class ConfigEditorController extends Controller
      */
     public function index(): View
     {
-        return view('tenant::settings.config.index');
+        $config = \DB::connection('tenant')
+            ->table('vtiger_configuration_editor')
+            ->get()
+            ->pluck('value', 'key');
+
+        return view('tenant::settings.config.index', compact('config'));
     }
 
     /**
@@ -24,7 +29,12 @@ class ConfigEditorController extends Controller
      */
     public function edit(): View
     {
-        return view('tenant::settings.config.edit');
+        $config = \DB::connection('tenant')
+            ->table('vtiger_configuration_editor')
+            ->get()
+            ->pluck('value', 'key');
+
+        return view('tenant::settings.config.edit', compact('config'));
     }
 
     /**
@@ -32,7 +42,20 @@ class ConfigEditorController extends Controller
      */
     public function save(Request $request): RedirectResponse
     {
-        // TODO: Implement save logic
+        $settings = $request->except(['_token']);
+
+        \DB::connection('tenant')->transaction(function () use ($settings) {
+            foreach ($settings as $key => $value) {
+                \DB::connection('tenant')
+                    ->table('vtiger_configuration_editor')
+                    ->where('key', $key)
+                    ->update([
+                        'value' => $value,
+                        'updated_at' => now()
+                    ]);
+            }
+        });
+
         return redirect()->route('tenant.settings.crm.config.index')
             ->with('success', __('tenant::settings.config_saved_successfully'));
     }

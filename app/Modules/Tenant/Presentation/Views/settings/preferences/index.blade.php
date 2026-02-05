@@ -40,47 +40,42 @@
                         <table class="table table-borderless">
                             <tbody>
                                 <tr>
+                                <tr>
                                     <td class="text-muted fw-semibold" style="width: 40%;">
                                         {{ __('tenant::settings.language') }}
                                     </td>
                                     <td>
-                                        {{-- TODO: Load from user --}}
-                                        <span class="badge bg-primary">English</span>
+                                        <span class="badge bg-primary">{{ $user->language ?? 'en' }}</span>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted fw-semibold">{{ __('tenant::settings.currency') }}</td>
                                     <td>
-                                        {{-- TODO: Load from user --}}
-                                        USD - US Dollar
+                                        {{ $user->currency_id ?? '1' }}
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted fw-semibold">{{ __('tenant::settings.date_format') }}</td>
                                     <td>
-                                        {{-- TODO: Load from user --}}
-                                        yyyy-mm-dd
+                                        {{ $user->date_format ?? 'yyyy-mm-dd' }}
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted fw-semibold">{{ __('tenant::settings.hour_format') }}</td>
                                     <td>
-                                        {{-- TODO: Load from user --}}
-                                        12 Hour (AM/PM)
+                                        {{ $user->hour_format ?? '12' }} Hour
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted fw-semibold">{{ __('tenant::settings.time_zone') }}</td>
                                     <td>
-                                        {{-- TODO: Load from user --}}
-                                        America/New_York
+                                        {{ $user->time_zone ?? 'UTC' }}
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted fw-semibold">{{ __('tenant::settings.currency_decimals') }}</td>
                                     <td>
-                                        {{-- TODO: Load from user --}}
-                                        2
+                                        {{ $user->no_of_currency_decimals ?? 2 }}
                                     </td>
                                 </tr>
                             </tbody>
@@ -105,22 +100,19 @@
                                         {{ __('tenant::settings.start_hour') }}
                                     </td>
                                     <td>
-                                        {{-- TODO: Load from user --}}
-                                        08:00 AM
+                                        {{ $user->start_hour ?? '08:00' }}
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted fw-semibold">{{ __('tenant::settings.end_hour') }}</td>
                                     <td>
-                                        {{-- TODO: Load from user --}}
-                                        06:00 PM
+                                        {{ $user->end_hour ?? '18:00' }}
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted fw-semibold">{{ __('tenant::settings.landing_page') }}</td>
                                     <td>
-                                        {{-- TODO: Load from user --}}
-                                        Dashboard
+                                        {{ $user->defaultlandingpage ?? 'Dashboard' }}
                                     </td>
                                 </tr>
                             </tbody>

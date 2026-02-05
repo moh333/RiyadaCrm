@@ -34,8 +34,8 @@
                     <div class="card-body text-center p-4">
                         <h5 class="card-title fw-bold mb-4">{{ __('tenant::settings.logo') }}</h5>
                         <div class="mb-3">
-                            <img src="{{ asset('images/logo-placeholder.png') }}" alt="Company Logo"
-                                class="img-fluid rounded-3" style="max-height: 200px;">
+                            <img src="{{ $organization->logo ? tenant_asset($organization->logo) : global_asset('images/logo-placeholder.png') }}"
+                                alt="Company Logo" class="img-fluid rounded-3" style="max-height: 200px;">
                         </div>
                         <p class="text-muted small mb-0">
                             <i class="bi bi-info-circle me-1"></i>
@@ -65,7 +65,9 @@
                                         <label class="form-label text-muted small mb-1">
                                             {{ __('tenant::settings.organization_name') }}
                                         </label>
-                                        <p class="fw-semibold mb-0">Your Company Name</p>
+                                        <p class="fw-semibold mb-0">
+                                            {{ $organization->organizationname ?? 'Your Company Name' }}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -79,9 +81,11 @@
                                         <label class="form-label text-muted small mb-1">
                                             {{ __('tenant::settings.address') }}
                                         </label>
-                                        <p class="mb-0">123 Business Street</p>
-                                        <p class="mb-0">City, State 12345</p>
-                                        <p class="mb-0">Country</p>
+                                        <p class="mb-0">{{ $organization->address ?? '' }}</p>
+                                        <p class="mb-0">{{ $organization->city ?? '' }}, {{ $organization->state ?? '' }}
+                                            {{ $organization->code ?? '' }}
+                                        </p>
+                                        <p class="mb-0">{{ $organization->country ?? '' }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -95,7 +99,7 @@
                                         <label class="form-label text-muted small mb-1">
                                             {{ __('tenant::settings.phone') }}
                                         </label>
-                                        <p class="fw-semibold mb-0">+1 234 567 8900</p>
+                                        <p class="fw-semibold mb-0">{{ $organization->phone ?? '' }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -109,7 +113,7 @@
                                         <label class="form-label text-muted small mb-1">
                                             {{ __('tenant::settings.fax') }}
                                         </label>
-                                        <p class="fw-semibold mb-0">+1 234 567 8901</p>
+                                        <p class="fw-semibold mb-0">{{ $organization->fax ?? '' }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -123,7 +127,7 @@
                                         <label class="form-label text-muted small mb-1">
                                             {{ __('tenant::settings.website') }}
                                         </label>
-                                        <p class="fw-semibold mb-0">www.example.com</p>
+                                        <p class="fw-semibold mb-0">{{ $organization->website ?? '' }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -137,7 +141,7 @@
                                         <label class="form-label text-muted small mb-1">
                                             {{ __('tenant::settings.vat_id') }}
                                         </label>
-                                        <p class="fw-semibold mb-0">VAT123456789</p>
+                                        <p class="fw-semibold mb-0">{{ $organization->vatid ?? '' }}</p>
                                     </div>
                                 </div>
                             </div>

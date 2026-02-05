@@ -31,12 +31,12 @@
         <div class="row g-4 mb-4">
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm rounded-4 bg-gradient"
-                    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    style="background: #667eea;">
                     <div class="card-body p-4 text-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="text-white-50 mb-2">{{ __('tenant::settings.total_currencies') }}</h6>
-                                <h2 class="mb-0 fw-bold">5</h2>
+                                <h2 class="mb-0 fw-bold">{{ $totalCurrencies }}</h2>
                             </div>
                             <div class="bg-white bg-opacity-25 rounded-circle p-3">
                                 <i class="bi bi-currency-exchange fs-3"></i>
@@ -47,12 +47,12 @@
             </div>
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm rounded-4 bg-gradient"
-                    style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    style="background:#f093fb;">
                     <div class="card-body p-4 text-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="text-white-50 mb-2">{{ __('tenant::settings.active_currencies') }}</h6>
-                                <h2 class="mb-0 fw-bold">4</h2>
+                                <h2 class="mb-0 fw-bold">{{ $activeCurrencies }}</h2>
                             </div>
                             <div class="bg-white bg-opacity-25 rounded-circle p-3">
                                 <i class="bi bi-check-circle fs-3"></i>
@@ -63,12 +63,12 @@
             </div>
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm rounded-4 bg-gradient"
-                    style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    style="background: #00f2fe;">
                     <div class="card-body p-4 text-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="text-white-50 mb-2">{{ __('tenant::settings.base_currency') }}</h6>
-                                <h2 class="mb-0 fw-bold">USD</h2>
+                                <h2 class="mb-0 fw-bold">{{ $baseCurrency->currency_code ?? '---' }}</h2>
                             </div>
                             <div class="bg-white bg-opacity-25 rounded-circle p-3">
                                 <i class="bi bi-star-fill fs-3"></i>
@@ -187,29 +187,29 @@
                     }
                 },
                 {
-                    data: 'action',
+                    data: null,
                     name: 'action',
                     orderable: false,
                     searchable: false,
                     className: 'text-end',
                     render: function (data, type, row) {
                         return `
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="/settings/crm/currency/${row.id}/edit" 
-                                               class="btn btn-outline-primary rounded-start-pill">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <button class="btn btn-outline-danger rounded-end-pill delete-btn" 
-                                                    data-id="${row.id}">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    `;
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="/settings/crm/currency/${row.id}/edit" 
+                                                   class="btn btn-outline-primary rounded-start-pill">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <button class="btn btn-outline-danger rounded-end-pill delete-btn" 
+                                                        data-id="${row.id}">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        `;
                     }
                 }
                 ],
                 language: {
-                    emptyTable: '<div class="text-center py-5"><i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i><p class="text-muted">{{ __('tenant::settings.no_workflows') }}</p></div>',
+                    emptyTable: '<div class="text-center py-5"><i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i><p class="text-muted">{{ __('tenant::settings.no_currencies') }}</p></div>',
                     processing: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>'
                 },
                 order: [
@@ -240,11 +240,11 @@
 
                             // Show success message
                             const alert = `
-                                        <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm" role="alert">
-                                            <i class="bi bi-check-circle me-2"></i>${response.message}
-                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                        </div>
-                                    `;
+                                            <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+                                                <i class="bi bi-check-circle me-2"></i>${response.message}
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                            </div>
+                                        `;
                             $('.container-fluid').prepend(alert);
 
                             setTimeout(() => {

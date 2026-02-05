@@ -79,7 +79,7 @@
                         </div>
                     </div>
                     <div class="card-body p-4">
-                        <table id="shippingTaxTable" class="table table-hover">
+                        <table id="shippingTaxTable" class="table table-hover w-100">
                             <thead>
                                 <tr>
                                     <th>{{ __('tenant::settings.tax_label') }}</th>

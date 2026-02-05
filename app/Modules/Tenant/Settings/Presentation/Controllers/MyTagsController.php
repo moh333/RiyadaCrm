@@ -16,8 +16,6 @@ class MyTagsController
     {
         $userId = $request->get('user_id', auth()->id());
 
-        // TODO: Load user tags
-
         return view('tenant::settings.tags.index', [
             'userId' => $userId
         ]);
@@ -30,13 +28,16 @@ class MyTagsController
     {
         $userId = $request->get('user_id', auth()->id());
 
-        // TODO: Fetch user tags from database
+        $tags = \DB::connection('tenant')
+            ->table('vtiger_freetags')
+            ->where('owner', $userId)
+            ->get();
 
         return response()->json([
             'draw' => $request->get('draw'),
-            'recordsTotal' => 0,
-            'recordsFiltered' => 0,
-            'data' => []
+            'recordsTotal' => $tags->count(),
+            'recordsFiltered' => $tags->count(),
+            'data' => $tags
         ]);
     }
 
@@ -48,15 +49,37 @@ class MyTagsController
         $tagName = $request->get('tag');
         $userId = auth()->id();
 
-        // TODO: Create tag
-        // - Check if tag exists
-        // - Insert into vtiger_freetags
-        // - Return tag ID
+        $exists = \DB::connection('tenant')
+            ->table('vtiger_freetags')
+            ->where('tag', $tagName)
+            ->where('owner', $userId)
+            ->first();
+
+        if ($exists) {
+            return response()->json(['success' => false, 'message' => 'Tag already exists'], 400);
+        }
+
+        $tagId = \DB::connection('tenant')->transaction(function () use ($tagName, $userId) {
+            $currentId = \DB::connection('tenant')->table('vtiger_freetags_seq')->max('id');
+            $nextId = $currentId + 1;
+
+            \DB::connection('tenant')->table('vtiger_freetags')->insert([
+                'id' => $nextId,
+                'tag' => $tagName,
+                'raw_tag' => $tagName,
+                'visibility' => 'PRIVATE',
+                'owner' => $userId
+            ]);
+
+            \DB::connection('tenant')->table('vtiger_freetags_seq')->update(['id' => $nextId]);
+
+            return $nextId;
+        });
 
         return response()->json([
             'success' => true,
             'message' => 'Tag created successfully',
-            'tag_id' => null // TODO: Return actual ID
+            'tag_id' => $tagId
         ]);
     }
 
@@ -67,7 +90,13 @@ class MyTagsController
     {
         $tagName = $request->get('tag');
 
-        // TODO: Update tag name
+        \DB::connection('tenant')
+            ->table('vtiger_freetags')
+            ->where('id', $id)
+            ->update([
+                'tag' => $tagName,
+                'raw_tag' => $tagName
+            ]);
 
         return response()->json([
             'success' => true,
@@ -80,9 +109,17 @@ class MyTagsController
      */
     public function destroy(int $id): JsonResponse
     {
-        // TODO: Delete tag
-        // - Remove from vtiger_freetags
-        // - Remove all tag associations from vtiger_freetagged_objects
+        \DB::connection('tenant')->transaction(function () use ($id) {
+            \DB::connection('tenant')
+                ->table('vtiger_freetags')
+                ->where('id', $id)
+                ->delete();
+
+            \DB::connection('tenant')
+                ->table('vtiger_freetagged_objects')
+                ->where('tag_id', $id)
+                ->delete();
+        });
 
         return response()->json([
             'success' => true,
@@ -98,7 +135,12 @@ class MyTagsController
         $enabled = $request->get('enabled', false);
         $userId = auth()->id();
 
-        // TODO: Update tag cloud visibility in vtiger_homestuff
+        // In Vtiger, tag cloud visibility is often a preference in vtiger_users 
+        // or a homestuff entry. Assuming it's a user preference here.
+        \DB::connection('tenant')
+            ->table('vtiger_users')
+            ->where('id', $userId)
+            ->update(['tagcloudview' => $enabled ? 1 : 0]);
 
         return response()->json([
             'success' => true,

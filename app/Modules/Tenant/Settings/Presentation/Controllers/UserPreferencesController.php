@@ -15,10 +15,13 @@ class UserPreferencesController
     {
         $userId = $request->get('user_id', auth()->id());
 
-        // TODO: Load user preferences
+        $user = \DB::connection('tenant')
+            ->table('vtiger_users')
+            ->where('id', $userId)
+            ->first();
 
         return view('tenant::settings.preferences.index', [
-            'user' => null // TODO: Load user model
+            'user' => $user
         ]);
     }
 
@@ -29,17 +32,62 @@ class UserPreferencesController
     {
         $userId = $request->get('user_id', auth()->id());
 
-        // TODO: Load user preferences
-        // TODO: Load available options (languages, currencies, timezones, etc.)
+        $user = \DB::connection('tenant')
+            ->table('vtiger_users')
+            ->where('id', $userId)
+            ->first();
 
         return view('tenant::settings.preferences.edit', [
-            'user' => null, // TODO: Load user model
+            'user' => $user,
             'languages' => $this->getLanguages(),
             'currencies' => $this->getCurrencies(),
             'timezones' => $this->getTimezones(),
             'dateFormats' => $this->getDateFormats(),
-            'hourFormats' => $this->getHourFormats()
+            'hourFormats' => $this->getHourFormats(),
+            'startHours' => $this->getStartHours(),
+            'endHours' => $this->getEndHours()
         ]);
+    }
+
+    /**
+     * Get start hour options
+     */
+    private function getStartHours(): array
+    {
+        return [
+            '00:00' => '12:00 AM',
+            '01:00' => '01:00 AM',
+            '02:00' => '02:00 AM',
+            '03:00' => '03:00 AM',
+            '04:00' => '04:00 AM',
+            '05:00' => '05:00 AM',
+            '06:00' => '06:00 AM',
+            '07:00' => '07:00 AM',
+            '08:00' => '08:00 AM',
+            '09:00' => '09:00 AM',
+            '10:00' => '10:00 AM',
+            '11:00' => '11:00 AM',
+            '12:00' => '12:00 PM',
+            '13:00' => '01:00 PM',
+            '14:00' => '02:00 PM',
+            '15:00' => '03:00 PM',
+            '16:00' => '04:00 PM',
+            '17:00' => '05:00 PM',
+            '18:00' => '06:00 PM',
+            '19:00' => '07:00 PM',
+            '20:00' => '08:00 PM',
+            '21:00' => '09:00 PM',
+            '22:00' => '10:00 PM',
+            '23:00' => '11:00 PM'
+        ];
+    }
+
+    /**
+     * Get end hour options
+     */
+    private function getEndHours(): array
+    {
+        return $this->getStartHours();
     }
 
     /**
@@ -49,19 +97,25 @@ class UserPreferencesController
     {
         $userId = $request->get('user_id', auth()->id());
 
-        // TODO: Validate and update preferences
-        // - language
-        // - currency_id
-        // - date_format
-        // - hour_format
-        // - time_zone
-        // - start_hour
-        // - end_hour
-        // - defaultlandingpage
-        // - no_of_currency_decimals
+        $validated = $request->validate([
+            'language' => 'required|string|max:50',
+            'currency_id' => 'required|integer',
+            'date_format' => 'required|string|max:50',
+            'hour_format' => 'required|string|max:10',
+            'time_zone' => 'required|string|max:100',
+            'start_hour' => 'nullable|string|max:10',
+            'end_hour' => 'nullable|string|max:10',
+            'defaultlandingpage' => 'nullable|string|max:100',
+            'no_of_currency_decimals' => 'nullable|integer|min:0|max:5',
+        ]);
+
+        \DB::connection('tenant')
+            ->table('vtiger_users')
+            ->where('id', $userId)
+            ->update($validated);
 
         return redirect()->route('tenant.settings.preferences.index', ['user_id' => $userId])
-            ->with('success', 'Preferences updated successfully');
+            ->with('success', __('tenant::settings.preferences_updated_successfully'));
     }
 
     /**
@@ -80,13 +134,12 @@ class UserPreferencesController
      */
     private function getCurrencies(): array
     {
-        // TODO: Load from database
-        return [
-            1 => 'USD - US Dollar',
-            2 => 'EUR - Euro',
-            3 => 'SAR - Saudi Riyal',
-            4 => 'AED - UAE Dirham'
-        ];
+        return \DB::connection('tenant')
+            ->table('vtiger_currency_info')
+            ->where('deleted', 0)
+            ->where('currency_status', 'Active')
+            ->pluck('currency_name', 'id')
+            ->toArray();
     }
 
     /**

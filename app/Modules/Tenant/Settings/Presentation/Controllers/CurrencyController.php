@@ -17,7 +17,24 @@ class CurrencyController extends Controller
      */
     public function index(): View
     {
-        return view('tenant::settings.currency.index');
+        $totalCurrencies = \DB::connection('tenant')
+            ->table('vtiger_currency_info')
+            ->where('deleted', 0)
+            ->count();
+
+        $activeCurrencies = \DB::connection('tenant')
+            ->table('vtiger_currency_info')
+            ->where('deleted', 0)
+            ->where('currency_status', 'Active')
+            ->count();
+
+        $baseCurrency = \DB::connection('tenant')
+            ->table('vtiger_currency_info')
+            ->where('deleted', 0)
+            ->where('conversion_rate', 1.0)
+            ->first();
+
+        return view('tenant::settings.currency.index', compact('totalCurrencies', 'activeCurrencies', 'baseCurrency'));
     }
 
     /**
@@ -25,10 +42,15 @@ class CurrencyController extends Controller
      */
     public function data(Request $request)
     {
-        // TODO: Implement DataTables logic
-        return response()->json([
-            'data' => []
-        ]);
+        $currencies = \DB::connection('tenant')
+            ->table('vtiger_currency_info')
+            ->where('deleted', 0);
+
+        return \Yajra\DataTables\DataTables::of($currencies)
+            ->addColumn('action', function ($row) {
+                return '';
+            })
+            ->make(true);
     }
 
     /**
@@ -36,8 +58,13 @@ class CurrencyController extends Controller
      */
     public function create(): View
     {
+        $allCurrencies = \DB::connection('tenant')
+            ->table('vtiger_currencies')
+            ->get();
+
         return view('tenant::settings.currency.edit', [
-            'currency' => null
+            'currency' => null,
+            'allCurrencies' => $allCurrencies
         ]);
     }
 
@@ -46,7 +73,18 @@ class CurrencyController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        // TODO: Implement store logic
+        $validated = $request->validate([
+            'currency_name' => 'required|string|max:200',
+            'currency_code' => 'required|string|max:100',
+            'currency_symbol' => 'required|string|max:30',
+            'conversion_rate' => 'required|numeric',
+            'currency_status' => 'required|string|max:25',
+        ]);
+
+        \DB::connection('tenant')
+            ->table('vtiger_currency_info')
+            ->insert(array_merge($validated, ['deleted' => 0]));
+
         return redirect()->route('tenant.settings.crm.currency.index')
             ->with('success', __('tenant::settings.currency_created_successfully'));
     }
@@ -56,9 +94,18 @@ class CurrencyController extends Controller
      */
     public function edit(int $id): View
     {
-        // TODO: Load currency
+        $currency = \DB::connection('tenant')
+            ->table('vtiger_currency_info')
+            ->where('id', $id)
+            ->first();
+
+        $allCurrencies = \DB::connection('tenant')
+            ->table('vtiger_currencies')
+            ->get();
+
         return view('tenant::settings.currency.edit', [
-            'currency' => null
+            'currency' => $currency,
+            'allCurrencies' => $allCurrencies
         ]);
     }
 
@@ -67,7 +114,19 @@ class CurrencyController extends Controller
      */
     public function update(Request $request, int $id): RedirectResponse
     {
-        // TODO: Implement update logic
+        $validated = $request->validate([
+            'currency_name' => 'required|string|max:200',
+            'currency_code' => 'required|string|max:100',
+            'currency_symbol' => 'required|string|max:30',
+            'conversion_rate' => 'required|numeric',
+            'currency_status' => 'required|string|max:25',
+        ]);
+
+        \DB::connection('tenant')
+            ->table('vtiger_currency_info')
+            ->where('id', $id)
+            ->update($validated);
+
         return redirect()->route('tenant.settings.crm.currency.index')
             ->with('success', __('tenant::settings.currency_updated_successfully'));
     }
@@ -77,7 +136,11 @@ class CurrencyController extends Controller
      */
     public function destroy(int $id): JsonResponse
     {
-        // TODO: Implement delete logic
+        \DB::connection('tenant')
+            ->table('vtiger_currency_info')
+            ->where('id', $id)
+            ->update(['deleted' => 1]);
+
         return response()->json([
             'success' => true,
             'message' => __('tenant::settings.currency_deleted_successfully')

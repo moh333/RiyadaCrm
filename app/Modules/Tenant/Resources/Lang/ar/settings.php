@@ -3,6 +3,7 @@
 return [
     // CRM Settings
     'crm_settings' => 'إعدادات CRM',
+    'configuration' => 'التكوين',
 
     // Picklist Management
     'picklist' => 'القوائم المنسدلة',
@@ -306,6 +307,12 @@ return [
     'iso_code' => 'رمز ISO',
     'conversion_rate_help' => 'سعر الصرف مقابل العملة الأساسية',
     'currency_information' => 'معلومات العملة',
+    'currency_iso_help' => 'استخدم رموز العملات القياسية ISO 4217 (مثل USD، EUR، GBP)',
+    'currency_conversion_help' => 'سعر الصرف نسبي لعملتك الأساسية',
+    'currency_update_help' => 'قم بتحديث أسعار الصرف بانتظام لضمان الدقة',
+    'currency_status_help' => 'العملات غير النشطة لن تظهر في اختيار العملة',
+    'common_currencies' => 'العملات الشائعة',
+    'no_currencies' => 'لم يتم العثور على عملات',
     'base_currency' => 'العملة الأساسية',
     'total_currencies' => 'إجمالي العملات',
     'active_currencies' => 'العملات النشطة',
@@ -326,6 +333,16 @@ return [
     'test_email_failed' => 'فشل إرسال البريد التجريبي',
     'smtp_port_help' => 'المنافذ الشائعة: 25 (عادي), 587 (TLS), 465 (SSL)',
     'require_authentication' => 'يتطلب المصادقة',
+    'smtp_configured' => 'خادم SMTP مكون مسبقاً',
+    'test_email_help' => 'أرسل بريداً إلكترونياً تجريبياً للتحقق من أن تكوين SMTP يعمل بشكل صحيح.',
+    'common_smtp_ports' => 'منافذ SMTP الشائعة',
+    'port_plain' => 'عادي (غير مستحسن)',
+    'port_tls' => 'TLS (مستحسن)',
+    'port_ssl' => 'SSL',
+    'smtp_test_after_save' => 'اختبر دائماً إعداداتك بعد الحفظ',
+    'smtp_use_tls' => 'استخدم TLS (المنفذ 587) لأمان أفضل',
+    'smtp_app_passwords' => 'تطلب بعض المزودات كلمات مرور خاصة بالتطبيقات',
+    'smtp_provider_docs' => 'راجع وثائق SMTP الخاصة بمزود الخدمة',
 
     // Config Editor
     'config_editor_description' => 'تحرير إعدادات النظام المتقدمة',
@@ -340,6 +357,13 @@ return [
     'helpdesk_support_name' => 'اسم فريق الدعم',
     'listview_settings' => 'إعدادات عرض القائمة',
     'invalid_number' => 'رقم غير صالح',
+    'display_options' => 'خيارات العرض',
+    'show_listview_icons' => 'إظهار أيقونات الوحدة في القائمة',
+    'enable_status_colors' => 'تفعيل ترميز الألوان لحقول الحالة',
+    'compact_view_mode' => 'استخدام وضع العرض المضغوط (تقليل ارتفاع الصف)',
+    'show_module_icons' => 'إظهار أيقونات الوحدة',
+    'enable_color_coding' => 'تفعيل ترميز الألوان',
+    'compact_view_short' => 'وضع العرض المضغوط',
 
     // Inventory Settings
     'inventory_settings' => 'إعدادات المخزون',

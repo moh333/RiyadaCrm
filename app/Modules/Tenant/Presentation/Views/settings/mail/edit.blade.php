@@ -14,8 +14,7 @@
                 <p class="text-muted mb-0">{{ __('tenant::settings.mail_description') }}</p>
             </div>
             <div>
-                <a href="{{ route('tenant.settings.crm.mail.index') }}"
-                    class="btn btn-outline-secondary rounded-pill px-4">
+                <a href="{{ route('tenant.settings.crm.mail.index') }}" class="btn btn-outline-secondary rounded-pill px-4">
                     <i class="bi bi-arrow-left me-2"></i>{{ __('tenant::settings.back') }}
                 </a>
             </div>
@@ -61,12 +60,10 @@
                                             {{ __('tenant::settings.smtp_server') }}
                                             <span class="text-danger">*</span>
                                         </label>
-                                        <input type="text"
-                                            class="form-control @error('smtp_server') is-invalid @enderror"
-                                            id="smtp_server" name="smtp_server"
-                                            value="{{ old('smtp_server', 'smtp.example.com') }}"
+                                        <input type="text" class="form-control @error('server') is-invalid @enderror"
+                                            id="server" name="server" value="{{ old('server', $server->server ?? '') }}"
                                             placeholder="smtp.example.com" required>
-                                        @error('smtp_server')
+                                        @error('server')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
@@ -77,15 +74,15 @@
                                             {{ __('tenant::settings.smtp_port') }}
                                             <span class="text-danger">*</span>
                                         </label>
-                                        <input type="number"
-                                            class="form-control @error('smtp_port') is-invalid @enderror"
-                                            id="smtp_port" name="smtp_port" value="{{ old('smtp_port', '587') }}"
+                                        <input type="number" class="form-control @error('server_port') is-invalid @enderror"
+                                            id="server_port" name="server_port"
+                                            value="{{ old('server_port', $server->server_port ?? '587') }}"
                                             placeholder="587" min="1" max="65535" required>
                                         <div class="form-text">
                                             <i class="bi bi-info-circle me-1"></i>
                                             {{ __('tenant::settings.smtp_port_help') }}
                                         </div>
-                                        @error('smtp_port')
+                                        @error('server_port')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
@@ -102,9 +99,8 @@
                                     {{-- Require Authentication --}}
                                     <div class="col-12">
                                         <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="smtp_auth"
-                                                name="smtp_auth" value="1"
-                                                {{ old('smtp_auth', true) ? 'checked' : '' }}>
+                                            <input class="form-check-input" type="checkbox" id="smtp_auth" name="smtp_auth"
+                                                value="true" {{ old('smtp_auth', ($server->smtp_auth ?? 'true') == 'true') ? 'checked' : '' }}>
                                             <label class="form-check-label fw-semibold" for="smtp_auth">
                                                 {{ __('tenant::settings.require_authentication') }}
                                             </label>
@@ -118,11 +114,11 @@
                                             <span class="text-danger">*</span>
                                         </label>
                                         <input type="text"
-                                            class="form-control @error('smtp_username') is-invalid @enderror"
-                                            id="smtp_username" name="smtp_username"
-                                            value="{{ old('smtp_username', 'user@example.com') }}"
+                                            class="form-control @error('server_username') is-invalid @enderror"
+                                            id="server_username" name="server_username"
+                                            value="{{ old('server_username', $server->server_username ?? '') }}"
                                             placeholder="user@example.com" required>
-                                        @error('smtp_username')
+                                        @error('server_username')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
@@ -135,14 +131,14 @@
                                         </label>
                                         <div class="input-group">
                                             <input type="password"
-                                                class="form-control @error('smtp_password') is-invalid @enderror"
-                                                id="smtp_password" name="smtp_password"
-                                                value="{{ old('smtp_password') }}" placeholder="••••••••" required>
-                                            <button class="btn btn-outline-secondary" type="button"
-                                                id="togglePassword">
+                                                class="form-control @error('server_password') is-invalid @enderror"
+                                                id="server_password" name="server_password"
+                                                value="{{ old('server_password', $server->server_password ?? '') }}"
+                                                placeholder="••••••••" required>
+                                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                                                 <i class="bi bi-eye"></i>
                                             </button>
-                                            @error('smtp_password')
+                                            @error('server_password')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
@@ -155,15 +151,15 @@
                                             <span class="text-danger">*</span>
                                         </label>
                                         <input type="email"
-                                            class="form-control @error('from_email') is-invalid @enderror"
-                                            id="from_email" name="from_email"
-                                            value="{{ old('from_email', 'noreply@example.com') }}"
+                                            class="form-control @error('from_email_field') is-invalid @enderror"
+                                            id="from_email_field" name="from_email_field"
+                                            value="{{ old('from_email_field', $server->from_email_field ?? '') }}"
                                             placeholder="noreply@example.com" required>
                                         <div class="form-text">
                                             <i class="bi bi-info-circle me-1"></i>
                                             This email address will appear as the sender for outgoing emails
                                         </div>
-                                        @error('from_email')
+                                        @error('from_email_field')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
@@ -261,19 +257,19 @@
                             <ul class="list-unstyled mb-0 small">
                                 <li class="mb-3">
                                     <i class="bi bi-check-circle text-success me-2"></i>
-                                    Always test your configuration after saving
+                                    {{ __('tenant::settings.smtp_test_after_save') }}
                                 </li>
                                 <li class="mb-3">
                                     <i class="bi bi-check-circle text-success me-2"></i>
-                                    Use TLS (port 587) for better security
+                                    {{ __('tenant::settings.smtp_use_tls') }}
                                 </li>
                                 <li class="mb-3">
                                     <i class="bi bi-check-circle text-success me-2"></i>
-                                    Some providers require app-specific passwords
+                                    {{ __('tenant::settings.smtp_app_passwords') }}
                                 </li>
                                 <li class="mb-0">
                                     <i class="bi bi-check-circle text-success me-2"></i>
-                                    Check your provider's SMTP documentation
+                                    {{ __('tenant::settings.smtp_provider_docs') }}
                                 </li>
                             </ul>
                         </div>
@@ -287,8 +283,8 @@
 @push('scripts')
     <script>
         // Toggle password visibility
-        document.getElementById('togglePassword').addEventListener('click', function() {
-            const passwordInput = document.getElementById('smtp_password');
+        document.getElementById('togglePassword').addEventListener('click', function () {
+            const passwordInput = document.getElementById('server_password');
             const icon = this.querySelector('i');
 
             if (passwordInput.type === 'password') {
@@ -303,8 +299,8 @@
         });
 
         // Toggle authentication fields
-        document.getElementById('smtp_auth').addEventListener('change', function() {
-            const authFields = ['smtp_username', 'smtp_password'];
+        document.getElementById('smtp_auth').addEventListener('change', function () {
+            const authFields = ['server_username', 'server_password'];
             authFields.forEach(field => {
                 document.getElementById(field).disabled = !this.checked;
             });
