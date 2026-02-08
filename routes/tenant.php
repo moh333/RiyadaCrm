@@ -20,6 +20,7 @@ use App\Modules\Tenant\Settings\Presentation\Controllers\CustomerPortalControlle
 use App\Modules\Tenant\Settings\Presentation\Controllers\CurrencyController;
 use App\Modules\Tenant\Settings\Presentation\Controllers\OutgoingServerController;
 use App\Modules\Tenant\Settings\Presentation\Controllers\ConfigEditorController;
+use App\Modules\Tenant\Settings\Presentation\Controllers\CTPowerBlocksFieldsController;
 use App\Modules\Tenant\Settings\Presentation\Controllers\TaxController;
 use App\Modules\Tenant\Settings\Presentation\Controllers\TermsConditionsController;
 use App\Modules\Tenant\Settings\Presentation\Controllers\UserPreferencesController;
@@ -297,6 +298,16 @@ Route::middleware([
                 Route::get('/', [ConfigEditorController::class, 'index'])->name('index');
                 Route::get('/edit', [ConfigEditorController::class, 'edit'])->name('edit');
                 Route::post('/save', [ConfigEditorController::class, 'save'])->name('save');
+            });
+
+            // CTPowerBlocksFields Management
+            Route::prefix('power-blocks')->name('ctpower-blocks-fields.')->group(function () {
+                Route::get('/', [CTPowerBlocksFieldsController::class, 'index'])->name('index');
+                Route::get('/create', [CTPowerBlocksFieldsController::class, 'create'])->name('create');
+                Route::post('/', [CTPowerBlocksFieldsController::class, 'store'])->name('store');
+                Route::get('/{id}/edit', [CTPowerBlocksFieldsController::class, 'edit'])->name('edit');
+                Route::put('/{id}', [CTPowerBlocksFieldsController::class, 'update'])->name('update');
+                Route::delete('/{id}', [CTPowerBlocksFieldsController::class, 'destroy'])->name('destroy');
             });
 
             // Tax Management

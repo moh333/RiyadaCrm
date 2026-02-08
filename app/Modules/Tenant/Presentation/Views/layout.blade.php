@@ -543,6 +543,32 @@
                             </div>
                         </li>
 
+                        {{-- Other Settings Submenu --}}
+                        <li>
+                            <a class="nav-link collapsed d-flex justify-content-between align-items-center ps-4"
+                                data-bs-toggle="collapse" href="#otherSettingsSubmenu" role="button"
+                                aria-expanded="{{ request()->routeIs('tenant.settings.crm.ctpower-blocks-fields.*') ? 'true' : 'false' }}"
+                                aria-controls="otherSettingsSubmenu">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-puzzle me-2"></i>
+                                    {{ __('tenant::settings.other_settings') ?? 'Other Settings' }}
+                                </div>
+                                <i class="bi bi-chevron-down small"></i>
+                            </a>
+                            <div class="collapse {{ request()->routeIs('tenant.settings.crm.ctpower-blocks-fields.*') ? 'show' : '' }}"
+                                id="otherSettingsSubmenu">
+                                <ul class="list-unstyled fw-normal pb-1 small bg-white rounded-bottom px-2 pt-1 ms-3">
+                                    <li>
+                                        <a href="{{ route('tenant.settings.crm.ctpower-blocks-fields.index') }}"
+                                            class="nav-link {{ request()->routeIs('tenant.settings.crm.ctpower-blocks-fields.index') ? 'active' : '' }} ps-4"><i
+                                                class="bi bi-magic me-2"></i>
+                                            {{ __('tenant::settings.ct_power_blocks') ?? 'Power Blocks & Fields' }}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+
                         {{-- My Preferences Submenu --}}
                         <li>
                             <a class="nav-link collapsed d-flex justify-content-between align-items-center ps-4"

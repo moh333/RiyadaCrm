@@ -511,4 +511,10 @@ return [
     'public' => 'عام',
     'confirm_delete_message' => 'هل أنت متأكد من رغبتك في حذف هذا الوسم؟',
     'calendar_settings_updated' => 'تم تحديث إعدادات التقويم بنجاح',
+
+    // Other Settings
+    'other_settings' => 'إعدادات أخرى',
+    'ct_power_blocks' => 'قوالب وحقول ذكية',
+    'ct_power_blocks_description' => 'إدارة ظهور الحقول وديناميكيتها والاعتمادات بينها.',
+    'add_rule' => 'إضافة قاعدة',
 ];

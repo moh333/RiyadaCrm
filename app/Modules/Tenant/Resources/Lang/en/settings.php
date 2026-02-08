@@ -540,4 +540,10 @@ return [
     'public' => 'Public',
     'confirm_delete_message' => 'Are you sure you want to delete this tag?',
     'calendar_settings_updated' => 'Calendar settings updated successfully',
+
+    // Other Settings
+    'other_settings' => 'Other Settings',
+    'ct_power_blocks' => 'Power Blocks & Fields',
+    'ct_power_blocks_description' => 'Manage dynamic field visibility, editability, and dependencies.',
+    'add_rule' => 'Add Rule',
 ];
