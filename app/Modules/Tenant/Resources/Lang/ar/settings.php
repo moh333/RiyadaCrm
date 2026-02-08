@@ -485,4 +485,9 @@ return [
     'tag_cloud_updated' => 'تم تحديث تفضيلات سحابة الوسوم',
     'no_tags' => 'لم يتم العثور على وسوم',
     'create_first_tag' => 'أنشئ وسمك الأول لتنظيم السجلات',
+    'visibility' => 'الظهور',
+    'private' => 'خاص',
+    'public' => 'عام',
+    'confirm_delete_message' => 'هل أنت متأكد من رغبتك في حذف هذا الوسم؟',
+    'calendar_settings_updated' => 'تم تحديث إعدادات التقويم بنجاح',
 ];

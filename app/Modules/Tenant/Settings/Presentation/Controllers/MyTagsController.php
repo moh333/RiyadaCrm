@@ -3,7 +3,6 @@
 namespace App\Modules\Tenant\Settings\Presentation\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
@@ -16,8 +15,14 @@ class MyTagsController
     {
         $userId = $request->get('user_id', auth()->id());
 
+        $user = \DB::connection('tenant')
+            ->table('vtiger_users')
+            ->where('id', $userId)
+            ->first();
+
         return view('tenant::settings.tags.index', [
-            'userId' => $userId
+            'userId' => $userId,
+            'showTagCloud' => (bool) ($user->tagcloudview ?? false)
         ]);
     }
 
@@ -59,7 +64,7 @@ class MyTagsController
             return response()->json(['success' => false, 'message' => 'Tag already exists'], 400);
         }
 
-        $tagId = \DB::connection('tenant')->transaction(function () use ($tagName, $userId) {
+        $tagId = \DB::connection('tenant')->transaction(function () use ($tagName, $userId, $request) {
             $currentId = \DB::connection('tenant')->table('vtiger_freetags_seq')->max('id');
             $nextId = $currentId + 1;
 
@@ -67,7 +72,7 @@ class MyTagsController
                 'id' => $nextId,
                 'tag' => $tagName,
                 'raw_tag' => $tagName,
-                'visibility' => 'PRIVATE',
+                'visibility' => $request->get('visibility', 'PRIVATE'),
                 'owner' => $userId
             ]);
 
@@ -95,7 +100,8 @@ class MyTagsController
             ->where('id', $id)
             ->update([
                 'tag' => $tagName,
-                'raw_tag' => $tagName
+                'raw_tag' => $tagName,
+                'visibility' => $request->get('visibility', 'PRIVATE')
             ]);
 
         return response()->json([
@@ -135,8 +141,6 @@ class MyTagsController
         $enabled = $request->get('enabled', false);
         $userId = auth()->id();
 
-        // In Vtiger, tag cloud visibility is often a preference in vtiger_users 
-        // or a homestuff entry. Assuming it's a user preference here.
         \DB::connection('tenant')
             ->table('vtiger_users')
             ->where('id', $userId)

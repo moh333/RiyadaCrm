@@ -121,32 +121,5 @@
                 </div>
             </div>
         </div>
-
-        {{-- Info Card --}}
-        <div class="card border-0 shadow-sm rounded-4 bg-light mt-4">
-            <div class="card-body p-4">
-                <h6 class="fw-bold mb-3">
-                    <i class="bi bi-info-circle text-primary me-2"></i>About User Preferences
-                </h6>
-                <ul class="list-unstyled small mb-0">
-                    <li class="mb-2">
-                        <i class="bi bi-check-circle text-success me-2"></i>
-                        These settings are personal and don't affect other users
-                    </li>
-                    <li class="mb-2">
-                        <i class="bi bi-check-circle text-success me-2"></i>
-                        Language and date format affect how you view data throughout the CRM
-                    </li>
-                    <li class="mb-2">
-                        <i class="bi bi-check-circle text-success me-2"></i>
-                        Currency settings affect financial displays and reports
-                    </li>
-                    <li class="mb-0">
-                        <i class="bi bi-check-circle text-success me-2"></i>
-                        Start and end hours define your working day in calendar views
-                    </li>
-                </ul>
-            </div>
-        </div>
     </div>
 @endsection

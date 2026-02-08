@@ -30,7 +30,7 @@
 
         <div class="row g-4">
             {{-- Tags Table --}}
-            <div class="col-lg-8">
+            <div class="col-lg-12">
                 <div class="card border-0 shadow-sm rounded-4">
                     <div class="card-header bg-white border-0 py-3">
                         <h5 class="fw-bold mb-0">{{ __('tenant::settings.my_tags') }}</h5>
@@ -40,58 +40,11 @@
                             <thead>
                                 <tr>
                                     <th>{{ __('tenant::settings.tag_name') }}</th>
+                                    <th>{{ __('tenant::settings.visibility') ?? 'Visibility' }}</th>
                                     <th class="text-end">{{ __('tenant::settings.actions') }}</th>
                                 </tr>
                             </thead>
                         </table>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Tag Cloud Settings --}}
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm rounded-4 bg-light">
-                    <div class="card-body p-4">
-                        <h6 class="fw-bold mb-3">
-                            <i class="bi bi-cloud text-primary me-2"></i>{{ __('tenant::settings.tag_cloud') }}
-                        </h6>
-                        <div class="form-check form-switch mb-3">
-                            <input class="form-check-input" type="checkbox" id="enableTagCloud" {{ $showTagCloud ? 'checked' : '' }}>
-                            <label class="form-check-label fw-semibold" for="enableTagCloud">
-                                {{ __('tenant::settings.enable_tag_cloud') }}
-                            </label>
-                        </div>
-                        <p class="small text-muted mb-0">
-                            <i class="bi bi-info-circle me-1"></i>
-                            Tag cloud displays your frequently used tags in the home dashboard
-                        </p>
-                    </div>
-                </div>
-
-                {{-- Tips --}}
-                <div class="card border-0 shadow-sm rounded-4 mt-3">
-                    <div class="card-body p-4">
-                        <h6 class="fw-bold mb-3">
-                            <i class="bi bi-lightbulb text-warning me-2"></i>{{ __('tenant::settings.tips') }}
-                        </h6>
-                        <ul class="list-unstyled small">
-                            <li class="mb-2">
-                                <i class="bi bi-check-circle text-success me-2"></i>
-                                Use tags to organize and categorize records
-                            </li>
-                            <li class="mb-2">
-                                <i class="bi bi-check-circle text-success me-2"></i>
-                                Tags are personal and only visible to you
-                            </li>
-                            <li class="mb-2">
-                                <i class="bi bi-check-circle text-success me-2"></i>
-                                Apply multiple tags to a single record
-                            </li>
-                            <li class="mb-0">
-                                <i class="bi bi-check-circle text-success me-2"></i>
-                                Filter records by tags for quick access
-                            </li>
-                        </ul>
                     </div>
                 </div>
             </div>
@@ -114,8 +67,24 @@
                                 {{ __('tenant::settings.tag_name') }}
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" class="form-control" id="tagName" name="tag" required
+                            <input type="text" class="form-control rounded-pill px-3" id="tagName" name="tag" required
                                 placeholder="Enter tag name...">
+                        </div>
+                        <div class="mb-3">
+                            <label
+                                class="form-label fw-semibold d-block">{{ __('tenant::settings.visibility') ?? 'Visibility' }}</label>
+                            <div class="btn-group w-100 custom-radio-group" role="group">
+                                <input type="radio" class="btn-check" name="visibility" id="addVisibilityPrivate"
+                                    value="PRIVATE" checked>
+                                <label class="btn btn-outline-primary py-2" for="addVisibilityPrivate">
+                                    <i class="bi bi-lock-fill me-2"></i>{{ __('tenant::settings.private') ?? 'Private' }}
+                                </label>
+                                <input type="radio" class="btn-check" name="visibility" id="addVisibilityPublic"
+                                    value="PUBLIC">
+                                <label class="btn btn-outline-primary py-2" for="addVisibilityPublic">
+                                    <i class="bi bi-globe me-2"></i>{{ __('tenant::settings.public') ?? 'Public' }}
+                                </label>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer border-0">
@@ -148,7 +117,23 @@
                                 {{ __('tenant::settings.tag_name') }}
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" class="form-control" id="editTagName" name="tag" required>
+                            <input type="text" class="form-control rounded-pill px-3" id="editTagName" name="tag" required>
+                        </div>
+                        <div class="mb-3">
+                            <label
+                                class="form-label fw-semibold d-block">{{ __('tenant::settings.visibility') ?? 'Visibility' }}</label>
+                            <div class="btn-group w-100 custom-radio-group" role="group">
+                                <input type="radio" class="btn-check" name="visibility" id="editVisibilityPrivate"
+                                    value="PRIVATE">
+                                <label class="btn btn-outline-primary py-2" for="editVisibilityPrivate">
+                                    <i class="bi bi-lock-fill me-2"></i>{{ __('tenant::settings.private') ?? 'Private' }}
+                                </label>
+                                <input type="radio" class="btn-check" name="visibility" id="editVisibilityPublic"
+                                    value="PUBLIC">
+                                <label class="btn btn-outline-primary py-2" for="editVisibilityPublic">
+                                    <i class="bi bi-globe me-2"></i>{{ __('tenant::settings.public') ?? 'Public' }}
+                                </label>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer border-0">
@@ -173,10 +158,6 @@
                 </div>
                 <div class="modal-body">
                     <p>{{ __('tenant::settings.confirm_delete_message') }}</p>
-                    <div class="alert alert-warning mb-0">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        This will remove the tag from all associated records.
-                    </div>
                 </div>
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-secondary rounded-pill"
@@ -203,31 +184,42 @@
                     data: 'tag',
                     name: 'tag',
                     render: function (data) {
-                        return `<span class="badge bg-primary fs-6 px-3 py-2">${data}</span>`;
+                        return `<span class="badge bg-primary-subtle text-primary fs-6 px-3 py-2 rounded-pill">${data}</span>`;
                     }
                 },
                 {
-                    data: 'action',
+                    data: 'visibility',
+                    name: 'visibility',
+                    render: function (data) {
+                        const color = data === 'PUBLIC' ? 'success' : 'secondary';
+                        const icon = data === 'PUBLIC' ? 'globe' : 'lock-fill';
+                        return `<span class="badge bg-${color}-subtle text-${color} px-3 py-2 rounded-pill">
+                                        <i class="bi bi-${icon} me-1"></i>${data}
+                                    </span>`;
+                    }
+                },
+                {
+                    data: 'id',
                     name: 'action',
                     orderable: false,
                     searchable: false,
                     className: 'text-end',
                     render: function (data, type, row) {
                         return `
-                                        <button class="btn btn-sm btn-outline-primary rounded-pill me-1 edit-tag" 
-                                                data-id="${row.id}" data-name="${row.tag}">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger rounded-pill delete-tag" 
-                                                data-id="${row.id}">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    `;
+                                            <button class="btn btn-sm btn-light rounded-pill me-1 edit-tag" 
+                                                    data-id="${row.id}" data-name="${row.tag}" data-visibility="${row.visibility}">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-light-danger rounded-pill delete-tag" 
+                                                    data-id="${row.id}">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        `;
                     }
                 }
                 ],
                 order: [
-                    [0, 'asc']
+                    [1, 'asc']
                 ],
                 language: {
                     emptyTable: '{{ __('tenant::settings.no_tags') }}',
@@ -259,8 +251,10 @@
             $(document).on('click', '.edit-tag', function () {
                 const id = $(this).data('id');
                 const name = $(this).data('name');
+                const visibility = $(this).data('visibility');
                 $('#editTagId').val(id);
                 $('#editTagName').val(name);
+                $(`#editVisibility${visibility.charAt(0) + visibility.slice(1).toLowerCase()}`).prop('checked', true);
                 $('#editTagModal').modal('show');
             });
 
@@ -272,7 +266,8 @@
                     type: 'PUT',
                     data: {
                         _token: '{{ csrf_token() }}',
-                        tag: $('#editTagName').val()
+                        tag: $('#editTagName').val(),
+                        visibility: $('#editTagForm input[name="visibility"]:checked').val()
                     },
                     success: function (response) {
                         $('#editTagModal').modal('hide');
@@ -327,11 +322,11 @@
 
             function showAlert(type, message) {
                 const alert = `
-                            <div class="alert alert-${type} alert-dismissible fade show rounded-4 shadow-sm" role="alert">
-                                <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>${message}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        `;
+                                <div class="alert alert-${type} alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+                                    <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>${message}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            `;
                 $('.container-fluid').prepend(alert);
                 setTimeout(() => {
                     $('.alert').fadeOut();

@@ -514,4 +514,9 @@ return [
     'tag_cloud_updated' => 'Tag cloud preference updated',
     'no_tags' => 'No tags found',
     'create_first_tag' => 'Create your first tag to organize records',
+    'visibility' => 'Visibility',
+    'private' => 'Private',
+    'public' => 'Public',
+    'confirm_delete_message' => 'Are you sure you want to delete this tag?',
+    'calendar_settings_updated' => 'Calendar settings updated successfully',
 ];

@@ -140,32 +140,5 @@
                 </div>
             </div>
         </div>
-
-        {{-- Info Card --}}
-        <div class="card border-0 shadow-sm rounded-4 bg-light mt-4">
-            <div class="card-body p-4">
-                <h6 class="fw-bold mb-3">
-                    <i class="bi bi-info-circle text-primary me-2"></i>About Calendar Settings
-                </h6>
-                <ul class="list-unstyled small mb-0">
-                    <li class="mb-2">
-                        <i class="bi bi-check-circle text-success me-2"></i>
-                        Calendar settings personalize your activity and event management
-                    </li>
-                    <li class="mb-2">
-                        <i class="bi bi-check-circle text-success me-2"></i>
-                        Default values are pre-filled when creating new activities
-                    </li>
-                    <li class="mb-2">
-                        <i class="bi bi-check-circle text-success me-2"></i>
-                        Start and end hours define the visible time range in calendar views
-                    </li>
-                    <li class="mb-0">
-                        <i class="bi bi-check-circle text-success me-2"></i>
-                        Reminder intervals help you stay on top of upcoming activities
-                    </li>
-                </ul>
-            </div>
-        </div>
     </div>
 @endsection
