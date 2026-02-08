@@ -334,6 +334,17 @@
                 </li>
             @endforeach
 
+            <li class="nav-item mt-3">
+                <small class="text-muted fw-bold text-uppercase px-3">{{ __('reports::reports.analytics') }}</small>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('tenant.reports.index') }}"
+                    class="nav-link {{ request()->is('reports*') ? 'active' : '' }}">
+                    <i class="bi bi-bar-chart-line-fill"></i>
+                    {{ __('reports::reports.reports') }}
+                </a>
+            </li>
+
             <li class="nav-item mt-4">
                 <small class="text-muted fw-bold text-uppercase px-3">{{ __('tenant::tenant.administration') }}</small>
             </li>

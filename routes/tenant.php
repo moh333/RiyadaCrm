@@ -116,6 +116,19 @@ Route::middleware([
             Route::delete('/{moduleName}/{id}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'destroy'])->name('destroy');
         });
 
+        // Reports Module
+        Route::prefix('reports')->name('reports.')->group(function () {
+            Route::get('/', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'create'])->name('create');
+            Route::post('/', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'store'])->name('store');
+            Route::get('/{id}', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'show'])->name('show');
+            Route::get('/{id}/edit', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'update'])->name('update');
+            Route::delete('/{id}', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'destroy'])->name('destroy');
+            Route::get('/{id}/run', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'run'])->name('run');
+            Route::get('/{id}/export', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'export'])->name('export');
+        });
+
         // Custom Fields Management (Generic for all modules)
         Route::prefix('settings/custom-fields')->name('custom-fields.')->group(function () {
             Route::get('/{module}', [CustomFieldsController::class, 'index'])->name('index');
