@@ -302,12 +302,28 @@ Route::middleware([
             // Tax Management
             Route::prefix('tax')->name('tax.')->group(function () {
                 Route::get('/', [TaxController::class, 'index'])->name('index');
+                Route::get('/taxes', [TaxController::class, 'taxes'])->name('taxes');
+                Route::get('/charges', [TaxController::class, 'charges'])->name('charges');
+                Route::get('/regions', [TaxController::class, 'regions'])->name('regions');
+
+                // Data routes
                 Route::get('/data', [TaxController::class, 'data'])->name('data');
-                Route::get('/create', [TaxController::class, 'create'])->name('create');
+                Route::get('/charges/data', [TaxController::class, 'chargesData'])->name('charges.data');
+                Route::get('/regions/data', [TaxController::class, 'regionsData'])->name('regions.data');
+
+                // CRUD actions
                 Route::post('/', [TaxController::class, 'store'])->name('store');
-                Route::get('/{id}/edit', [TaxController::class, 'edit'])->name('edit');
                 Route::put('/{id}', [TaxController::class, 'update'])->name('update');
                 Route::delete('/{id}', [TaxController::class, 'destroy'])->name('destroy');
+
+                Route::post('/charges', [TaxController::class, 'storeCharge'])->name('charges.store');
+                Route::put('/charges/{id}', [TaxController::class, 'updateCharge'])->name('charges.update');
+                Route::delete('/charges/{id}', [TaxController::class, 'destroyCharge'])->name('charges.destroy');
+
+                Route::post('/regions', [TaxController::class, 'storeRegion'])->name('regions.store');
+                Route::put('/regions/{id}', [TaxController::class, 'updateRegion'])->name('regions.update');
+                Route::delete('/regions/{id}', [TaxController::class, 'destroyRegion'])->name('regions.destroy');
+
                 Route::post('/check-duplicate', [TaxController::class, 'checkDuplicate'])->name('check-duplicate');
             });
 
