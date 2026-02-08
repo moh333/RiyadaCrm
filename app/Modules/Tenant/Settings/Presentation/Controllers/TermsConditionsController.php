@@ -8,20 +8,31 @@ use Illuminate\View\View;
 
 class TermsConditionsController
 {
+    public function __construct(
+        private \App\Modules\Core\VtigerModules\Contracts\ModuleRegistryInterface $moduleRegistry
+    ) {
+    }
+
     /**
      * Display terms and conditions management
      */
     public function index(): View
     {
-        // Get all inventory modules
-        $modules = ['Quotes', 'SalesOrder', 'PurchaseOrder', 'Invoice'];
+        // Get all active modules with their localized labels
+        $modules = $this->moduleRegistry->getActive()
+            ->map(fn($m) => [
+                'name' => $m->getName(),
+                'label' => $m->getLabel()
+            ])->values();
+
+        $moduleNames = $modules->pluck('name')->toArray();
 
         // Load terms for each module
         $termsMap = \DB::connection('tenant')
             ->table('vtiger_inventory_termsandconditions')
-            ->whereIn('module', $modules)
+            ->whereIn('module_name', $moduleNames)
             ->get()
-            ->pluck('terms', 'module');
+            ->keyBy('module_name');
 
         return view('tenant::settings.terms.index', [
             'modules' => $modules,
@@ -37,12 +48,12 @@ class TermsConditionsController
         // Load terms for module
         $terms = \DB::connection('tenant')
             ->table('vtiger_inventory_termsandconditions')
-            ->where('module', $module)
+            ->where('module_name', $module)
             ->first();
 
         return view('tenant::settings.terms.edit', [
-            'module' => $module,
-            'terms' => $terms ? $terms->terms : ''
+            'module_name' => $module,
+            'terms' => $terms
         ]);
     }
 
@@ -51,14 +62,21 @@ class TermsConditionsController
      */
     public function save(Request $request): RedirectResponse
     {
-        $module = $request->get('module');
-        $terms = $request->get('terms');
+        $module = $request->get('module_name');
+        $terms_en = $request->get('terms_en');
+        $terms_ar = $request->get('terms_ar');
 
         \DB::connection('tenant')
             ->table('vtiger_inventory_termsandconditions')
             ->updateOrInsert(
-                ['module' => $module],
-                ['terms' => $terms, 'updated_at' => now()]
+                ['module_name' => $module],
+                [
+                    'terms_en' => $terms_en,
+                    'terms_ar' => $terms_ar,
+                    'is_default' => 1,
+                    'status' => 1,
+                    'updated_at' => now()
+                ]
             );
 
         return redirect()->route('tenant.settings.crm.terms.index')

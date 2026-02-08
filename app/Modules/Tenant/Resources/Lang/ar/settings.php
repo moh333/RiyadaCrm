@@ -418,7 +418,9 @@ return [
     // Terms & Conditions
     'terms_conditions' => 'الشروط والأحكام',
     'terms_conditions_description' => 'إدارة الشروط والأحكام الخاصة بكل وحدة',
-    'terms_text' => 'نص الشروط',
+    'inventory_terms' => 'شروط المخزون',
+    'terms_en' => 'الشروط بالإنجليزية',
+    'terms_ar' => 'الشروط بالعربية',
     'module_terms' => 'شروط الوحدة',
     'terms_saved_successfully' => 'تم حفظ الشروط والأحكام بنجاح',
     'edit_terms' => 'تعديل الشروط',

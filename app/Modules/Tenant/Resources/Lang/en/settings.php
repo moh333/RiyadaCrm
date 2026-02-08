@@ -447,7 +447,9 @@ return [
     // Terms & Conditions
     'terms_conditions' => 'Terms & Conditions',
     'terms_conditions_description' => 'Manage module-specific terms and conditions',
-    'terms_text' => 'Terms Text',
+    'inventory_terms' => 'Inventory Terms',
+    'terms_en' => 'English Terms',
+    'terms_ar' => 'Arabic Terms',
     'module_terms' => 'Module Terms',
     'terms_saved_successfully' => 'Terms and conditions saved successfully',
     'edit_terms' => 'Edit Terms',
