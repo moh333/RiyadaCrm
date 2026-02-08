@@ -45,7 +45,8 @@ class UserPreferencesController
             'dateFormats' => $this->getDateFormats(),
             'hourFormats' => $this->getHourFormats(),
             'startHours' => $this->getStartHours(),
-            'endHours' => $this->getEndHours()
+            'endHours' => $this->getEndHours(),
+            'users' => $this->getUsers($userId)
         ]);
     }
 
@@ -54,32 +55,13 @@ class UserPreferencesController
      */
     private function getStartHours(): array
     {
-        return [
-            '00:00' => '12:00 AM',
-            '01:00' => '01:00 AM',
-            '02:00' => '02:00 AM',
-            '03:00' => '03:00 AM',
-            '04:00' => '04:00 AM',
-            '05:00' => '05:00 AM',
-            '06:00' => '06:00 AM',
-            '07:00' => '07:00 AM',
-            '08:00' => '08:00 AM',
-            '09:00' => '09:00 AM',
-            '10:00' => '10:00 AM',
-            '11:00' => '11:00 AM',
-            '12:00' => '12:00 PM',
-            '13:00' => '01:00 PM',
-            '14:00' => '02:00 PM',
-            '15:00' => '03:00 PM',
-            '16:00' => '04:00 PM',
-            '17:00' => '05:00 PM',
-            '18:00' => '06:00 PM',
-            '19:00' => '07:00 PM',
-            '20:00' => '08:00 PM',
-            '21:00' => '09:00 PM',
-            '22:00' => '10:00 PM',
-            '23:00' => '11:00 PM'
-        ];
+        $hours = [];
+        for ($i = 0; $i < 24; $i++) {
+            $key = str_pad($i, 2, '0', STR_PAD_LEFT) . ':00';
+            $label = date("h:i A", strtotime($key));
+            $hours[$key] = $label;
+        }
+        return $hours;
     }
 
     /**
@@ -98,24 +80,69 @@ class UserPreferencesController
         $userId = $request->get('user_id', auth()->id());
 
         $validated = $request->validate([
+            // Basic Info
+            'first_name' => 'nullable|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email1' => 'required|email|max:255',
+            'title' => 'nullable|string|max:255',
+            'department' => 'nullable|string|max:255',
+            'phone_work' => 'nullable|string|max:50',
+            'phone_mobile' => 'nullable|string|max:50',
+            'phone_home' => 'nullable|string|max:50',
+            'phone_fax' => 'nullable|string|max:50',
+            'reports_to_id' => 'nullable|string',
+            'signature' => 'nullable|string',
+
+            // Address Info
+            'address_street' => 'nullable|string',
+            'address_city' => 'nullable|string|max:255',
+            'address_state' => 'nullable|string|max:255',
+            'address_country' => 'nullable|string|max:255',
+            'address_postalcode' => 'nullable|string|max:20',
+
+            // Advanced Options
             'language' => 'required|string|max:50',
             'currency_id' => 'required|integer',
             'date_format' => 'required|string|max:50',
             'hour_format' => 'required|string|max:10',
             'time_zone' => 'required|string|max:100',
-            'start_hour' => 'nullable|string|max:10',
-            'end_hour' => 'nullable|string|max:10',
+            'start_hour' => 'nullable|string|max:50',
+            'end_hour' => 'nullable|string|max:50',
             'defaultlandingpage' => 'nullable|string|max:100',
             'no_of_currency_decimals' => 'nullable|integer|min:0|max:5',
+            'truncate_trailing_zeros' => 'nullable|boolean',
         ]);
+
+        // Fix for reports_to_id and checkbox
+        $validated['reports_to_id'] = $validated['reports_to_id'] ?: null;
+        $validated['truncate_trailing_zeros'] = $request->has('truncate_trailing_zeros') ? 1 : 0;
+
+        // Filter out columns that don't exist in the table to avoid SQL errors
+        $columns = \DB::connection('tenant')->getSchemaBuilder()->getColumnListing('vtiger_users');
+        $updateData = array_intersect_key($validated, array_flip($columns));
 
         \DB::connection('tenant')
             ->table('vtiger_users')
             ->where('id', $userId)
-            ->update($validated);
+            ->update($updateData);
 
         return redirect()->route('tenant.settings.preferences.index', ['user_id' => $userId])
             ->with('success', __('tenant::settings.preferences_updated_successfully'));
+    }
+
+    /**
+     * Get all users for reports_to field
+     */
+    private function getUsers(int $excludeId): array
+    {
+        return \DB::connection('tenant')
+            ->table('vtiger_users')
+            ->where('id', '!=', $excludeId)
+            ->where('status', 'Active')
+            ->select('id', 'first_name', 'last_name')
+            ->get()
+            ->mapWithKeys(fn($u) => [$u->id => $u->first_name . ' ' . $u->last_name])
+            ->toArray();
     }
 
     /**
