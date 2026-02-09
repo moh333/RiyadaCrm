@@ -57,7 +57,36 @@ class ReportService
                 'secondarymodules' => isset($data['secondarymodules']) ? implode(':', $data['secondarymodules']) : ''
             ]);
 
-            // 5. TODO: Add Filters (Standard and Advanced)
+            // 5. Handle Filters (Standard and Advanced)
+            if (isset($data['std_field']) && !empty($data['std_field'])) {
+                DB::connection('tenant')->table('vtiger_reportdatefilter')->insert([
+                    'datefilterid' => $report->reportid,
+                    'datecolumnname' => $data['std_field'],
+                    'datefilter' => $data['std_duration'] ?? 'custom',
+                    'startdate' => $data['startdate'] ?? null,
+                    'enddate' => $data['enddate'] ?? null,
+                ]);
+            }
+
+            if (isset($data['conditions'])) {
+                foreach ($data['conditions'] as $index => $condition) {
+                    \App\Modules\Tenant\Reports\Domain\Models\RelCriteria::create([
+                        'queryid' => $queryId,
+                        'columnindex' => $index,
+                        'columnname' => $condition['columnname'],
+                        'comparator' => $condition['comparator'],
+                        'value' => $condition['value'] ?? '',
+                        'groupid' => $condition['groupid'] ?? 1,
+                        'column_condition' => 'AND' // Default to AND within group
+                    ]);
+                }
+
+                // Create default groupings if they don't exist
+                DB::connection('tenant')->table('vtiger_relcriteria_grouping')->insertOrIgnore([
+                    ['groupid' => 1, 'queryid' => $queryId, 'group_condition' => 'AND', 'condition_expression' => ''],
+                    ['groupid' => 2, 'queryid' => $queryId, 'group_condition' => 'OR', 'condition_expression' => '']
+                ]);
+            }
 
             // 6. Handle Sharing
             if (isset($data['sharing'])) {
@@ -104,11 +133,38 @@ class ReportService
                 'secondarymodules' => isset($data['secondarymodules']) ? implode(':', $data['secondarymodules']) : ''
             ]);
 
+            // Update Filters
+            DB::connection('tenant')->table('vtiger_reportdatefilter')->where('datefilterid', $report->reportid)->delete();
+            if (isset($data['std_field']) && !empty($data['std_field'])) {
+                DB::connection('tenant')->table('vtiger_reportdatefilter')->insert([
+                    'datefilterid' => $report->reportid,
+                    'datecolumnname' => $data['std_field'],
+                    'datefilter' => $data['std_duration'] ?? 'custom',
+                    'startdate' => $data['startdate'] ?? null,
+                    'enddate' => $data['enddate'] ?? null,
+                ]);
+            }
+
+            $report->selectQuery->criteria()->delete();
+            if (isset($data['conditions'])) {
+                foreach ($data['conditions'] as $index => $condition) {
+                    \App\Modules\Tenant\Reports\Domain\Models\RelCriteria::create([
+                        'queryid' => $report->queryid,
+                        'columnindex' => $index,
+                        'columnname' => $condition['columnname'],
+                        'comparator' => $condition['comparator'],
+                        'value' => $condition['value'] ?? '',
+                        'groupid' => $condition['groupid'] ?? 1,
+                        'column_condition' => 'AND'
+                    ]);
+                }
+            }
+
             // Update columns
             $report->selectQuery->columns()->delete();
             if (isset($data['columns'])) {
                 foreach ($data['columns'] as $index => $colString) {
-                    SelectColumn::create([
+                    \App\Modules\Tenant\Reports\Domain\Models\SelectColumn::create([
                         'queryid' => $report->queryid,
                         'columnindex' => $index,
                         'columnname' => $colString

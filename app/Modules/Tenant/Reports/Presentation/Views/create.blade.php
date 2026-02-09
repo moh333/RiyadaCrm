@@ -549,6 +549,105 @@
                     $('#scheduling-options').addClass('d-none');
                 }
             });
+
+            // Condition Builder JS
+            let operators = {};
+            let conditionIndex = 0;
+
+            // Load Operators
+            $.get("{{ route('tenant.reports.condition-operators') }}", function (data) {
+                operators = data.operators;
+            });
+
+            // When moving to Step 3, ensure we have operators and field data
+            $('#next-btn').on('click', function () {
+                if (currentStep === 3) {
+                    populateDateFields();
+                }
+            });
+
+            function populateDateFields() {
+                const dateSelect = $('.select-field-date');
+                const currentValue = dateSelect.val();
+                dateSelect.empty().append('<option value="">{{ __("reports::reports.none") }}</option>');
+
+                if (!window.primaryModuleData) return;
+
+                window.primaryModuleData.fields.forEach(f => {
+                    if ([5, 6, 23, 70].includes(parseInt(f.uitype))) {
+                        dateSelect.append(`<option value="${window.primaryModuleData.module.name}:${f.name}" ${currentValue === window.primaryModuleData.module.name + ':' + f.name ? 'selected' : ''}>${f.label}</option>`);
+                    }
+                });
+            }
+
+            $('.add-condition-btn').on('click', function() {
+                const type = $(this).data('type');
+                addConditionRow(type);
+            });
+
+            function addConditionRow(type) {
+                const container = $(`#${type}ConditionsContainer`);
+                const index = conditionIndex++;
+                
+                let fieldOptionsHtml = '';
+                
+                if (window.primaryModuleData) {
+                    fieldOptionsHtml += `<optgroup label="${window.primaryModuleData.module.label}">`;
+                    window.primaryModuleData.fields.forEach(f => {
+                        fieldOptionsHtml += `<option value="${window.primaryModuleData.module.name}:${f.name}">${f.label}</option>`;
+                    });
+                    fieldOptionsHtml += `</optgroup>`;
+                }
+
+                $('#fields-accordion .accordion-item').each(function() {
+                    const moduleLabel = $(this).find('.accordion-button').text().trim();
+                    const moduleName = $(this).find('.accordion-collapse').attr('id').replace('fields-', '').replace(/_/g, ':');
+                    
+                    if (window.primaryModuleData && moduleName === window.primaryModuleData.module.name) return;
+
+                    fieldOptionsHtml += `<optgroup label="${moduleLabel}">`;
+                    $(this).find('.field-item').each(function() {
+                        const fName = $(this).data('field');
+                        const fLabel = $(this).data('label');
+                        const fMod = $(this).data('module');
+                        fieldOptionsHtml += `<option value="${fMod}:${fName}">${fLabel}</option>`;
+                    });
+                    fieldOptionsHtml += `</optgroup>`;
+                });
+                
+                const html = `
+                    <div class="condition-row row g-2 align-items-center mb-2" data-index="${index}" data-group="${type}">
+                        <div class="col-md-4">
+                            <select class="form-select form-select-sm field-selector" name="conditions[${index}][columnname]" required>
+                                <option value="">{{ __("tenant::settings.select_field") }}</option>
+                                ${fieldOptionsHtml}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select form-select-sm operator-selector" name="conditions[${index}][comparator]" required>
+                                <option value="">{{ __("tenant::settings.select_operator") }}</option>
+                                ${Object.entries(operators).map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control form-control-sm" name="conditions[${index}][value]" placeholder="{{ __('tenant::settings.enter_value') }}">
+                            <input type="hidden" name="conditions[${index}][groupid]" value="${type === 'all' ? 1 : 2}">
+                        </div>
+                        <div class="col-md-1 text-end">
+                            <button type="button" class="btn btn-sm btn-link text-danger remove-condition p-0">
+                                <i class="bi bi-x-circle fs-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                container.append(html);
+                
+                const row = container.find(`.condition-row[data-index="${index}"]`);
+                row.find('.remove-condition').on('click', function() {
+                    row.remove();
+                });
+            }
         </script>
     @endpush
 @endsection

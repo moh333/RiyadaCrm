@@ -58,7 +58,7 @@ class ReportsController extends Controller
 
     public function edit($id)
     {
-        $report = Report::with(['modules', 'selectQuery.columns', 'shareUsers', 'shareGroups', 'shareRoles', 'scheduledReport'])->findOrFail($id);
+        $report = Report::with(['modules', 'selectQuery.columns', 'selectQuery.criteria', 'shareUsers', 'shareGroups', 'shareRoles', 'scheduledReport'])->findOrFail($id);
         $folders = ReportFolder::all();
         $activeModules = $this->moduleRegistry->getActive();
         $users = VtigerUser::all();
@@ -105,5 +105,26 @@ class ReportsController extends Controller
     public function run($id)
     {
         return $this->show($id);
+    }
+
+    public function getConditionOperators()
+    {
+        return response()->json([
+            'operators' => [
+                'e' => __('tenant::settings.operator_is'),
+                'n' => __('tenant::settings.operator_is_not'),
+                's' => __('tenant::settings.operator_contains'),
+                'ew' => __('tenant::settings.operator_ends_with'),
+                'c' => __('tenant::settings.operator_contains'),
+                'k' => __('tenant::settings.operator_does_not_contain'),
+                'l' => __('tenant::settings.operator_less_than'),
+                'g' => __('tenant::settings.operator_greater_than'),
+                'm' => __('tenant::settings.operator_less_than_or_equal'),
+                'h' => __('tenant::settings.operator_greater_than_or_equal'),
+                'b' => __('tenant::settings.operator_before'),
+                'a' => __('tenant::settings.operator_after'),
+                'bw' => __('tenant::settings.operator_between'),
+            ]
+        ]);
     }
 }

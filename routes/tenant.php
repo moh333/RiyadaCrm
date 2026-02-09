@@ -5,11 +5,13 @@ declare(strict_types=1);
 use App\Http\Middleware\InitializeTenancyOrRedirect;
 use App\Modules\Tenant\Contacts\Presentation\Controllers\ContactsController;
 use App\Modules\Tenant\Contacts\Presentation\Controllers\CustomFieldsController;
+use App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController;
 use App\Modules\Tenant\ModComments\Presentation\Controllers\ModCommentsController;
 use App\Modules\Tenant\Presentation\Controllers\DashboardController;
 use App\Modules\Tenant\Presentation\Controllers\LoginController;
 use App\Modules\Tenant\Presentation\Controllers\ProfileController;
 use App\Modules\Tenant\Presentation\Controllers\SettingsController;
+use App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController;
 use App\Modules\Tenant\Settings\Presentation\Controllers\ModuleManagementController;
 use App\Modules\Tenant\Settings\Presentation\Controllers\PicklistController;
 use App\Modules\Tenant\Settings\Presentation\Controllers\PicklistDependencyController;
@@ -106,28 +108,29 @@ Route::middleware([
 
         // Dynamic Modules (Metadata Engine)
         Route::prefix('modules')->name('modules.')->group(function () {
-            Route::get('/{moduleName}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'index'])->name('index');
-            Route::get('/{moduleName}/create', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'create'])->name('create');
-            Route::post('/{moduleName}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'store'])->name('store');
-            Route::get('/{moduleName}/reference-search/{field}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'referenceSearch'])->name('reference-search');
-            Route::get('/{moduleName}/{id}/edit', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'edit'])->name('edit');
-            Route::get('/{moduleName}/{id}/related/{relationId}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'relatedData'])->name('related-data');
-            Route::get('/{moduleName}/{id}/{tab?}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'show'])->name('show');
-            Route::put('/{moduleName}/{id}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'update'])->name('update');
-            Route::delete('/{moduleName}/{id}', [\App\Modules\Tenant\Core\Presentation\Controllers\GenericModuleController::class, 'destroy'])->name('destroy');
+            Route::get('/{moduleName}', [GenericModuleController::class, 'index'])->name('index');
+            Route::get('/{moduleName}/create', [GenericModuleController::class, 'create'])->name('create');
+            Route::post('/{moduleName}', [GenericModuleController::class, 'store'])->name('store');
+            Route::get('/{moduleName}/reference-search/{field}', [GenericModuleController::class, 'referenceSearch'])->name('reference-search');
+            Route::get('/{moduleName}/{id}/edit', [GenericModuleController::class, 'edit'])->name('edit');
+            Route::get('/{moduleName}/{id}/related/{relationId}', [GenericModuleController::class, 'relatedData'])->name('related-data');
+            Route::get('/{moduleName}/{id}/{tab?}', [GenericModuleController::class, 'show'])->name('show');
+            Route::put('/{moduleName}/{id}', [GenericModuleController::class, 'update'])->name('update');
+            Route::delete('/{moduleName}/{id}', [GenericModuleController::class, 'destroy'])->name('destroy');
         });
 
         // Reports Module
         Route::prefix('reports')->name('reports.')->group(function () {
-            Route::get('/', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'index'])->name('index');
-            Route::get('/create', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'create'])->name('create');
-            Route::post('/', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'store'])->name('store');
-            Route::get('/{id}', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'show'])->name('show');
-            Route::get('/{id}/edit', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'edit'])->name('edit');
-            Route::put('/{id}', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'update'])->name('update');
-            Route::delete('/{id}', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'destroy'])->name('destroy');
-            Route::get('/{id}/run', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'run'])->name('run');
-            Route::get('/{id}/export', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'export'])->name('export');
+            Route::get('/', [ReportsController::class, 'index'])->name('index');
+            Route::get('/condition-operators', [ReportsController::class, 'getConditionOperators'])->name('condition-operators');
+            Route::get('/create', [ReportsController::class, 'create'])->name('create');
+            Route::post('/', [ReportsController::class, 'store'])->name('store');
+            Route::get('/{id}', [ReportsController::class, 'show'])->name('show');
+            Route::get('/{id}/edit', [ReportsController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [ReportsController::class, 'update'])->name('update');
+            Route::delete('/{id}', [ReportsController::class, 'destroy'])->name('destroy');
+            Route::get('/{id}/run', [ReportsController::class, 'run'])->name('run');
+            Route::get('/{id}/export', [ReportsController::class, 'export'])->name('export');
         });
 
         // Test Routes for Vtiger Module Management Engine
