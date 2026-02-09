@@ -14,6 +14,8 @@ class VtigerScheduledReport extends Model
      *
      * @var array
      */
+    protected $table = 'vtiger_schedulereports';
+    public $timestamps = false;
     protected $guarded = [];
 
     /**

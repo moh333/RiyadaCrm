@@ -7,6 +7,9 @@ use App\Modules\Tenant\Reports\Domain\Models\Report;
 use App\Modules\Tenant\Reports\Domain\Models\ReportFolder;
 use App\Modules\Tenant\Reports\Application\Services\ReportService;
 use App\Modules\Core\VtigerModules\Contracts\ModuleRegistryInterface;
+use App\Models\Tenant\VtigerUser;
+use App\Models\Tenant\VtigerGroup;
+use App\Models\Tenant\VtigerRole;
 use Illuminate\Http\Request;
 
 class ReportsController extends Controller
@@ -29,8 +32,11 @@ class ReportsController extends Controller
     {
         $folders = ReportFolder::all();
         $activeModules = $this->moduleRegistry->getActive();
+        $users = VtigerUser::all();
+        $groups = VtigerGroup::all();
+        $roles = VtigerRole::all();
 
-        return view('reports::create', compact('folders', 'activeModules'));
+        return view('reports::create', compact('folders', 'activeModules', 'users', 'groups', 'roles'));
     }
 
     public function store(Request $request)
@@ -52,11 +58,32 @@ class ReportsController extends Controller
 
     public function edit($id)
     {
-        $report = Report::with(['modules', 'selectQuery.columns'])->findOrFail($id);
+        $report = Report::with(['modules', 'selectQuery.columns', 'shareUsers', 'shareGroups', 'shareRoles', 'scheduledReport'])->findOrFail($id);
         $folders = ReportFolder::all();
         $activeModules = $this->moduleRegistry->getActive();
+        $users = VtigerUser::all();
+        $groups = VtigerGroup::all();
+        $roles = VtigerRole::all();
 
-        return view('reports::edit', compact('report', 'folders', 'activeModules'));
+        $secondaryModules = [];
+        if (!empty($report->modules->secondarymodules)) {
+            $secondaryNames = explode(':', $report->modules->secondarymodules);
+            foreach ($secondaryNames as $name) {
+                if ($name) {
+                    try {
+                        $mod = $this->moduleRegistry->get($name);
+                        $secondaryModules[] = [
+                            'name' => $mod->getName(),
+                            'label' => $mod->getLabel()
+                        ];
+                    } catch (\Exception $e) {
+                        $secondaryModules[] = ['name' => $name, 'label' => vtranslate($name)];
+                    }
+                }
+            }
+        }
+
+        return view('reports::edit', compact('report', 'folders', 'activeModules', 'users', 'groups', 'roles', 'secondaryModules'));
     }
 
     public function update(Request $request, $id)

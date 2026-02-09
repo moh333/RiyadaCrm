@@ -38,7 +38,7 @@
                                 <tr>
                                     @if(count($data) > 0)
                                         @foreach(array_keys($data[0]) as $header)
-                                            <th class="px-4 py-3">{{ str_replace('_', ' ', $header) }}</th>
+                                            <th class="px-4 py-3">{{ vtranslate($header) }}</th>
                                         @endforeach
                                     @endif
                                 </tr>

@@ -6,6 +6,10 @@ use App\Modules\Tenant\Reports\Domain\Models\Report;
 use App\Modules\Tenant\Reports\Domain\Models\ReportModule;
 use App\Modules\Tenant\Reports\Domain\Models\SelectColumn;
 use App\Modules\Tenant\Reports\Domain\Models\SelectQuery;
+use App\Models\Tenant\VtigerReportShareuser;
+use App\Models\Tenant\VtigerReportSharegroup;
+use App\Models\Tenant\VtigerReportSharerole;
+use App\Models\Tenant\VtigerScheduledReport;
 use Illuminate\Support\Facades\DB;
 
 class ReportService
@@ -55,6 +59,30 @@ class ReportService
 
             // 5. TODO: Add Filters (Standard and Advanced)
 
+            // 6. Handle Sharing
+            if (isset($data['sharing'])) {
+                foreach ($data['sharing'] as $shareString) {
+                    [$type, $id] = explode(':', $shareString);
+                    if ($type === 'users') {
+                        VtigerReportShareuser::create(['reportid' => $report->reportid, 'userid' => $id]);
+                    } elseif ($type === 'groups') {
+                        VtigerReportSharegroup::create(['reportid' => $report->reportid, 'groupid' => $id]);
+                    } elseif ($type === 'roles' || $type === 'rolesandsubordinates') {
+                        VtigerReportSharerole::create(['reportid' => $report->reportid, 'roleid' => $id]);
+                    }
+                }
+            }
+
+            // 7. Handle Scheduling
+            if (isset($data['is_scheduled']) && $data['is_scheduled']) {
+                VtigerScheduledReport::create([
+                    'reportid' => $report->reportid,
+                    'schdate' => $data['sch_frequency'],
+                    'schtime' => $data['schtime'],
+                    'recipients' => isset($data['sch_recipients']) ? implode(',', $data['sch_recipients']) : ''
+                ]);
+            }
+
             return $report;
         });
     }
@@ -86,6 +114,34 @@ class ReportService
                         'columnname' => $colString
                     ]);
                 }
+            }
+
+            // Update Sharing
+            $report->shareUsers()->delete();
+            $report->shareGroups()->delete();
+            $report->shareRoles()->delete();
+            if (isset($data['sharing'])) {
+                foreach ($data['sharing'] as $shareString) {
+                    [$type, $id] = explode(':', $shareString);
+                    if ($type === 'users') {
+                        VtigerReportShareuser::create(['reportid' => $report->reportid, 'userid' => $id]);
+                    } elseif ($type === 'groups') {
+                        VtigerReportSharegroup::create(['reportid' => $report->reportid, 'groupid' => $id]);
+                    } elseif ($type === 'roles' || $type === 'rolesandsubordinates') {
+                        VtigerReportSharerole::create(['reportid' => $report->reportid, 'roleid' => $id]);
+                    }
+                }
+            }
+
+            // Update Scheduling
+            $report->scheduledReport()->delete();
+            if (isset($data['is_scheduled']) && $data['is_scheduled']) {
+                VtigerScheduledReport::create([
+                    'reportid' => $report->reportid,
+                    'schdate' => $data['sch_frequency'],
+                    'schtime' => $data['schtime'],
+                    'recipients' => isset($data['sch_recipients']) ? implode(',', $data['sch_recipients']) : ''
+                ]);
             }
 
             return $report->fresh();

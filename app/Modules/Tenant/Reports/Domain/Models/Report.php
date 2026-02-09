@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\Tenant\VtigerReportShareuser;
+use App\Models\Tenant\VtigerReportSharegroup;
+use App\Models\Tenant\VtigerReportSharerole;
+use App\Models\Tenant\VtigerScheduledReport;
 
 class Report extends Model
 {
@@ -43,5 +47,25 @@ class Report extends Model
     public function summaries(): HasMany
     {
         return $this->hasMany(ReportSummary::class, 'reportsummaryid', 'reportid');
+    }
+
+    public function shareUsers(): HasMany
+    {
+        return $this->hasMany(VtigerReportShareuser::class, 'reportid', 'reportid');
+    }
+
+    public function shareGroups(): HasMany
+    {
+        return $this->hasMany(VtigerReportSharegroup::class, 'reportid', 'reportid');
+    }
+
+    public function shareRoles(): HasMany
+    {
+        return $this->hasMany(VtigerReportSharerole::class, 'reportid', 'reportid');
+    }
+
+    public function scheduledReport(): HasOne
+    {
+        return $this->hasOne(VtigerScheduledReport::class, 'reportid', 'reportid');
     }
 }

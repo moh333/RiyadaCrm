@@ -129,16 +129,44 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
             ->where('tabid', $tabId)
             ->value('name');
 
-        // Load related lists
+        // Load related lists (typically children or many-to-many)
         $relations = DB::connection($this->connection)
             ->table('vtiger_relatedlists')
             ->where('tabid', $tabId)
             ->orderBy('sequence')
             ->get();
 
-        return $relations->map(function ($row) use ($sourceModule) {
+        $collection = $relations->map(function ($row) use ($sourceModule) {
             return $this->hydrateRelation($row, $sourceModule);
         })->filter();
+
+        // Load lookup fields (typically parents)
+        $lookups = DB::connection($this->connection)
+            ->table('vtiger_field')
+            ->join('vtiger_fieldmodulerel', 'vtiger_field.fieldid', '=', 'vtiger_fieldmodulerel.fieldid')
+            ->where('vtiger_field.tabid', $tabId)
+            ->where('vtiger_field.presence', 'in', [0, 2])
+            ->select('vtiger_field.fieldname', 'vtiger_fieldmodulerel.relmodule', 'vtiger_field.fieldlabel')
+            ->get();
+
+        foreach ($lookups as $lookup) {
+            $targetModule = DB::connection($this->connection)
+                ->table('vtiger_tab')
+                ->where('tabid', $lookup->relmodule)
+                ->value('name');
+
+            if ($targetModule && !$collection->contains(fn($r) => $r->getTargetModule() === $targetModule)) {
+                $collection->push(RelationDefinition::create(
+                    sourceModule: $sourceModule,
+                    targetModule: $targetModule,
+                    relationType: 'lookup',
+                    relatedField: $lookup->fieldname,
+                    label: $lookup->fieldlabel ?? $targetModule,
+                ));
+            }
+        }
+
+        return $collection->values();
     }
 
     /**
@@ -312,17 +340,17 @@ class VtigerModuleMetadataRepository implements ModuleMetadataRepositoryInterfac
      */
     private function determineRelationType(object $row): string
     {
-        // Check if it's a many-to-many relation (has intermediate table)
-        if (!empty($row->name) && str_contains($row->name, 'rel')) {
+        // Check if it's a many-to-many relation (has intermediate table or function name contains "rel")
+        if (!empty($row->name) && (str_contains($row->name, 'rel') || str_contains($row->name, 'Campaign'))) {
             return 'N:N';
         }
 
-        // Check if it's a lookup field
-        if (!empty($row->name) && !str_contains($row->name, 'id')) {
-            return 'lookup';
+        // get_dependents_list and similar typically mean one-to-many (parent to child)
+        if (!empty($row->name) && (str_contains($row->name, 'dependents') || str_contains($row->name, 'get_tickets') || str_contains($row->name, 'get_activities'))) {
+            return '1:N';
         }
 
-        // Default to one-to-many
+        // Default to one-to-many for related lists
         return '1:N';
     }
 

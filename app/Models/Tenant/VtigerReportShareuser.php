@@ -14,6 +14,9 @@ class VtigerReportShareuser extends Model
      *
      * @var array
      */
+    
+    protected $table = 'vtiger_report_shareusers';
+    public $timestamps = false;
     protected $guarded = [];
 
     /**

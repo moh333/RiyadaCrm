@@ -79,11 +79,12 @@
                                                 <td class="px-4 py-3">
                                                     <div class="fw-bold text-dark">{{ $report->reportname }}</div>
                                                     <div class="small text-muted text-truncate" style="max-width: 300px;">
-                                                        {{ $report->description }}</div>
+                                                        {{ $report->description }}
+                                                    </div>
                                                 </td>
                                                 <td class="px-4 py-3">
                                                     <span
-                                                        class="badge bg-soft-info text-info rounded-pill px-3">{{ $report->modules->primarymodule ?? '-' }}</span>
+                                                        class="badge bg-soft-info text-info rounded-pill px-3">{{ vtranslate($report->modules->primarymodule ?? '-') }}</span>
                                                 </td>
                                                 <td class="px-4 py-3 text-muted">
                                                     <i class="bi bi-folder2 me-1"></i>
@@ -120,7 +121,8 @@
                                                         <h5 class="text-muted">{{ __('reports::reports.no_reports_found') }}
                                                         </h5>
                                                         <p class="text-muted small">
-                                                            {{ __('reports::reports.start_by_creating_new_report') }}</p>
+                                                            {{ __('reports::reports.start_by_creating_new_report') }}
+                                                        </p>
                                                         <a href="{{ route('tenant.reports.create') }}"
                                                             class="btn btn-primary rounded-pill px-4 mt-2">
                                                             {{ __('reports::reports.create_report') }}

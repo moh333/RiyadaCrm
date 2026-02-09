@@ -18,7 +18,8 @@
                         </ol>
                     </nav>
                     <h1 class="h3 mb-0 text-main fw-bold">{{ __('reports::reports.edit_report') }}:
-                        {{ $report->reportname }}</h1>
+                        {{ $report->reportname }}
+                    </h1>
                 </div>
             </div>
 
@@ -34,9 +35,17 @@
                             <div class="step-icon mb-1 mx-auto bg-light text-muted rounded-circle">2</div>
                             <div class="small fw-bold">{{ __('reports::reports.select_columns') }}</div>
                         </div>
-                        <div class="flex-fill py-3 step-item" id="step-3-indicator">
+                        <div class="flex-fill py-3 border-end step-item" id="step-3-indicator">
                             <div class="step-icon mb-1 mx-auto bg-light text-muted rounded-circle">3</div>
                             <div class="small fw-bold">{{ __('reports::reports.filters') }}</div>
+                        </div>
+                        <div class="flex-fill py-3 border-end step-item" id="step-4-indicator">
+                            <div class="step-icon mb-1 mx-auto bg-light text-muted rounded-circle">4</div>
+                            <div class="small fw-bold">{{ __('reports::reports.sharing') }}</div>
+                        </div>
+                        <div class="flex-fill py-3 step-item" id="step-5-indicator">
+                            <div class="step-icon mb-1 mx-auto bg-light text-muted rounded-circle">5</div>
+                            <div class="small fw-bold">{{ __('reports::reports.scheduling') }}</div>
                         </div>
                     </div>
                 </div>
@@ -90,8 +99,8 @@
                                         <input type="hidden" name="primarymodule"
                                             value="{{ $report->modules->primarymodule ?? '' }}">
                                         <div class="form-text mt-1 small text-warning"><i
-                                                class="bi bi-exclamation-triangle me-1"></i>Primary module cannot be changed
-                                            after creation.</div>
+                                                class="bi bi-exclamation-triangle me-1"></i>{{ __('reports::reports.primary_module_change_warning') }}
+                                        </div>
                                     </div>
 
                                     <div class="mb-4">
@@ -102,10 +111,8 @@
                                         @endphp
                                         <select name="secondarymodules[]" id="secondary-modules"
                                             class="form-select rounded-3 select2" multiple>
-                                            @foreach($secondary as $mod)
-                                                @if($mod)
-                                                    <option value="{{ $mod }}" selected>{{ $mod }}</option>
-                                                @endif
+                                            @foreach($secondaryModules as $mod)
+                                                <option value="{{ $mod['name'] }}" selected>{{ $mod['label'] }}</option>
                                             @endforeach
                                         </select>
                                         <div class="form-text mt-2">{{ __('reports::reports.secondary_modules_help') }}
@@ -160,7 +167,8 @@
                                                         <div>
                                                             <div class="fw-bold small">{{ str_replace('_', ' ', $label) }}</div>
                                                             <div class="text-muted" style="font-size: 10px;">
-                                                                {{ $mod }}:{{ $field }}</div>
+                                                                {{ $mod }}:{{ $field }}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <input type="hidden" name="columns[]" value="{{ $column->columnname }}">
@@ -185,6 +193,134 @@
                         <div class="step-content d-none" id="step-3-content">
                             <!-- Filter UI -->
                             @include('reports::partials.filters_step', ['selectQuery' => $report->selectQuery])
+                        </div>
+
+                        <!-- Step 4: Sharing -->
+                        <div class="step-content d-none" id="step-4-content">
+                            <div class="row justify-content-center">
+                                <div class="col-md-10">
+                                    <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                                        <i class="bi bi-share text-primary"></i>
+                                        {{ __('reports::reports.sharing_settings') }}
+                                    </h5>
+
+                                    <div class="card bg-light border-0 rounded-4">
+                                        <div class="card-body p-4">
+                                            <div class="row g-3 align-items-end mb-4">
+                                                <div class="col-md-5">
+                                                    <label
+                                                        class="form-label small fw-bold">{{ __('reports::reports.share_with') }}</label>
+                                                    <select id="share-type" class="form-select rounded-3">
+                                                        <option value="users">{{ __('reports::reports.users') }}</option>
+                                                        <option value="groups">{{ __('reports::reports.groups') }}</option>
+                                                        <option value="roles">{{ __('reports::reports.roles') }}</option>
+                                                        <option value="rolesandsubordinates">
+                                                            {{ __('reports::reports.rolesandsubordinates') }}
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <label
+                                                        class="form-label small fw-bold">{{ __('reports::reports.select_entity') }}</label>
+                                                    <select id="share-entity" class="form-select rounded-3 select2-sharing">
+                                                        <!-- Populated via JS -->
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <button type="button" id="add-share-btn"
+                                                        class="btn btn-primary w-100 rounded-3">
+                                                        <i class="bi bi-plus-lg"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div id="sharing-list" class="d-flex flex-wrap gap-2">
+                                                @php
+                                                    $sharedEntities = [];
+                                                    foreach ($report->shareUsers as $u)
+                                                        $sharedEntities[] = ['type' => 'users', 'id' => $u->userid, 'text' => ($u->user->first_name ?? '') . ' ' . ($u->user->last_name ?? 'User ' . $u->userid)];
+                                                    foreach ($report->shareGroups as $g)
+                                                        $sharedEntities[] = ['type' => 'groups', 'id' => $g->groupid, 'text' => $g->groupname ?? 'Group ' . $g->groupid];
+                                                    foreach ($report->shareRoles as $r)
+                                                        $sharedEntities[] = ['type' => 'roles', 'id' => $r->roleid, 'text' => $r->rolename ?? 'Role ' . $r->roleid];
+                                                @endphp
+
+                                                @foreach($sharedEntities as $entity)
+                                                    <div class="share-item badge bg-white border text-dark p-2 rounded-pivot d-flex align-items-center gap-2"
+                                                        data-value="{{ $entity['type'] }}:{{ $entity['id'] }}">
+                                                        <span><strong>{{ $entity['type'] }}:</strong>
+                                                            {{ $entity['text'] }}</span>
+                                                        <input type="hidden" name="sharing[]"
+                                                            value="{{ $entity['type'] }}:{{ $entity['id'] }}">
+                                                        <i class="bi bi-x-circle text-danger cursor-pointer delete-share"></i>
+                                                    </div>
+                                                @endforeach
+
+                                                <div
+                                                    class="text-muted small w-100 text-center py-3 empty-sharing {{ count($sharedEntities) > 0 ? 'd-none' : '' }}">
+                                                    {{ __('reports::reports.not_shared_yet') }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 5: Scheduling -->
+                        <div class="step-content d-none" id="step-5-content">
+                            <div class="row justify-content-center">
+                                <div class="col-md-8">
+                                    <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                                        <i class="bi bi-alarm text-primary"></i>
+                                        {{ __('reports::reports.schedule_report') }}
+                                    </h5>
+
+                                    @php $isSched = !empty($report->scheduledReport); @endphp
+                                    <div class="form-check form-switch mb-4">
+                                        <input class="form-check-input" type="checkbox" name="is_scheduled"
+                                            id="is_scheduled" value="1" {{ $isSched ? 'checked' : '' }}>
+                                        <label class="form-check-label fw-bold"
+                                            for="is_scheduled">{{ __('reports::reports.enable_scheduling') }}</label>
+                                    </div>
+
+                                    <div id="scheduling-options"
+                                        class="{{ $isSched ? '' : 'd-none' }} border rounded-4 p-4 bg-light">
+                                        <div class="mb-3">
+                                            <label
+                                                class="form-label small fw-bold">{{ __('reports::reports.frequency') }}</label>
+                                            <select name="sch_frequency" class="form-select rounded-3">
+                                                <option value="1" {{ ($report->scheduledReport->sch_frequency ?? '') == 1 ? 'selected' : '' }}>{{ __('reports::reports.daily') }}</option>
+                                                <option value="2" {{ ($report->scheduledReport->sch_frequency ?? '') == 2 ? 'selected' : '' }}>{{ __('reports::reports.weekly') }}</option>
+                                                <option value="3" {{ ($report->scheduledReport->sch_frequency ?? '') == 3 ? 'selected' : '' }}>{{ __('reports::reports.monthly') }}</option>
+                                                <option value="4" {{ ($report->scheduledReport->sch_frequency ?? '') == 4 ? 'selected' : '' }}>{{ __('reports::reports.annually') }}</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label
+                                                class="form-label small fw-bold">{{ __('reports::reports.time') }}</label>
+                                            <input type="time" name="schtime" class="form-control rounded-3"
+                                                value="{{ $report->scheduledReport->schtime ?? '09:00' }}">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label
+                                                class="form-label small fw-bold">{{ __('reports::reports.recipients') }}</label>
+                                            @php
+                                                $recipients = explode(',', $report->scheduledReport->recipients ?? '');
+                                            @endphp
+                                            <select name="sch_recipients[]" class="form-select rounded-3 select2" multiple>
+                                                @foreach($users as $user)
+                                                    <option value="{{ $user->id }}" {{ in_array($user->id, $recipients) ? 'selected' : '' }}>
+                                                        {{ $user->first_name }} {{ $user->last_name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="card-footer bg-white border-top p-4 d-flex justify-content-between align-items-center">
@@ -256,7 +392,11 @@
     @push('scripts')
         <script>
             let currentStep = 1;
-            const totalSteps = 3;
+            const totalSteps = 5;
+
+            const users = @json($users);
+            const groups = @json($groups);
+            const roles = @json($roles);
 
             function updateStep() {
                 $('.step-content').addClass('d-none');
@@ -303,6 +443,11 @@
                     loadModuleMetadata(primaryModule);
                 }
 
+                $('#secondary-modules').select2({
+                    maximumSelectionLength: 2,
+                    placeholder: "{{ __('reports::reports.select_secondary_modules') }}"
+                });
+
                 $('.delete-field').on('click', function () {
                     $(this).closest('.selected-field-row').remove();
                     if ($('#selected-fields-list .selected-field-row').length === 0) {
@@ -315,55 +460,86 @@
                 // Fetch valid secondary modules via AJAX
                 $.get("{{ url('test/modules') }}/" + moduleName, function (data) {
                     const secondarySelect = $('#secondary-modules');
-                    // We don't empty if we want to keep selected ones, but Select2 might handle it if we re-append
-                    // Actually, let's keep the existing options and just add missing ones
-                    const existingVals = secondarySelect.val() || [];
-
+                    // We don't empty here on edit page to keep existing selected options
                     if (data.relations) {
                         data.relations.forEach(rel => {
                             if (!secondarySelect.find(`option[value="${rel.target}"]`).length) {
-                                secondarySelect.append(`<option value="${rel.target}">${rel.target}</option>`);
+                                secondarySelect.append(`<option value="${rel.target}">${rel.label || rel.target}</option>`);
                             }
                         });
                     }
-                    secondarySelect.trigger('change');
 
-                    // Step 2: Populate fields
-                    populateFieldsStep(moduleName, data.fields);
+                    if (secondarySelect.hasClass('select2-hidden-accessible')) {
+                        secondarySelect.select2('destroy');
+                    }
+                    secondarySelect.select2({
+                        maximumSelectionLength: 2,
+                        placeholder: "{{ __('reports::reports.select_secondary_modules') }}"
+                    });
+
+                    // Store primary fields for later
+                    window.primaryModuleData = data;
                 });
             }
 
-            function populateFieldsStep(primaryModule, primaryFields) {
+            // When moving to Step 2, populate all fields for primary + selected secondary modules
+            $('#next-btn').on('click', function () {
+                if (currentStep === 2) {
+                    populateAllFields();
+                }
+            });
+
+            function populateAllFields() {
                 const accordion = $('#fields-accordion');
                 accordion.empty();
 
-                // Add Primary Module Section
-                let primaryHtml = `
-                            <div class="accordion-item border-0 mb-2 overflow-hidden rounded-3">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button bg-white fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#fields-${primaryModule}">
-                                        ${primaryModule}
-                                    </button>
-                                </h2>
-                                <div id="fields-${primaryModule}" class="accordion-collapse collapse show">
-                                    <div class="accordion-body p-2">
-                                        <div class="list-group list-group-flush">
-                        `;
+                if (!window.primaryModuleData) return;
 
-                primaryFields.forEach(field => {
-                    primaryHtml += `
-                                <div class="list-group-item field-item py-2 px-3 border-0 small d-flex align-items-center justify-content-between" 
-                                    data-module="${primaryModule}" data-field="${field.name}" data-label="${field.label}">
-                                    <span>${field.label}</span>
-                                    <i class="bi bi-plus-circle text-primary opacity-50"></i>
-                                </div>
-                            `;
+                // 1. Primary Module Fields
+                addModuleToAccordion(window.primaryModuleData.module.name, window.primaryModuleData.module.label, window.primaryModuleData.fields, true);
+
+                // 2. Secondary Modules Fields
+                const secondaryModules = $('#secondary-modules').val() || [];
+                secondaryModules.forEach(modName => {
+                    $.get("{{ url('test/modules') }}/" + modName, function (data) {
+                        addModuleToAccordion(data.module.name, data.module.label, data.fields, false);
+                    });
+                });
+            }
+
+            function addModuleToAccordion(moduleName, moduleLabel, fields, showDefault) {
+                const accordion = $('#fields-accordion');
+                const collapseId = `fields-${moduleName.replace(/[^a-zA-Z0-9]/g, '_')}`;
+
+                // Check if already exists in accordion to avoid duplicates on re-entry
+                if ($(`#${collapseId}`).length) return;
+
+                let html = `
+                                    <div class="accordion-item border-0 mb-2 overflow-hidden rounded-3">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button bg-white fw-bold shadow-none ${showDefault ? '' : 'collapsed'}" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}">
+                                                ${moduleLabel}
+                                            </button>
+                                        </h2>
+                                        <div id="${collapseId}" class="accordion-collapse collapse ${showDefault ? 'show' : ''}">
+                                            <div class="accordion-body p-2">
+                                                <div class="list-group list-group-flush">
+                                `;
+
+                fields.forEach(field => {
+                    html += `
+                                        <div class="list-group-item field-item py-2 px-3 border-0 small d-flex align-items-center justify-content-between" 
+                                            data-module="${moduleName}" data-field="${field.name}" data-label="${field.label}">
+                                            <span>${field.label}</span>
+                                            <i class="bi bi-plus-circle text-primary opacity-50"></i>
+                                        </div>
+                                    `;
                 });
 
-                primaryHtml += '</div></div></div></div>';
-                accordion.append(primaryHtml);
+                html += '</div></div></div></div>';
+                accordion.append(html);
 
-                // Click handler for field items
+                // Re-attach click handlers for the new items
                 $('.field-item').off('click').on('click', function () {
                     const mod = $(this).data('module');
                     const field = $(this).data('field');
@@ -380,20 +556,20 @@
                 if (exists) return;
 
                 $('#selected-fields-list').append(`
-                            <div class="selected-field-row p-3 rounded-3 d-flex align-items-center justify-content-between">
-                                <div class="d-flex align-items-center gap-3">
-                                    <i class="bi bi-grip-vertical text-muted"></i>
-                                    <div>
-                                        <div class="fw-bold small">${label}</div>
-                                        <div class="text-muted" style="font-size: 10px;">${mod}:${field}</div>
+                                    <div class="selected-field-row p-3 rounded-3 d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <i class="bi bi-grip-vertical text-muted"></i>
+                                            <div>
+                                                <div class="fw-bold small">${label}</div>
+                                                <div class="text-muted" style="font-size: 10px;">${mod}:${field}</div>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" name="columns[]" value="${value}">
+                                        <button type="button" class="btn btn-link btn-sm text-danger p-0 delete-field">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
                                     </div>
-                                </div>
-                                <input type="hidden" name="columns[]" value="${value}">
-                                <button type="button" class="btn btn-link btn-sm text-danger p-0 delete-field">
-                                    <i class="bi bi-x-circle"></i>
-                                </button>
-                            </div>
-                        `);
+                                `);
 
                 $('.delete-field').off('click').on('click', function () {
                     $(this).closest('.selected-field-row').remove();
@@ -402,6 +578,69 @@
                     }
                 });
             }
+            // Sharing JS
+            function populateShareEntities() {
+                const type = $('#share-type').val();
+                const entitySelect = $('#share-entity');
+                entitySelect.empty();
+
+                let data = [];
+                if (type === 'users') {
+                    data = users.map(u => ({ id: u.id, text: (u.first_name || '') + ' ' + (u.last_name || '') }));
+                } else if (type === 'groups') {
+                    data = groups.map(g => ({ id: g.groupid, text: g.groupname }));
+                } else if (type === 'roles' || type === 'rolesandsubordinates') {
+                    data = roles.map(r => ({ id: r.roleid, text: r.rolename }));
+                }
+
+                data.forEach(item => {
+                    entitySelect.append(`<option value="${item.id}">${item.text}</option>`);
+                });
+            }
+
+            $('#share-type').on('change', populateShareEntities);
+            populateShareEntities();
+
+            $('#add-share-btn').on('click', function () {
+                const type = $('#share-type').val();
+                const entityId = $('#share-entity').val();
+                const entityText = $('#share-entity option:selected').text();
+
+                if (!entityId) return;
+
+                const value = type + ':' + entityId;
+                if ($(`.share-item[data-value="${value}"]`).length) return;
+
+                $('.empty-sharing').hide();
+                $('#sharing-list').append(`
+                                    <div class="share-item badge bg-white border text-dark p-2 rounded-pivot d-flex align-items-center gap-2" data-value="${value}">
+                                        <span><strong>${type}:</strong> ${entityText}</span>
+                                        <input type="hidden" name="sharing[]" value="${value}">
+                                        <i class="bi bi-x-circle text-danger cursor-pointer delete-share"></i>
+                                    </div>
+                                `);
+
+                attachDeleteShareEvents();
+            });
+
+            function attachDeleteShareEvents() {
+                $('.delete-share').off('click').on('click', function () {
+                    $(this).closest('.share-item').remove();
+                    if ($('#sharing-list .share-item').length === 0) {
+                        $('.empty-sharing').show();
+                    }
+                });
+            }
+            attachDeleteShareEvents();
+
+            // Scheduling JS
+            $('#is_scheduled').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('#scheduling-options').removeClass('d-none');
+                } else {
+                    $('#scheduling-options').addClass('d-none');
+                }
+            });
         </script>
     @endpush
 @endsection

@@ -34,6 +34,7 @@ use App\Modules\Tenant\Users\Presentation\Controllers\SharingRulesController;
 use App\Modules\Tenant\Users\Presentation\Controllers\UsersController;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Features\UserImpersonation;
+use App\Modules\Core\VtigerModules\Contracts\ModuleRegistryInterface;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
 /*
@@ -127,6 +128,63 @@ Route::middleware([
             Route::delete('/{id}', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'destroy'])->name('destroy');
             Route::get('/{id}/run', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'run'])->name('run');
             Route::get('/{id}/export', [\App\Modules\Tenant\Reports\Presentation\Controllers\ReportsController::class, 'export'])->name('export');
+        });
+
+        // Test Routes for Vtiger Module Management Engine
+        Route::prefix('test/modules')->group(function () {
+            Route::get('/', function (ModuleRegistryInterface $registry) {
+                $modules = $registry->all();
+                return response()->json([
+                    'total' => $modules->count(),
+                    'modules' => $modules->map(fn($m) => [
+                        'id' => $m->getId(),
+                        'name' => $m->getName(),
+                        'label' => $m->getLabel(),
+                    ])->values(),
+                ]);
+            });
+
+            Route::get('/{module}', function (string $module, ModuleRegistryInterface $registry) {
+                try {
+                    $moduleDefinition = $registry->get($module);
+                    return response()->json([
+                        'module' => [
+                            'id' => $moduleDefinition->getId(),
+                            'name' => $moduleDefinition->getName(),
+                            'label' => $moduleDefinition->getLabel(),
+                            'base_table' => $moduleDefinition->getBaseTable(),
+                            'base_index' => $moduleDefinition->getBaseIndex(),
+                            'is_entity' => $moduleDefinition->isEntity(),
+                            'is_custom' => $moduleDefinition->isCustom(),
+                            'is_active' => $moduleDefinition->isActive(),
+                        ],
+                        'fields' => $moduleDefinition->fields()->map(fn($f) => [
+                            'name' => $f->getFieldName(),
+                            'label' => $f->getLabel(),
+                            'column' => $f->getColumnName(),
+                            'table' => $f->getTableName(),
+                            'uitype' => $f->getUitype(),
+                            'type' => $f->getFieldType(),
+                            'is_mandatory' => $f->isMandatory(),
+                            'is_custom' => $f->isCustomField(),
+                            'is_editable' => $f->isEditable(),
+                        ])->values(),
+                        'relations' => $moduleDefinition->relations()->map(fn($r) => [
+                            'target' => $r->getTargetModule(),
+                            'type' => $r->getRelationType(),
+                            'field' => $r->getRelatedField(),
+                            'label' => $r->getLabel(),
+                        ])->values(),
+                    ]);
+                } catch (\Exception $e) {
+                    return response()->json(['error' => $e->getMessage()], 404);
+                }
+            });
+
+            Route::post('/refresh', function (ModuleRegistryInterface $registry) {
+                $registry->refresh();
+                return response()->json(['message' => 'Cache refreshed']);
+            });
         });
 
         // Custom Fields Management (Generic for all modules)

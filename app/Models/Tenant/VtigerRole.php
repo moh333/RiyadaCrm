@@ -16,6 +16,8 @@ class VtigerRole extends Model
      */
     protected $guarded = [];
 
+    protected $table = 'vtiger_role';
+
     /**
      * Get the attributes that should be cast.
      *

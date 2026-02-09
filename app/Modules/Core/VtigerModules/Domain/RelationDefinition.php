@@ -97,6 +97,9 @@ class RelationDefinition
 
     public function getLabel(): string
     {
+        if (function_exists('vtranslate')) {
+            return vtranslate($this->label, $this->targetModule);
+        }
         return $this->label;
     }
 
