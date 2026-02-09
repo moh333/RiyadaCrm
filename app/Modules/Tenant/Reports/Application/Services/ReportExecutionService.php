@@ -103,13 +103,15 @@ class ReportExecutionService
      */
     private function tableExists(string $table): bool
     {
-        if (isset($this->tableMetadata[$table])) {
+        $realTable = $this->getRealTableName($table);
+
+        if (isset($this->tableMetadata[$realTable])) {
             return true;
         }
 
-        $exists = DB::connection('tenant')->getSchemaBuilder()->hasTable($table);
+        $exists = DB::connection('tenant')->getSchemaBuilder()->hasTable($realTable);
         if ($exists) {
-            $this->tableMetadata[$table] = null; // Cache existence
+            $this->tableMetadata[$realTable] = null; // Cache existence
         }
 
         return $exists;
@@ -120,16 +122,29 @@ class ReportExecutionService
      */
     private function columnExists(string $table, string $column): bool
     {
-        if (!$this->tableExists($table)) {
+        $realTable = $this->getRealTableName($table);
+
+        if (!$this->tableExists($realTable)) {
             return false;
         }
 
         // Fetch all columns for the table once and cache them
-        if ($this->tableMetadata[$table] === null) {
-            $this->tableMetadata[$table] = DB::connection('tenant')->getSchemaBuilder()->getColumnListing($table);
+        if ($this->tableMetadata[$realTable] === null) {
+            $this->tableMetadata[$realTable] = DB::connection('tenant')->getSchemaBuilder()->getColumnListing($realTable);
         }
 
-        return in_array($column, $this->tableMetadata[$table]);
+        return in_array($column, $this->tableMetadata[$realTable]);
+    }
+
+    /**
+     * Resolve alias to real table name
+     */
+    private function getRealTableName(string $table): string
+    {
+        if (str_starts_with($table, 'vtiger_crmentity') && $table !== 'vtiger_crmentity') {
+            return 'vtiger_crmentity';
+        }
+        return $table;
     }
 
     /**
@@ -153,7 +168,46 @@ class ReportExecutionService
         if (!$targetModule)
             return;
 
-        // Simplistic join logic for now
+        $primaryTable = $primaryModule->getBaseTable();
+        $primaryIndex = $primaryModule->getBaseIndex();
+        $secondaryTable = $targetModule->getBaseTable();
+        $secondaryIndex = $targetModule->getBaseIndex();
+
+        if (in_array($secondaryTable, $joinedTables)) {
+            return;
+        }
+
+        // 1. Direct link: Primary table points to secondary (e.g. Contact has accountid)
+        if ($this->columnExists($primaryTable, $secondaryIndex)) {
+            $query->leftJoin($secondaryTable, "{$secondaryTable}.{$secondaryIndex}", '=', "{$primaryTable}.{$secondaryIndex}");
+            $joinedTables[] = $secondaryTable;
+        }
+        // 2. Inverse link: Secondary table points to primary (e.g. Ticket has contactid/contact_id)
+        elseif ($this->columnExists($secondaryTable, $primaryIndex) || $this->columnExists($secondaryTable, str_replace('id', '_id', $primaryIndex))) {
+            $linkCol = $this->columnExists($secondaryTable, $primaryIndex) ? $primaryIndex : str_replace('id', '_id', $primaryIndex);
+            $query->leftJoin($secondaryTable, "{$secondaryTable}.{$linkCol}", '=', "{$primaryTable}.{$primaryIndex}");
+            $joinedTables[] = $secondaryTable;
+        }
+        // 3. Fallback for CRM Entities: Linking through crmentity handles most Vtiger relations
+        elseif ($primaryModule->isEntity() && $targetModule->isEntity()) {
+            // We need to join the secondary table on its own index matching the CRM ID
+            // But we need a way to link it to the primary table. 
+            // Often this is via vtiger_crmentityrel or just direct parent/child.
+            // For now, if no direct link found, try linking to the primary base index via secondaryIndex if it exists
+            if ($this->columnExists($secondaryTable, 'parent_id')) {
+                $query->leftJoin($secondaryTable, "{$secondaryTable}.parent_id", '=', "{$primaryTable}.{$primaryIndex}");
+                $joinedTables[] = $secondaryTable;
+            }
+        }
+
+        // Join secondary custom fields table
+        if (in_array($secondaryTable, $joinedTables)) {
+            $secondaryCfTable = "{$secondaryTable}cf";
+            if ($this->tableExists($secondaryCfTable) && !in_array($secondaryCfTable, $joinedTables)) {
+                $query->leftJoin($secondaryCfTable, "{$secondaryCfTable}.{$secondaryIndex}", '=', "{$secondaryTable}.{$secondaryIndex}");
+                $joinedTables[] = $secondaryCfTable;
+            }
+        }
     }
 
     private function addColumnToSelect(Builder $query, string $vtigerColumn, array &$joinedTables): void
@@ -182,20 +236,38 @@ class ReportExecutionService
             $table = 'vtiger_crmentity' . $module->getName();
         }
 
-        // Picklist logic
-        if (in_array($field->getUitype(), [15, 16, 33]) && str_starts_with($table, 'vtiger_')) {
-            $column = $fieldName;
+        // Picklist logic: Check if the column exists in the base table first (Vtiger duplicates picklist values there)
+        if (in_array($field->getUitype(), [15, 16, 33])) {
+            $baseTable = $module->getBaseTable();
+            if ($this->columnExists($baseTable, $fieldName)) {
+                $table = $baseTable;
+                $column = $fieldName;
+            }
         }
 
         // Only add if table is joined
         if (!in_array($table, $joinedTables)) {
-            $primaryModule = $this->getModule($field->getModule());
-            if ($primaryModule && $table !== $primaryModule->getBaseTable()) {
-                $table = $primaryModule->getBaseTable();
+            // Try fallback to base table if not joined
+            $baseTable = $module->getBaseTable();
+            if (in_array($baseTable, $joinedTables) && $this->columnExists($baseTable, $column)) {
+                $table = $baseTable;
             }
         }
 
         if (!in_array($table, $joinedTables)) {
+            // Last resort: If it's a core crmentity field, use the primary crmentity alias
+            if ($column === 'smownerid' || $column === 'createdtime' || $column === 'modifiedtime') {
+                foreach ($joinedTables as $jt) {
+                    if (str_starts_with($jt, 'vtiger_crmentity')) {
+                        $table = $jt;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!in_array($table, $joinedTables)) {
+            \Log::warning("Skipping column selection from unjoined table: {$table}.{$column} for field {$fieldName}");
             return;
         }
 

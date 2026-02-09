@@ -323,8 +323,8 @@ class ReportsController extends Controller
     protected function exportToExcel($report, array $data, string $filename): StreamedResponse
     {
         $headers = [
-            'Content-Type' => 'text/plain; charset=UTF-16LE',
-            'Content-Disposition' => "attachment; filename=\"{$filename}.txt\"",
+            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-16LE',
+            'Content-Disposition' => "attachment; filename=\"{$filename}.xls\"",
             'Pragma' => 'no-cache',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
             'Expires' => '0'
