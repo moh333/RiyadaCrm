@@ -178,10 +178,13 @@ class ReportsController extends Controller
     /**
      * Map raw data keys (Module_Field) to translated labels
      */
-    private function translateData(array $data, Report $report): array
+    private function translateData($rawData, Report $report): array
     {
-        if (empty($data))
+        if ($rawData->isEmpty())
             return [];
+
+        // Increase memory limit for processing
+        ini_set('memory_limit', '512M');
 
         $headerMap = [];
         if ($report->selectQuery && $report->selectQuery->columns) {
@@ -196,15 +199,14 @@ class ReportsController extends Controller
             }
         }
 
-        return array_map(function ($row) use ($headerMap) {
+        return $rawData->map(function ($row) use ($headerMap) {
             $newRow = [];
-            foreach ($row as $key => $value) {
+            foreach ((array) $row as $key => $value) {
                 $translatedKey = $headerMap[$key] ?? $key;
-                // Keep value as-is from database (already UTF-8)
                 $newRow[$translatedKey] = $value ?? '';
             }
             return $newRow;
-        }, $data);
+        })->all();
     }
 
     public function edit($id)

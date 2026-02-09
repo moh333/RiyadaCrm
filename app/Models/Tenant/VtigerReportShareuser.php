@@ -14,7 +14,7 @@ class VtigerReportShareuser extends Model
      *
      * @var array
      */
-    
+
     protected $table = 'vtiger_report_shareusers';
     public $timestamps = false;
     protected $guarded = [];
@@ -29,5 +29,13 @@ class VtigerReportShareuser extends Model
         return [
             'id' => 'integer',
         ];
+    }
+
+    /**
+     * Get the user that this share belongs to
+     */
+    public function user()
+    {
+        return $this->belongsTo(VtigerUser::class, 'userid', 'id');
     }
 }

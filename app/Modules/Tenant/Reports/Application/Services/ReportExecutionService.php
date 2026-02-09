@@ -9,22 +9,21 @@ use Illuminate\Support\Facades\DB;
 
 class ReportExecutionService
 {
+    private array $tableMetadata = [];
+
     public function __construct(
         private readonly ModuleRegistryInterface $moduleRegistry
     ) {
     }
 
-    /**
-     * Execute a report and return results
-     * 
-     * @param Report $report
-     * @return array
-     */
-    public function run(Report $report): array
+    public function run(Report $report): \Illuminate\Support\Collection
     {
+        // Increase memory limit for potentially large reports
+        ini_set('memory_limit', '512M');
+
         $query = $this->buildQuery($report);
 
-        return $query->get()->map(fn($item) => (array) $item)->toArray();
+        return $query->get();
     }
 
     /**
@@ -45,23 +44,32 @@ class ReportExecutionService
         $baseTable = $primaryModule->getBaseTable();
         $baseIndex = $primaryModule->getBaseIndex();
 
-        // 1. Base Query from Primary Module (No alias needed for base table to allow direct access)
+        // Track joined tables to avoid "Unknown column" errors from unjoined tables
+        $joinedTables = [$baseTable];
+
+        // 1. Base Query from Primary Module
         $query = DB::connection('tenant')->table($baseTable);
 
-        // 2. Join Crmentity for Primary Module (Alias with module name to avoid collisions with secondary modules)
+        // 2. Join Crmentity for Primary Module
         $crmentityAlias = "vtiger_crmentity" . $primaryModule->getName();
-        $query->join("vtiger_crmentity as {$crmentityAlias}", "{$crmentityAlias}.crmid", '=', "{$baseTable}.{$baseIndex}");
-        $query->where("{$crmentityAlias}.deleted", 0);
+        if ($this->tableExists('vtiger_crmentity')) {
+            $query->join("vtiger_crmentity as {$crmentityAlias}", "{$crmentityAlias}.crmid", '=', "{$baseTable}.{$baseIndex}");
+            $query->where("{$crmentityAlias}.deleted", 0);
+            $joinedTables[] = $crmentityAlias;
+        }
 
         // 3. Join Custom Fields and other tables for Primary Module
-        // We look at all fields to find which tables they belong to
         $primaryTables = $primaryModule->fields()->pluck('tableName')->unique();
         foreach ($primaryTables as $table) {
             if ($table === $baseTable || $table === 'vtiger_crmentity' || empty($table)) {
                 continue;
             }
-            // Join on the base index
-            $query->leftJoin($table, "{$table}.{$baseIndex}", '=', "{$baseTable}.{$baseIndex}");
+
+            // Only join if the table exists and has the base index column
+            if ($this->columnExists($table, $baseIndex)) {
+                $query->leftJoin($table, "{$table}.{$baseIndex}", '=', "{$baseTable}.{$baseIndex}");
+                $joinedTables[] = $table;
+            }
         }
 
         // 4. Handle Secondary Modules (Joins)
@@ -71,23 +79,57 @@ class ReportExecutionService
             foreach ($modules as $modName) {
                 if (empty($modName))
                     continue;
-                $this->addSecondaryJoin($query, $primaryModule, $modName);
+                $this->addSecondaryJoin($query, $primaryModule, $modName, $joinedTables);
             }
         }
 
         // 5. Select Columns
         $selectedColumns = $report->selectQuery->columns;
         foreach ($selectedColumns as $col) {
-            $this->addColumnToSelect($query, $col->columnname);
+            $this->addColumnToSelect($query, $col->columnname, $joinedTables);
         }
 
         // 6. Apply Filters
         $filters = $report->selectQuery->criteria;
         foreach ($filters as $filter) {
-            $this->addFilterToQuery($query, $filter);
+            $this->addFilterToQuery($query, $filter, $joinedTables);
         }
 
         return $query;
+    }
+
+    /**
+     * Efficiently check if a table exists
+     */
+    private function tableExists(string $table): bool
+    {
+        if (isset($this->tableMetadata[$table])) {
+            return true;
+        }
+
+        $exists = DB::connection('tenant')->getSchemaBuilder()->hasTable($table);
+        if ($exists) {
+            $this->tableMetadata[$table] = null; // Cache existence
+        }
+
+        return $exists;
+    }
+
+    /**
+     * Efficiently check if a column exists in a table
+     */
+    private function columnExists(string $table, string $column): bool
+    {
+        if (!$this->tableExists($table)) {
+            return false;
+        }
+
+        // Fetch all columns for the table once and cache them
+        if ($this->tableMetadata[$table] === null) {
+            $this->tableMetadata[$table] = DB::connection('tenant')->getSchemaBuilder()->getColumnListing($table);
+        }
+
+        return in_array($column, $this->tableMetadata[$table]);
     }
 
     /**
@@ -105,20 +147,17 @@ class ReportExecutionService
         });
     }
 
-    private function addSecondaryJoin(Builder $query, $primaryModule, string $modName): void
+    private function addSecondaryJoin(Builder $query, $primaryModule, string $modName, array &$joinedTables): void
     {
         $targetModule = $this->getModule($modName);
         if (!$targetModule)
             return;
 
         // Simplistic join logic for now
-        // A full implementation would use vtiger_relatedlists or fieldmodulerel
     }
 
-    private function addColumnToSelect(Builder $query, string $vtigerColumn): void
+    private function addColumnToSelect(Builder $query, string $vtigerColumn, array &$joinedTables): void
     {
-        // VTiger column format: "Module:FieldName:Label:FieldType"
-        // e.g. "Accounts:accountname:Account_Name:V"
         $parts = explode(':', $vtigerColumn);
         if (count($parts) < 2)
             return;
@@ -131,7 +170,6 @@ class ReportExecutionService
             return;
 
         $field = $module->getField($fieldName);
-
         if (!$field)
             return;
 
@@ -144,10 +182,30 @@ class ReportExecutionService
             $table = 'vtiger_crmentity' . $module->getName();
         }
 
-        $query->addSelect("{$table}.{$column} as {$alias}");
+        // Picklist logic
+        if (in_array($field->getUitype(), [15, 16, 33]) && str_starts_with($table, 'vtiger_')) {
+            $column = $fieldName;
+        }
+
+        // Only add if table is joined
+        if (!in_array($table, $joinedTables)) {
+            $primaryModule = $this->getModule($field->getModule());
+            if ($primaryModule && $table !== $primaryModule->getBaseTable()) {
+                $table = $primaryModule->getBaseTable();
+            }
+        }
+
+        if (!in_array($table, $joinedTables)) {
+            return;
+        }
+
+        // Efficient column check
+        if ($this->columnExists($table, $column)) {
+            $query->addSelect("{$table}.{$column} as {$alias}");
+        }
     }
 
-    private function addFilterToQuery(Builder $query, $filter): void
+    private function addFilterToQuery(Builder $query, $filter, array $joinedTables): void
     {
         // TODO: Map VTiger comparators (e, c, bw, etc.) to SQL
     }
