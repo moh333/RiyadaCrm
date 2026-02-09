@@ -73,4 +73,57 @@ return [
     'recipients' => 'المستلمون',
     'select_secondary_modules' => 'اختر الموديولات الثانوية (حد أقصى 2)',
     'primary_module_change_warning' => 'لا يمكن تغيير الموديول الأساسي بعد الإنشاء.',
+
+    // Enhanced Scheduling
+    'run_report' => 'تشغيل التقرير',
+    'at_time' => 'في الوقت',
+    'on_these_days' => 'في هذه الأيام',
+    'monthly_by_date' => 'شهري حسب التاريخ',
+    'yearly' => 'سنوي',
+    'specific_date' => 'في تاريخ محدد',
+    'select_dates' => 'اختر التواريخ',
+    'choose_date' => 'اختر التاريخ',
+    'select_recipients' => 'اختر المستلمين',
+    'specific_email_address' => 'عنوان بريد إلكتروني محدد',
+    'separate_emails_with_comma' => 'افصل بين عناوين البريد الإلكتروني بفاصلة',
+    'file_format' => 'صيغة الملف',
+    'select' => 'اختر',
+    'next_trigger_time' => 'وقت التشغيل التالي',
+
+    // Day names
+    'sunday' => 'الأحد',
+    'monday' => 'الإثنين',
+    'tuesday' => 'الثلاثاء',
+    'wednesday' => 'الأربعاء',
+    'thursday' => 'الخميس',
+    'friday' => 'الجمعة',
+    'saturday' => 'السبت',
+
+    'unknown' => 'غير معروف',
+
+    // Report View Page
+    'report_created_success' => 'تم إنشاء التقرير بنجاح',
+    'report_updated_success' => 'تم تحديث التقرير بنجاح',
+    'total_rows' => 'إجمالي الصفوف',
+    'total_columns' => 'إجمالي الأعمدة',
+    'report_data' => 'بيانات التقرير',
+    'records' => 'سجلات',
+
+    // DataTables
+    'show' => 'عرض',
+    'entries' => 'مدخلات',
+    'showing' => 'عرض',
+    'to' => 'إلى',
+    'of' => 'من',
+    'no_entries' => 'لا توجد مدخلات',
+    'search' => 'بحث',
+    'view' => 'عرض',
+
+    // Delete Confirmation
+    'confirm_delete' => 'تأكيد الحذف',
+    'delete_report_confirmation' => 'هل أنت متأكد من حذف هذا التقرير؟ لا يمكن التراجع عن هذا الإجراء.',
+    'cancel' => 'إلغاء',
+    'deleting' => 'جاري الحذف...',
+    'report_deleted_success' => 'تم حذف التقرير بنجاح',
+    'delete_error' => 'حدث خطأ أثناء حذف التقرير',
 ];

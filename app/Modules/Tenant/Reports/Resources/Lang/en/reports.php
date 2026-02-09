@@ -73,4 +73,57 @@ return [
     'recipients' => 'Recipients',
     'select_secondary_modules' => 'Select Secondary Modules (Max 2)',
     'primary_module_change_warning' => 'Primary module cannot be changed after creation.',
+
+    // Enhanced Scheduling
+    'run_report' => 'Run Report',
+    'at_time' => 'At Time',
+    'on_these_days' => 'On These Days',
+    'monthly_by_date' => 'Monthly by Date',
+    'yearly' => 'Yearly',
+    'specific_date' => 'On Specific Date',
+    'select_dates' => 'Select Dates',
+    'choose_date' => 'Choose Date',
+    'select_recipients' => 'Select Recipients',
+    'specific_email_address' => 'Specific Email Address',
+    'separate_emails_with_comma' => 'Separate multiple emails with comma',
+    'file_format' => 'File Format',
+    'select' => 'Select',
+    'next_trigger_time' => 'Next Trigger Time',
+
+    // Day names
+    'sunday' => 'Sunday',
+    'monday' => 'Monday',
+    'tuesday' => 'Tuesday',
+    'wednesday' => 'Wednesday',
+    'thursday' => 'Thursday',
+    'friday' => 'Friday',
+    'saturday' => 'Saturday',
+
+    'unknown' => 'Unknown',
+
+    // Report View Page
+    'report_created_success' => 'Report created successfully',
+    'report_updated_success' => 'Report updated successfully',
+    'total_rows' => 'Total Rows',
+    'total_columns' => 'Total Columns',
+    'report_data' => 'Report Data',
+    'records' => 'records',
+
+    // DataTables
+    'show' => 'Show',
+    'entries' => 'entries',
+    'showing' => 'Showing',
+    'to' => 'to',
+    'of' => 'of',
+    'no_entries' => 'No entries available',
+    'search' => 'Search',
+    'view' => 'View',
+
+    // Delete Confirmation
+    'confirm_delete' => 'Confirm Delete',
+    'delete_report_confirmation' => 'Are you sure you want to delete this report? This action cannot be undone.',
+    'cancel' => 'Cancel',
+    'deleting' => 'Deleting...',
+    'report_deleted_success' => 'Report deleted successfully',
+    'delete_error' => 'An error occurred while deleting the report',
 ];

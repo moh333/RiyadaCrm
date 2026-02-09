@@ -122,6 +122,7 @@ Route::middleware([
         // Reports Module
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('/', [ReportsController::class, 'index'])->name('index');
+            Route::get('/datatable', [ReportsController::class, 'datatable'])->name('datatable');
             Route::get('/condition-operators', [ReportsController::class, 'getConditionOperators'])->name('condition-operators');
             Route::get('/create', [ReportsController::class, 'create'])->name('create');
             Route::post('/', [ReportsController::class, 'store'])->name('store');

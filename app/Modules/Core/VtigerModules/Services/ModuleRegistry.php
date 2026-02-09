@@ -70,6 +70,11 @@ class ModuleRegistry implements ModuleRegistryInterface
         $module = $this->modules->get($moduleName);
 
         if (!$module) {
+            // Fallback: try to find by base table name (e.g. vtiger_contactdetails)
+            $module = $this->modules->first(fn(ModuleDefinition $m) => $m->getBaseTable() === $moduleName);
+        }
+
+        if (!$module) {
             throw new \InvalidArgumentException("Module '{$moduleName}' not found");
         }
 
@@ -88,7 +93,12 @@ class ModuleRegistry implements ModuleRegistryInterface
             $this->loadModules();
         }
 
-        return $this->modules->has($moduleName);
+        if ($this->modules->has($moduleName)) {
+            return true;
+        }
+
+        // Fallback: check by base table name
+        return $this->modules->contains(fn(ModuleDefinition $m) => $m->getBaseTable() === $moduleName);
     }
 
     /**

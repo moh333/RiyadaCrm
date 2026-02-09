@@ -104,12 +104,47 @@ class ReportService
 
             // 7. Handle Scheduling
             if (isset($data['is_scheduled']) && $data['is_scheduled']) {
-                VtigerScheduledReport::create([
+                $scheduleData = [
                     'reportid' => $report->reportid,
-                    'schdate' => $data['sch_frequency'],
-                    'schtime' => $data['schtime'],
-                    'recipients' => isset($data['sch_recipients']) ? implode(',', $data['sch_recipients']) : ''
-                ]);
+                    'scheduleid' => $data['scheduleid'] ?? 1,
+                    'schtime' => $data['schtime'] ?? '09:00:00',
+                    'recipients' => isset($data['recipients']) ? json_encode($data['recipients']) : '[]',
+                    'specificemails' => !empty($data['specificemails'])
+                        ? json_encode(array_map('trim', explode(',', $data['specificemails'])))
+                        : '[]',
+                    'fileformat' => $data['fileformat'] ?? 'CSV',
+                ];
+
+                // Handle schedule-type specific fields
+                $scheduleId = (int) ($data['scheduleid'] ?? 1);
+
+                if ($scheduleId === 2) { // Weekly
+                    $scheduleData['schdayoftheweek'] = isset($data['schdayoftheweek'])
+                        ? json_encode($data['schdayoftheweek'])
+                        : '[]';
+                }
+
+                if ($scheduleId === 3) { // Monthly by date
+                    $scheduleData['schdayofthemonth'] = isset($data['schdayofthemonth'])
+                        ? json_encode($data['schdayofthemonth'])
+                        : '[]';
+                }
+
+                if ($scheduleId === 4) { // Annually
+                    $scheduleData['schannualdates'] = $data['schannualdates'] ?? '[]';
+                }
+
+                if ($scheduleId === 5) { // Specific date
+                    $scheduleData['schdate'] = isset($data['schdate'])
+                        ? json_encode([$data['schdate']])
+                        : null;
+                }
+
+                $schedule = VtigerScheduledReport::create($scheduleData);
+
+                // Calculate and set next trigger time
+                $schedule->next_trigger_time = $schedule->calculateNextTriggerTime();
+                $schedule->save();
             }
 
             return $report;
@@ -192,12 +227,47 @@ class ReportService
             // Update Scheduling
             $report->scheduledReport()->delete();
             if (isset($data['is_scheduled']) && $data['is_scheduled']) {
-                VtigerScheduledReport::create([
+                $scheduleData = [
                     'reportid' => $report->reportid,
-                    'schdate' => $data['sch_frequency'],
-                    'schtime' => $data['schtime'],
-                    'recipients' => isset($data['sch_recipients']) ? implode(',', $data['sch_recipients']) : ''
-                ]);
+                    'scheduleid' => $data['scheduleid'] ?? 1,
+                    'schtime' => $data['schtime'] ?? '09:00:00',
+                    'recipients' => isset($data['recipients']) ? json_encode($data['recipients']) : '[]',
+                    'specificemails' => !empty($data['specificemails'])
+                        ? json_encode(array_map('trim', explode(',', $data['specificemails'])))
+                        : '[]',
+                    'fileformat' => $data['fileformat'] ?? 'CSV',
+                ];
+
+                // Handle schedule-type specific fields
+                $scheduleId = (int) ($data['scheduleid'] ?? 1);
+
+                if ($scheduleId === 2) { // Weekly
+                    $scheduleData['schdayoftheweek'] = isset($data['schdayoftheweek'])
+                        ? json_encode($data['schdayoftheweek'])
+                        : '[]';
+                }
+
+                if ($scheduleId === 3) { // Monthly by date
+                    $scheduleData['schdayofthemonth'] = isset($data['schdayofthemonth'])
+                        ? json_encode($data['schdayofthemonth'])
+                        : '[]';
+                }
+
+                if ($scheduleId === 4) { // Annually
+                    $scheduleData['schannualdates'] = $data['schannualdates'] ?? '[]';
+                }
+
+                if ($scheduleId === 5) { // Specific date
+                    $scheduleData['schdate'] = isset($data['schdate'])
+                        ? json_encode([$data['schdate']])
+                        : null;
+                }
+
+                $schedule = VtigerScheduledReport::create($scheduleData);
+
+                // Calculate and set next trigger time
+                $schedule->next_trigger_time = $schedule->calculateNextTriggerTime();
+                $schedule->save();
             }
 
             return $report->fresh();
@@ -210,14 +280,33 @@ class ReportService
     public function delete(Report $report): void
     {
         DB::connection('tenant')->transaction(function () use ($report) {
+            // Delete select query related data
             $report->selectQuery->columns()->delete();
             $report->selectQuery->criteria()->delete();
             $report->selectQuery->criteriaGroupings()->delete();
             $report->selectQuery->delete();
+
+            // Delete report modules
             $report->modules()->delete();
+
+            // Delete sorting and grouping
             $report->sortColumns()->delete();
             $report->groupByColumns()->delete();
             $report->summaries()->delete();
+
+            // Delete sharing
+            $report->shareUsers()->delete();
+            $report->shareGroups()->delete();
+            $report->shareRoles()->delete();
+
+            // Delete scheduling
+            $report->scheduledReport()->delete();
+
+            // Delete date filter
+            DB::connection('tenant')->table('vtiger_reportdatefilter')
+                ->where('datefilterid', $report->reportid)->delete();
+
+            // Delete the report itself
             $report->delete();
         });
     }

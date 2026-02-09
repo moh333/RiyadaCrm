@@ -24,7 +24,7 @@ class ReportExecutionService
     {
         $query = $this->buildQuery($report);
 
-        return $query->get()->toArray();
+        return $query->get()->map(fn($item) => (array) $item)->toArray();
     }
 
     /**
@@ -35,19 +35,33 @@ class ReportExecutionService
      */
     public function buildQuery(Report $report): Builder
     {
-        $primaryModule = $this->moduleRegistry->get($report->modules->primarymodule);
+        $primaryModuleName = $report->modules->primarymodule;
+        $primaryModule = $this->getModule($primaryModuleName);
 
-        // 1. Base Query from Primary Module
-        $query = DB::connection('tenant')->table($primaryModule->getBaseTable() . ' as primary_table');
+        if (!$primaryModule) {
+            throw new \InvalidArgumentException("Primary module '{$primaryModuleName}' not found or invalid");
+        }
 
-        // 2. Join Crmentity for Primary Module
-        $query->join('vtiger_crmentity as primary_crmentity', 'primary_crmentity.crmid', '=', 'primary_table.' . $primaryModule->getBaseIndex());
-        $query->where('primary_crmentity.deleted', 0);
+        $baseTable = $primaryModule->getBaseTable();
+        $baseIndex = $primaryModule->getBaseIndex();
 
-        // 3. Join Custom Fields table if exists
-        $cfTable = $primaryModule->getBaseTable() . 'cf';
-        if (DB::connection('tenant')->getSchemaBuilder()->hasTable($cfTable)) {
-            $query->join($cfTable . ' as primary_cf', 'primary_cf.' . $primaryModule->getBaseIndex(), '=', 'primary_table.' . $primaryModule->getBaseIndex());
+        // 1. Base Query from Primary Module (No alias needed for base table to allow direct access)
+        $query = DB::connection('tenant')->table($baseTable);
+
+        // 2. Join Crmentity for Primary Module (Alias with module name to avoid collisions with secondary modules)
+        $crmentityAlias = "vtiger_crmentity" . $primaryModule->getName();
+        $query->join("vtiger_crmentity as {$crmentityAlias}", "{$crmentityAlias}.crmid", '=', "{$baseTable}.{$baseIndex}");
+        $query->where("{$crmentityAlias}.deleted", 0);
+
+        // 3. Join Custom Fields and other tables for Primary Module
+        // We look at all fields to find which tables they belong to
+        $primaryTables = $primaryModule->fields()->pluck('tableName')->unique();
+        foreach ($primaryTables as $table) {
+            if ($table === $baseTable || $table === 'vtiger_crmentity' || empty($table)) {
+                continue;
+            }
+            // Join on the base index
+            $query->leftJoin($table, "{$table}.{$baseIndex}", '=', "{$baseTable}.{$baseIndex}");
         }
 
         // 4. Handle Secondary Modules (Joins)
@@ -76,14 +90,29 @@ class ReportExecutionService
         return $query;
     }
 
+    /**
+     * Resolve module name, handling cases where it might be a table name
+     */
+    private function getModule(string $name): ?\App\Modules\Core\VtigerModules\Domain\ModuleDefinition
+    {
+        if ($this->moduleRegistry->has($name)) {
+            return $this->moduleRegistry->get($name);
+        }
+
+        // Try to find module by base table name fallback (e.g. vtiger_contactdetails -> Contacts)
+        return $this->moduleRegistry->all()->first(function ($module) use ($name) {
+            return $module->getBaseTable() === $name;
+        });
+    }
+
     private function addSecondaryJoin(Builder $query, $primaryModule, string $modName): void
     {
-        // Simplistic join logic - usually VTiger uses fieldmodulerel or simple related field
-        // This needs to be much more robust for a full implementation
-        $targetModule = $this->moduleRegistry->get($modName);
+        $targetModule = $this->getModule($modName);
+        if (!$targetModule)
+            return;
 
-        // Logic to find join field in primary module to target module
-        // For now, let's assume a standard lookup field or use metadata
+        // Simplistic join logic for now
+        // A full implementation would use vtiger_relatedlists or fieldmodulerel
     }
 
     private function addColumnToSelect(Builder $query, string $vtigerColumn): void
@@ -97,7 +126,10 @@ class ReportExecutionService
         $modName = $parts[0];
         $fieldName = $parts[1];
 
-        $module = $this->moduleRegistry->get($modName);
+        $module = $this->getModule($modName);
+        if (!$module)
+            return;
+
         $field = $module->getField($fieldName);
 
         if (!$field)
@@ -107,7 +139,12 @@ class ReportExecutionService
         $column = $field->getColumnName();
         $alias = $modName . '_' . $fieldName;
 
-        $query->addSelect("$table.$column as $alias");
+        // Handle aliased crmentity table
+        if ($table === 'vtiger_crmentity') {
+            $table = 'vtiger_crmentity' . $module->getName();
+        }
+
+        $query->addSelect("{$table}.{$column} as {$alias}");
     }
 
     private function addFilterToQuery(Builder $query, $filter): void

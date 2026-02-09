@@ -270,13 +270,22 @@
                         <!-- Step 5: Scheduling -->
                         <div class="step-content d-none" id="step-5-content">
                             <div class="row justify-content-center">
-                                <div class="col-md-8">
+                                <div class="col-md-10">
                                     <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
                                         <i class="bi bi-alarm text-primary"></i>
                                         {{ __('reports::reports.schedule_report') }}
                                     </h5>
 
-                                    @php $isSched = !empty($report->scheduledReport); @endphp
+                                    @php 
+                                        $isSched = !empty($report->scheduledReport);
+                                        $schedule = $report->scheduledReport;
+                                        $scheduleId = $schedule->scheduleid ?? 1;
+                                        $schDaysOfWeek = $schedule ? ($schedule->day_of_week_array ?? []) : [];
+                                        $schDaysOfMonth = $schedule ? ($schedule->day_of_month_array ?? []) : [];
+                                        $schAnnualDates = $schedule ? ($schedule->annual_dates_array ?? []) : [];
+                                        $schRecipients = $schedule ? ($schedule->recipients_array ?? []) : [];
+                                        $schSpecificEmails = $schedule ? ($schedule->specific_emails_array ?? []) : [];
+                                    @endphp
                                     <div class="form-check form-switch mb-4">
                                         <input class="form-check-input" type="checkbox" name="is_scheduled"
                                             id="is_scheduled" value="1" {{ $isSched ? 'checked' : '' }}>
@@ -286,37 +295,129 @@
 
                                     <div id="scheduling-options"
                                         class="{{ $isSched ? '' : 'd-none' }} border rounded-4 p-4 bg-light">
-                                        <div class="mb-3">
-                                            <label
-                                                class="form-label small fw-bold">{{ __('reports::reports.frequency') }}</label>
-                                            <select name="sch_frequency" class="form-select rounded-3">
-                                                <option value="1" {{ ($report->scheduledReport->sch_frequency ?? '') == 1 ? 'selected' : '' }}>{{ __('reports::reports.daily') }}</option>
-                                                <option value="2" {{ ($report->scheduledReport->sch_frequency ?? '') == 2 ? 'selected' : '' }}>{{ __('reports::reports.weekly') }}</option>
-                                                <option value="3" {{ ($report->scheduledReport->sch_frequency ?? '') == 3 ? 'selected' : '' }}>{{ __('reports::reports.monthly') }}</option>
-                                                <option value="4" {{ ($report->scheduledReport->sch_frequency ?? '') == 4 ? 'selected' : '' }}>{{ __('reports::reports.annually') }}</option>
-                                            </select>
-                                        </div>
+                                        <div class="row g-3">
+                                            {{-- Schedule Type --}}
+                                            <div class="col-md-6">
+                                                <label class="form-label small fw-bold">{{ __('reports::reports.run_report') }}</label>
+                                                <select name="scheduleid" id="schtypeid" class="form-select rounded-3">
+                                                    <option value="1" {{ $scheduleId == 1 ? 'selected' : '' }}>{{ __('reports::reports.daily') }}</option>
+                                                    <option value="2" {{ $scheduleId == 2 ? 'selected' : '' }}>{{ __('reports::reports.weekly') }}</option>
+                                                    <option value="3" {{ $scheduleId == 3 ? 'selected' : '' }}>{{ __('reports::reports.monthly_by_date') }}</option>
+                                                    <option value="4" {{ $scheduleId == 4 ? 'selected' : '' }}>{{ __('reports::reports.yearly') }}</option>
+                                                    <option value="5" {{ $scheduleId == 5 ? 'selected' : '' }}>{{ __('reports::reports.specific_date') }}</option>
+                                                </select>
+                                            </div>
 
-                                        <div class="mb-3">
-                                            <label
-                                                class="form-label small fw-bold">{{ __('reports::reports.time') }}</label>
-                                            <input type="time" name="schtime" class="form-control rounded-3"
-                                                value="{{ $report->scheduledReport->schtime ?? '09:00' }}">
-                                        </div>
+                                            {{-- Time --}}
+                                            <div class="col-md-6">
+                                                <label class="form-label small fw-bold">{{ __('reports::reports.at_time') }}</label>
+                                                <input type="time" name="schtime" class="form-control rounded-3" 
+                                                    value="{{ $schedule->schtime ?? '09:00' }}">
+                                            </div>
 
-                                        <div class="mb-3">
-                                            <label
-                                                class="form-label small fw-bold">{{ __('reports::reports.recipients') }}</label>
+                                            {{-- Weekly: Day of Week --}}
+                                            <div class="col-md-12 sch-option {{ $scheduleId == 2 ? '' : 'd-none' }}" id="scheduledWeekDay">
+                                                <label class="form-label small fw-bold">{{ __('reports::reports.on_these_days') }}</label>
+                                                <select name="schdayoftheweek[]" id="schdayoftheweek" class="form-select rounded-3 select2" multiple>
+                                                    <option value="7" {{ in_array(7, $schDaysOfWeek) || in_array('7', $schDaysOfWeek) ? 'selected' : '' }}>{{ __('reports::reports.sunday') }}</option>
+                                                    <option value="1" {{ in_array(1, $schDaysOfWeek) || in_array('1', $schDaysOfWeek) ? 'selected' : '' }}>{{ __('reports::reports.monday') }}</option>
+                                                    <option value="2" {{ in_array(2, $schDaysOfWeek) || in_array('2', $schDaysOfWeek) ? 'selected' : '' }}>{{ __('reports::reports.tuesday') }}</option>
+                                                    <option value="3" {{ in_array(3, $schDaysOfWeek) || in_array('3', $schDaysOfWeek) ? 'selected' : '' }}>{{ __('reports::reports.wednesday') }}</option>
+                                                    <option value="4" {{ in_array(4, $schDaysOfWeek) || in_array('4', $schDaysOfWeek) ? 'selected' : '' }}>{{ __('reports::reports.thursday') }}</option>
+                                                    <option value="5" {{ in_array(5, $schDaysOfWeek) || in_array('5', $schDaysOfWeek) ? 'selected' : '' }}>{{ __('reports::reports.friday') }}</option>
+                                                    <option value="6" {{ in_array(6, $schDaysOfWeek) || in_array('6', $schDaysOfWeek) ? 'selected' : '' }}>{{ __('reports::reports.saturday') }}</option>
+                                                </select>
+                                            </div>
+
+                                            {{-- Monthly: Day of Month --}}
+                                            <div class="col-md-12 sch-option {{ $scheduleId == 3 ? '' : 'd-none' }}" id="scheduleMonthByDates">
+                                                <label class="form-label small fw-bold">{{ __('reports::reports.on_these_days') }}</label>
+                                                <select name="schdayofthemonth[]" id="schdayofthemonth" class="form-select rounded-3 select2" multiple>
+                                                    @for($i = 1; $i <= 31; $i++)
+                                                        <option value="{{ $i }}" {{ in_array($i, $schDaysOfMonth) || in_array((string)$i, $schDaysOfMonth) ? 'selected' : '' }}>{{ $i }}</option>
+                                                    @endfor
+                                                </select>
+                                            </div>
+
+                                            {{-- Annually: Multiple Dates --}}
+                                            <div class="col-md-12 sch-option {{ $scheduleId == 4 ? '' : 'd-none' }}" id="scheduleAnually">
+                                                <label class="form-label small fw-bold">{{ __('reports::reports.select_dates') }}</label>
+                                                <input type="date" id="annualDatePicker" class="form-control rounded-3 mb-2">
+                                                <div id="selectedAnnualDates" class="d-flex flex-wrap gap-2 mb-2">
+                                                    @foreach($schAnnualDates as $date)
+                                                        <span class="badge bg-primary d-flex align-items-center gap-1">
+                                                            {{ $date }}
+                                                            <i class="bi bi-x-circle cursor-pointer remove-annual-date" data-date="{{ $date }}" style="cursor: pointer;"></i>
+                                                        </span>
+                                                    @endforeach
+                                                </div>
+                                                <input type="hidden" name="schannualdates" id="schannualdates" value="{{ json_encode($schAnnualDates) }}">
+                                            </div>
+
+                                            {{-- Specific Date --}}
                                             @php
-                                                $recipients = explode(',', $report->scheduledReport->recipients ?? '');
+                                                $schDateValue = '';
+                                                if ($schedule && $schedule->schdate) {
+                                                    $decoded = json_decode($schedule->schdate, true);
+                                                    $schDateValue = is_array($decoded) && !empty($decoded[0]) ? $decoded[0] : $schedule->schdate;
+                                                }
                                             @endphp
-                                            <select name="sch_recipients[]" class="form-select rounded-3 select2" multiple>
-                                                @foreach($users as $user)
-                                                    <option value="{{ $user->id }}" {{ in_array($user->id, $recipients) ? 'selected' : '' }}>
-                                                        {{ $user->first_name }} {{ $user->last_name }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
+                                            <div class="col-md-12 sch-option {{ $scheduleId == 5 ? '' : 'd-none' }}" id="scheduleByDate">
+                                                <label class="form-label small fw-bold">{{ __('reports::reports.choose_date') }}</label>
+                                                <input type="date" name="schdate" id="schdate" class="form-control rounded-3" value="{{ $schDateValue }}">
+                                            </div>
+
+                                            <hr class="my-3">
+
+                                            {{-- Recipients --}}
+                                            <div class="col-md-12">
+                                                <label class="form-label small fw-bold">{{ __('reports::reports.select_recipients') }}</label>
+                                                <select name="recipients[]" id="recipients" class="form-select rounded-3 select2" multiple>
+                                                    <optgroup label="{{ __('reports::reports.users') }}">
+                                                        @foreach($users as $user)
+                                                            <option value="USER::{{ $user->id }}" {{ in_array("USER::{$user->id}", $schRecipients) ? 'selected' : '' }}>{{ $user->first_name }} {{ $user->last_name }}</option>
+                                                        @endforeach
+                                                    </optgroup>
+                                                    <optgroup label="{{ __('reports::reports.groups') }}">
+                                                        @foreach($groups as $group)
+                                                            <option value="GROUP::{{ $group->groupid }}" {{ in_array("GROUP::{$group->groupid}", $schRecipients) ? 'selected' : '' }}>{{ $group->groupname }}</option>
+                                                        @endforeach
+                                                    </optgroup>
+                                                    <optgroup label="{{ __('reports::reports.roles') }}">
+                                                        @foreach($roles as $role)
+                                                            <option value="ROLE::{{ $role->roleid }}" {{ in_array("ROLE::{$role->roleid}", $schRecipients) ? 'selected' : '' }}>{{ $role->rolename }}</option>
+                                                        @endforeach
+                                                    </optgroup>
+                                                </select>
+                                            </div>
+
+                                            {{-- Specific Emails --}}
+                                            <div class="col-md-12">
+                                                <label class="form-label small fw-bold">{{ __('reports::reports.specific_email_address') }}</label>
+                                                <input type="text" name="specificemails" id="specificemails" class="form-control rounded-3" 
+                                                    value="{{ implode(', ', $schSpecificEmails) }}"
+                                                    placeholder="email1@example.com, email2@example.com">
+                                                <small class="text-muted">{{ __('reports::reports.separate_emails_with_comma') }}</small>
+                                            </div>
+
+                                            {{-- File Format --}}
+                                            <div class="col-md-6">
+                                                <label class="form-label small fw-bold">{{ __('reports::reports.file_format') }}</label>
+                                                <select name="fileformat" class="form-select rounded-3">
+                                                    <option value="CSV" {{ ($schedule->fileformat ?? 'CSV') == 'CSV' ? 'selected' : '' }}>CSV</option>
+                                                    <option value="XLS" {{ ($schedule->fileformat ?? 'CSV') == 'XLS' ? 'selected' : '' }}>Excel</option>
+                                                </select>
+                                            </div>
+
+                                            {{-- Next Trigger Time --}}
+                                            @if($schedule && $schedule->next_trigger_time)
+                                                <div class="col-md-12">
+                                                    <div class="alert alert-info mb-0">
+                                                        <strong>{{ __('reports::reports.next_trigger_time') }}:</strong>
+                                                        {{ $schedule->next_trigger_time_formatted }} ({{ config('app.timezone') }})
+                                                    </div>
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -640,6 +741,73 @@
                 } else {
                     $('#scheduling-options').addClass('d-none');
                 }
+            });
+
+            // Schedule type change handler
+            $('#schtypeid').on('change', function() {
+                const value = $(this).val();
+                
+                // Hide all schedule-specific options
+                $('.sch-option').addClass('d-none');
+                
+                // Show specific options based on schedule type
+                if (value === '2') { // Weekly
+                    $('#scheduledWeekDay').removeClass('d-none');
+                } else if (value === '3') { // Monthly by date
+                    $('#scheduleMonthByDates').removeClass('d-none');
+                } else if (value === '4') { // Annually
+                    $('#scheduleAnually').removeClass('d-none');
+                } else if (value === '5') { // Specific date
+                    $('#scheduleByDate').removeClass('d-none');
+                }
+            });
+
+            // Annual dates picker - load existing dates
+            let annualDates = @json($schAnnualDates ?? []);
+            
+            $('#annualDatePicker').on('change', function() {
+                const date = $(this).val();
+                if (date && !annualDates.includes(date)) {
+                    annualDates.push(date);
+                    updateAnnualDatesUI();
+                }
+                $(this).val('');
+            });
+
+            function updateAnnualDatesUI() {
+                const container = $('#selectedAnnualDates');
+                container.empty();
+                
+                annualDates.forEach(date => {
+                    container.append(`
+                        <span class="badge bg-primary d-flex align-items-center gap-1">
+                            ${date}
+                            <i class="bi bi-x-circle cursor-pointer remove-annual-date" data-date="${date}" style="cursor: pointer;"></i>
+                        </span>
+                    `);
+                });
+                
+                $('#schannualdates').val(JSON.stringify(annualDates));
+                
+                // Re-bind remove handlers
+                $('.remove-annual-date').off('click').on('click', function() {
+                    const dateToRemove = $(this).data('date');
+                    annualDates = annualDates.filter(d => d !== dateToRemove);
+                    updateAnnualDatesUI();
+                });
+            }
+            
+            // Attach initial remove handlers for pre-populated dates
+            $('.remove-annual-date').on('click', function() {
+                const dateToRemove = $(this).data('date');
+                annualDates = annualDates.filter(d => d !== dateToRemove);
+                updateAnnualDatesUI();
+            });
+
+            // Initialize Select2 for scheduling selects
+            $('#schdayoftheweek, #schdayofthemonth, #recipients').select2({
+                placeholder: '{{ __("reports::reports.select") }}',
+                width: '100%'
             });
 
             // Condition Builder JS
