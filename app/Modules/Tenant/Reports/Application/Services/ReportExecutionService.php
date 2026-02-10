@@ -89,10 +89,30 @@ class ReportExecutionService
             $this->addColumnToSelect($query, $col->columnname, $joinedTables);
         }
 
+        // 5.5 Standard Date Filter
+        $this->applyStandardDateFilter($query, $report, $joinedTables);
+
         // 6. Apply Filters
         $filters = $report->selectQuery->criteria;
-        foreach ($filters as $filter) {
-            $this->addFilterToQuery($query, $filter, $joinedTables);
+
+        // Group 1: All Conditions (AND)
+        $allConditions = $filters->where('groupid', 1);
+        if ($allConditions->isNotEmpty()) {
+            $query->where(function ($q) use ($allConditions, $joinedTables) {
+                foreach ($allConditions as $filter) {
+                    $this->addFilterToQuery($q, 'where', $filter, $joinedTables);
+                }
+            });
+        }
+
+        // Group 2: Any Conditions (OR)
+        $anyConditions = $filters->where('groupid', 2);
+        if ($anyConditions->isNotEmpty()) {
+            $query->where(function ($q) use ($anyConditions, $joinedTables) {
+                foreach ($anyConditions as $filter) {
+                    $this->addFilterToQuery($q, 'orWhere', $filter, $joinedTables);
+                }
+            });
         }
 
         return $query;
@@ -162,6 +182,68 @@ class ReportExecutionService
         });
     }
 
+    private function resolveColumn(string $vtigerColumn, array $joinedTables): ?array
+    {
+        $parts = explode(':', $vtigerColumn);
+        if (count($parts) < 2)
+            return null;
+
+        $modName = $parts[0];
+        $fieldName = $parts[1];
+
+        $module = $this->getModule($modName);
+        if (!$module)
+            return null;
+
+        $field = $module->getField($fieldName);
+        if (!$field)
+            return null;
+
+        $table = $field->getTableName();
+        $column = $field->getColumnName();
+
+        // Handle aliased crmentity table
+        if ($table === 'vtiger_crmentity') {
+            $table = 'vtiger_crmentity' . $module->getName();
+        }
+
+        // Picklist logic: Check if the column exists in the base table first (Vtiger duplicates picklist values there)
+        if (in_array($field->getUitype(), [15, 16, 33])) {
+            $baseTable = $module->getBaseTable();
+            if ($this->columnExists($baseTable, $fieldName)) {
+                $table = $baseTable;
+                $column = $fieldName;
+            }
+        }
+
+        // Only add if table is joined
+        if (!in_array($table, $joinedTables)) {
+            // Try fallback to base table if not joined
+            $baseTable = $module->getBaseTable();
+            if (in_array($baseTable, $joinedTables) && $this->columnExists($baseTable, $column)) {
+                $table = $baseTable;
+            }
+        }
+
+        if (!in_array($table, $joinedTables)) {
+            // Last resort: If it's a core crmentity field, use the primary crmentity alias
+            if ($column === 'smownerid' || $column === 'createdtime' || $column === 'modifiedtime' || $column === 'crmid') {
+                foreach ($joinedTables as $jt) {
+                    if (str_starts_with($jt, 'vtiger_crmentity')) {
+                        $table = $jt;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!in_array($table, $joinedTables)) {
+            return null;
+        }
+
+        return ['table' => $table, 'column' => $column, 'module' => $module, 'field' => $field];
+    }
+
     private function addSecondaryJoin(Builder $query, $primaryModule, string $modName, array &$joinedTables): void
     {
         $targetModule = $this->getModule($modName);
@@ -207,78 +289,267 @@ class ReportExecutionService
                 $query->leftJoin($secondaryCfTable, "{$secondaryCfTable}.{$secondaryIndex}", '=', "{$secondaryTable}.{$secondaryIndex}");
                 $joinedTables[] = $secondaryCfTable;
             }
+
+            // Join crmentity for secondary module
+            $crmentityAlias = "vtiger_crmentity" . $targetModule->getName();
+            if ($this->tableExists('vtiger_crmentity') && !in_array($crmentityAlias, $joinedTables)) {
+                $query->leftJoin("vtiger_crmentity as {$crmentityAlias}", "{$crmentityAlias}.crmid", '=', "{$secondaryTable}.{$secondaryIndex}");
+                $joinedTables[] = $crmentityAlias;
+            }
         }
     }
 
     private function addColumnToSelect(Builder $query, string $vtigerColumn, array &$joinedTables): void
     {
+        $resolved = $this->resolveColumn($vtigerColumn, $joinedTables);
+        if (!$resolved) {
+            \Log::warning("Skipping column selection: {$vtigerColumn} - could not resolve to joined table");
+            return;
+        }
+
         $parts = explode(':', $vtigerColumn);
-        if (count($parts) < 2)
-            return;
+        $modPrefix = $parts[0] ?? $resolved['module']->getName();
 
-        $modName = $parts[0];
-        $fieldName = $parts[1];
-
-        $module = $this->getModule($modName);
-        if (!$module)
-            return;
-
-        $field = $module->getField($fieldName);
-        if (!$field)
-            return;
-
-        $table = $field->getTableName();
-        $column = $field->getColumnName();
-        $alias = $modName . '_' . $fieldName;
-
-        // Handle aliased crmentity table
-        if ($table === 'vtiger_crmentity') {
-            $table = 'vtiger_crmentity' . $module->getName();
-        }
-
-        // Picklist logic: Check if the column exists in the base table first (Vtiger duplicates picklist values there)
-        if (in_array($field->getUitype(), [15, 16, 33])) {
-            $baseTable = $module->getBaseTable();
-            if ($this->columnExists($baseTable, $fieldName)) {
-                $table = $baseTable;
-                $column = $fieldName;
-            }
-        }
-
-        // Only add if table is joined
-        if (!in_array($table, $joinedTables)) {
-            // Try fallback to base table if not joined
-            $baseTable = $module->getBaseTable();
-            if (in_array($baseTable, $joinedTables) && $this->columnExists($baseTable, $column)) {
-                $table = $baseTable;
-            }
-        }
-
-        if (!in_array($table, $joinedTables)) {
-            // Last resort: If it's a core crmentity field, use the primary crmentity alias
-            if ($column === 'smownerid' || $column === 'createdtime' || $column === 'modifiedtime') {
-                foreach ($joinedTables as $jt) {
-                    if (str_starts_with($jt, 'vtiger_crmentity')) {
-                        $table = $jt;
-                        break;
-                    }
-                }
-            }
-        }
-
-        if (!in_array($table, $joinedTables)) {
-            \Log::warning("Skipping column selection from unjoined table: {$table}.{$column} for field {$fieldName}");
-            return;
-        }
+        $table = $resolved['table'];
+        $column = $resolved['column'];
+        $field = $resolved['field'];
+        $fieldName = $field->getFieldName();
+        $alias = $modPrefix . '_' . $fieldName;
+        $uitype = $field->getUitype();
 
         // Efficient column check
-        if ($this->columnExists($table, $column)) {
+        if (!$this->columnExists($table, $column))
+            return;
+
+        // 1. Owner Fields (Users or Groups)
+        if (in_array($uitype, [52, 53, 77])) {
+            $userAlias = 'u_' . $alias;
+            $groupAlias = 'g_' . $alias;
+
+            $query->leftJoin("vtiger_users as {$userAlias}", "{$userAlias}.id", '=', "{$table}.{$column}");
+            $query->leftJoin("vtiger_groups as {$groupAlias}", "{$groupAlias}.groupid", '=', "{$table}.{$column}");
+
+            $query->addSelect(DB::raw("COALESCE(NULLIF(CONCAT_WS(' ', {$userAlias}.first_name, {$userAlias}.last_name), ' '), {$groupAlias}.groupname) as {$alias}"));
+
+            // Add metadata for linking (Users don't have a generic detail view like modules, but we can pass anyway)
+            $query->addSelect("{$table}.{$column} as {$alias}_id");
+            $query->addSelect(DB::raw("CASE WHEN {$userAlias}.id IS NOT NULL THEN 'Users' ELSE 'Groups' END as {$alias}_module"));
+
+            $joinedTables[] = $userAlias;
+            $joinedTables[] = $groupAlias;
+        }
+        // 2. User-only references
+        elseif (in_array($uitype, [51, 101])) {
+            $userAlias = 'u_' . $alias;
+            $query->leftJoin("vtiger_users as {$userAlias}", "{$userAlias}.id", '=', "{$table}.{$column}");
+            $query->addSelect(DB::raw("NULLIF(CONCAT_WS(' ', {$userAlias}.first_name, {$userAlias}.last_name), ' ') as {$alias}"));
+
+            $query->addSelect("{$table}.{$column} as {$alias}_id");
+            $query->addSelect(DB::raw("'Users' as {$alias}_module"));
+
+            $joinedTables[] = $userAlias;
+        }
+        // 3. General module references (UI 10, etc.)
+        elseif (in_array($uitype, [10, 57, 58, 59, 73, 75, 76, 78, 80, 81])) {
+            $entAlias = 'ent_' . $alias;
+            $query->leftJoin("vtiger_crmentity as {$entAlias}", "{$entAlias}.crmid", '=', "{$table}.{$column}");
+            $query->addSelect("{$entAlias}.label as {$alias}");
+
+            $query->addSelect("{$table}.{$column} as {$alias}_id");
+            $query->addSelect("{$entAlias}.setype as {$alias}_module");
+
+            $joinedTables[] = $entAlias;
+        }
+        // 4. Standard Column
+        else {
             $query->addSelect("{$table}.{$column} as {$alias}");
         }
     }
 
-    private function addFilterToQuery(Builder $query, $filter, array $joinedTables): void
+    private function applyStandardDateFilter(Builder $query, Report $report, array $joinedTables): void
     {
-        // TODO: Map VTiger comparators (e, c, bw, etc.) to SQL
+        $stdFilter = DB::connection('tenant')->table('vtiger_reportdatefilter')
+            ->where('datefilterid', $report->reportid)->first();
+
+        if (!$stdFilter || empty($stdFilter->datecolumnname) || $stdFilter->datefilter === 'custom') {
+            // Handle custom dates if start/end are provided
+            if ($stdFilter && $stdFilter->datefilter === 'custom' && $stdFilter->startdate && $stdFilter->enddate) {
+                $resolved = $this->resolveColumn($stdFilter->datecolumnname, $joinedTables);
+                if ($resolved) {
+                    $query->whereBetween("{$resolved['table']}.{$resolved['column']}", [$stdFilter->startdate, $stdFilter->enddate]);
+                }
+            }
+            return;
+        }
+
+        $resolved = $this->resolveColumn($stdFilter->datecolumnname, $joinedTables);
+        if (!$resolved)
+            return;
+
+        $table = $resolved['table'];
+        $column = $resolved['column'];
+        $filter = $stdFilter->datefilter;
+
+        $now = now();
+        $startDate = null;
+        $endDate = null;
+
+        switch ($filter) {
+            case 'today':
+                $startDate = $now->copy()->startOfDay();
+                $endDate = $now->copy()->endOfDay();
+                break;
+            case 'yesterday':
+                $startDate = $now->copy()->subDay()->startOfDay();
+                $endDate = $now->copy()->subDay()->endOfDay();
+                break;
+            case 'tomorrow':
+                $startDate = $now->copy()->addDay()->startOfDay();
+                $endDate = $now->copy()->addDay()->endOfDay();
+                break;
+            case 'lastweek':
+                $startDate = $now->copy()->subWeek()->startOfWeek();
+                $endDate = $now->copy()->subWeek()->endOfWeek();
+                break;
+            case 'thisweek':
+                $startDate = $now->copy()->startOfWeek();
+                $endDate = $now->copy()->endOfWeek();
+                break;
+            case 'nextweek':
+                $startDate = $now->copy()->addWeek()->startOfWeek();
+                $endDate = $now->copy()->addWeek()->endOfWeek();
+                break;
+            case 'lastmonth':
+                $startDate = $now->copy()->subMonth()->startOfMonth();
+                $endDate = $now->copy()->subMonth()->endOfMonth();
+                break;
+            case 'thismonth':
+                $startDate = $now->copy()->startOfMonth();
+                $endDate = $now->copy()->endOfMonth();
+                break;
+            case 'nextmonth':
+                $startDate = $now->copy()->addMonth()->startOfMonth();
+                $endDate = $now->copy()->addMonth()->endOfMonth();
+                break;
+            case 'last7days':
+                $startDate = $now->copy()->subDays(7)->startOfDay();
+                $endDate = $now->copy()->endOfDay();
+                break;
+            case 'last30days':
+                $startDate = $now->copy()->subDays(30)->startOfDay();
+                $endDate = $now->copy()->endOfDay();
+                break;
+            case 'last60days':
+                $startDate = $now->copy()->subDays(60)->startOfDay();
+                $endDate = $now->copy()->endOfDay();
+                break;
+            case 'last90days':
+                $startDate = $now->copy()->subDays(90)->startOfDay();
+                $endDate = $now->copy()->endOfDay();
+                break;
+            case 'last120days':
+                $startDate = $now->copy()->subDays(120)->startOfDay();
+                $endDate = $now->copy()->endOfDay();
+                break;
+            case 'next30days':
+                $startDate = $now->copy()->startOfDay();
+                $endDate = $now->copy()->addDays(30)->endOfDay();
+                break;
+            case 'next60days':
+                $startDate = $now->copy()->startOfDay();
+                $endDate = $now->copy()->addDays(60)->endOfDay();
+                break;
+            case 'next90days':
+                $startDate = $now->copy()->startOfDay();
+                $endDate = $now->copy()->addDays(90)->endOfDay();
+                break;
+            case 'next120days':
+                $startDate = $now->copy()->startOfDay();
+                $endDate = $now->copy()->addDays(120)->endOfDay();
+                break;
+            case 'thisfy':
+                $startDate = $now->copy()->month >= 4 ? $now->copy()->month(4)->startOfMonth() : $now->copy()->subYear()->month(4)->startOfMonth();
+                $endDate = $startDate->copy()->addYear()->subDay()->endOfDay();
+                break;
+            case 'prevfy':
+                $currentFYStart = $now->copy()->month >= 4 ? $now->copy()->month(4)->startOfMonth() : $now->copy()->subYear()->month(4)->startOfMonth();
+                $startDate = $currentFYStart->copy()->subYear();
+                $endDate = $currentFYStart->copy()->subDay()->endOfDay();
+                break;
+            case 'nextfy':
+                $currentFYStart = $now->copy()->month >= 4 ? $now->copy()->month(4)->startOfMonth() : $now->copy()->subYear()->month(4)->startOfMonth();
+                $startDate = $currentFYStart->copy()->addYear();
+                $endDate = $startDate->copy()->addYear()->subDay()->endOfDay();
+                break;
+        }
+
+        if ($startDate && $endDate) {
+            $query->whereBetween("{$table}.{$column}", [$startDate->toDateTimeString(), $endDate->toDateTimeString()]);
+        }
+    }
+
+    private function addFilterToQuery(Builder $query, string $method, $filter, array $joinedTables): void
+    {
+        $resolved = $this->resolveColumn($filter->columnname, $joinedTables);
+        if (!$resolved)
+            return;
+
+        $table = $resolved['table'];
+        $column = $resolved['column'];
+        $comparator = $filter->comparator;
+        $value = $filter->value;
+
+        switch ($comparator) {
+            case 'e':
+                $query->$method("{$table}.{$column}", '=', $value);
+                break;
+            case 'n':
+                $query->$method("{$table}.{$column}", '<>', $value);
+                break;
+            case 's':
+                $query->$method("{$table}.{$column}", 'LIKE', "{$value}%");
+                break;
+            case 'ew':
+                $query->$method("{$table}.{$column}", 'LIKE', "%{$value}");
+                break;
+            case 'c':
+                $query->$method("{$table}.{$column}", 'LIKE', "%{$value}%");
+                break;
+            case 'k':
+                $query->$method("{$table}.{$column}", 'NOT LIKE', "%{$value}%");
+                break;
+            case 'l':
+            case 'b': // before
+                $query->$method("{$table}.{$column}", '<', $value);
+                break;
+            case 'g':
+            case 'a': // after
+                $query->$method("{$table}.{$column}", '>', $value);
+                break;
+            case 'm':
+                $query->$method("{$table}.{$column}", '<=', $value);
+                break;
+            case 'h':
+                $query->$method("{$table}.{$column}", '>=', $value);
+                break;
+            case 'bw':
+                $parts = explode(',', $value);
+                if (count($parts) == 2) {
+                    $query->{$method . 'Between'}("{$table}.{$column}", [trim($parts[0]), trim($parts[1])]);
+                }
+                break;
+            case 'y': // is empty
+                $query->$method(function ($q) use ($table, $column) {
+                    $q->whereNull("{$table}.{$column}")->orWhere("{$table}.{$column}", '=', '');
+                });
+                break;
+            case 'ny': // is not empty
+                $query->$method(function ($q) use ($table, $column) {
+                    $q->whereNotNull("{$table}.{$column}")->where("{$table}.{$column}", '<>', '');
+                });
+                break;
+            default:
+                $query->$method("{$table}.{$column}", '=', $value);
+        }
     }
 }

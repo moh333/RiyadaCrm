@@ -266,6 +266,11 @@ class ReportsController extends Controller
         return $rawData->map(function ($row) use ($headerMap) {
             $newRow = [];
             foreach ((array) $row as $key => $value) {
+                // Skip metadata columns in export
+                if (str_ends_with($key, '_id') || str_ends_with($key, '_module')) {
+                    continue;
+                }
+
                 $translatedKey = $headerMap[$key] ?? $key;
                 $newRow[$translatedKey] = $value ?? '';
             }
