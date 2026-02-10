@@ -132,6 +132,7 @@ Route::middleware([
             Route::delete('/{id}', [ReportsController::class, 'destroy'])->name('destroy');
             Route::get('/{id}/run', [ReportsController::class, 'run'])->name('run');
             Route::get('/{id}/export', [ReportsController::class, 'export'])->name('export');
+            Route::get('/{id}/data', [ReportsController::class, 'reportData'])->name('report-data');
         });
 
         // Test Routes for Vtiger Module Management Engine

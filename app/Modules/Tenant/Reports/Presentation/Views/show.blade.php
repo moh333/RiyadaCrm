@@ -83,7 +83,7 @@
                                 @endif
                                 <li class="d-flex justify-content-between py-2 border-bottom">
                                     <span class="text-muted small">{{ __('reports::reports.total_rows') }}</span>
-                                    <span class="small fw-bold">{{ count($data) }}</span>
+                                    <span class="small fw-bold">{{ $totalRows }}</span>
                                 </li>
                                 <li class="d-flex justify-content-between py-2 border-bottom">
                                     <span class="text-muted small">{{ __('reports::reports.total_columns') }}</span>
@@ -151,39 +151,27 @@
                         <div
                             class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
                             <h6 class="mb-0 fw-bold">{{ __('reports::reports.report_data') }}</h6>
-                            <span class="badge bg-primary">{{ count($data) }} {{ __('reports::reports.records') }}</span>
+                            <span class="badge bg-primary">{{ $totalRows }} {{ __('reports::reports.records') }}</span>
                         </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
-                                <table class="table table-hover align-middle mb-0" id="reportDataTable">
-                                    <thead class="bg-light text-muted small text-uppercase sticky-top" style="top: 0;">
+                        <div class="card-body p-4">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0 w-100" id="reportDataTable">
+                                    <thead class="bg-light text-muted small text-uppercase">
                                         <tr>
                                             <th class="px-4 py-3" style="width: 50px;">#</th>
-                                            @if(count($data) > 0)
-                                                @foreach(array_keys($data[0]) as $header)
-                                                    <th class="px-4 py-3">{{ $header }}</th>
-                                                @endforeach
-                                            @endif
+                                            @foreach($columns as $column)
+                                                <th class="px-4 py-3">{{ $column['label'] }}</th>
+                                            @endforeach
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse($data as $index => $row)
-                                            <tr>
-                                                <td class="px-4 py-3 text-muted">{{ $index + 1 }}</td>
-                                                @foreach($row as $value)
-                                                    <td class="px-4 py-3">{{ $value }}</td>
-                                                @endforeach
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="{{ count($columns) + 1 }}" class="text-center py-5">
-                                                    <div class="text-muted">
-                                                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-                                                        {{ __('reports::reports.no_data_available') }}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        @endforelse
+                                        <tr>
+                                            <td colspan="{{ count($columns) + 1 }}" class="text-center py-5">
+                                                <div class="spinner-border text-primary" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -195,31 +183,73 @@
     </div>
 
     <style>
-        .sticky-top {
-            position: sticky;
-            top: 0;
-            z-index: 1;
-            background: #f8f9fa !important;
+        #reportDataTable thead th {
+            white-space: nowrap;
+            background: #f8f9fa;
         }
 
-        .table-responsive {
-            scrollbar-width: thin;
-            scrollbar-color: #999 #f0f0f0;
+        #reportDataTable tbody td {
+            white-space: nowrap;
+            padding: 1rem 1.5rem;
         }
 
-        .table-responsive::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            padding: 0.1em 0.5em;
         }
 
-        .table-responsive::-webkit-scrollbar-track {
-            background: #f0f0f0;
-            border-radius: 4px;
-        }
-
-        .table-responsive::-webkit-scrollbar-thumb {
-            background: #999;
-            border-radius: 4px;
+        .dataTables_processing {
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.8) !important;
+            border: none !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
         }
     </style>
 @endsection
+
+@push('scripts')
+    <script>
+        $(document).ready(function () {
+            $('#reportDataTable').DataTable({
+                processing: true,
+                serverSide: true,
+                scrollX: true,
+                ajax: {
+                    url: "{{ route('tenant.reports.report-data', $report->reportid) }}",
+                    type: "GET",
+                    error: function (xhr, error, thrown) {
+                        console.error('DataTables error:', error, thrown);
+                        alert('Error loading report data. Please check the console for details.');
+                    }
+                },
+                columns: [
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, row, meta) {
+                            return meta.row + meta.settings._iDisplayStart + 1;
+                        }
+                    },
+                    @foreach($columns as $column)
+                        {
+                                data: "{{ $column['alias'] }}",
+                                defaultContent: "-"
+                            },
+                    @endforeach
+            ],
+                language: {
+                    @if(app()->getLocale() == 'ar')
+                        url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/ar.json'
+                    @endif
+            },
+            pageLength: 20,
+            lengthMenu: [10, 20, 50, 100],
+            dom: '<"d-flex justify-content-between align-items-center mb-3"lf>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
+            drawCallback: function () {
+                $('.dataTables_paginate > .pagination').addClass('pagination-sm');
+            }
+        });
+    });
+    </script>
+@endpush

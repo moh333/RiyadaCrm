@@ -160,19 +160,51 @@ class ReportsController extends Controller
                     'module' => vtranslate($module, 'Vtiger'),
                     'field' => $parts[1] ?? '',
                     'label' => vtranslate($label, $module),
+                    'alias' => $module . '_' . ($parts[1] ?? ''),
                     'raw' => $column->columnname
                 ];
             }
         }
 
-        // Execute report
+        // Execute report for total count (for now)
         $executionService = app(\App\Modules\Tenant\Reports\Application\Services\ReportExecutionService::class);
-        $rawData = $executionService->run($report);
+        $totalRows = $executionService->buildQuery($report)->count();
 
-        // Translate table data headers
-        $data = $this->translateData($rawData, $report);
+        return view('reports::show', compact('report', 'columns', 'totalRows'));
+    }
 
-        return view('reports::show', compact('report', 'data', 'columns'));
+    /**
+     * Get report execution data for server-side DataTables
+     */
+    public function reportData($id, Request $request)
+    {
+        $report = Report::with(['modules', 'selectQuery.columns', 'selectQuery.criteria'])->findOrFail($id);
+
+        $executionService = app(\App\Modules\Tenant\Reports\Application\Services\ReportExecutionService::class);
+        $query = $executionService->buildQuery($report);
+
+        // Get total count
+        $totalCount = $query->count();
+
+        // Search (simple implementation for now)
+        if ($request->filled('search.value')) {
+            $search = $request->input('search.value');
+            // Note: Searching in report results is tricky because columns are often joined from various tables
+            // For a robust implementation, we'd need to map the search input to the specific joined columns
+        }
+
+        // Pagination
+        $start = $request->input('start', 0);
+        $length = $request->input('length', 10);
+
+        $rawData = $query->skip($start)->take($length)->get();
+
+        return response()->json([
+            'draw' => intval($request->input('draw')),
+            'recordsTotal' => $totalCount,
+            'recordsFiltered' => $totalCount, // Simplified search filtering for now
+            'data' => $rawData
+        ]);
     }
 
     /**
