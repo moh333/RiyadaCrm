@@ -50,11 +50,17 @@ class ReportExecutionService
         // 1. Base Query from Primary Module
         $query = DB::connection('tenant')->table($baseTable);
 
-        // 2. Join Crmentity for Primary Module
-        $crmentityAlias = "vtiger_crmentity" . $primaryModule->getName();
-        if ($this->tableExists('vtiger_crmentity')) {
-            $query->join("vtiger_crmentity as {$crmentityAlias}", "{$crmentityAlias}.crmid", '=', "{$baseTable}.{$baseIndex}");
-            $query->where("{$crmentityAlias}.deleted", 0);
+        // 2. Join Crmentity for Primary Module (Resilient Left Join)
+        if ($primaryModule->isEntity() && $this->tableExists('vtiger_crmentity')) {
+            $crmentityAlias = "vtiger_crmentity" . $primaryModule->getName();
+            $query->leftJoin("vtiger_crmentity as {$crmentityAlias}", "{$crmentityAlias}.crmid", '=', "{$baseTable}.{$baseIndex}");
+
+            // Apply deleted filter but be resilient to missing entities
+            $query->where(function ($q) use ($crmentityAlias) {
+                $q->where("{$crmentityAlias}.deleted", 0)
+                    ->orWhereNull("{$crmentityAlias}.deleted")
+                    ->orWhereNull("{$crmentityAlias}.crmid");
+            });
             $joinedTables[] = $crmentityAlias;
         }
 
@@ -250,36 +256,74 @@ class ReportExecutionService
         if (!$targetModule)
             return;
 
-        $primaryTable = $primaryModule->getBaseTable();
-        $primaryIndex = $primaryModule->getBaseIndex();
         $secondaryTable = $targetModule->getBaseTable();
         $secondaryIndex = $targetModule->getBaseIndex();
 
-        if (in_array($secondaryTable, $joinedTables)) {
+        if (in_array($secondaryTable, $joinedTables))
             return;
+
+        $joined = false;
+
+        // Try to link to ANY already joined table
+        foreach ($joinedTables as $joinedTable) {
+            // Skip crmentity aliases for linking search
+            if (str_starts_with($joinedTable, 'vtiger_crmentity'))
+                continue;
+
+            $joinedMod = $this->getModule($joinedTable);
+            $joinedIndex = $joinedMod ? $joinedMod->getBaseIndex() : null;
+
+            // 1. Direct link: Joined table has a column pointing to secondary
+            // Check variations: contactid, contact_id, accountid, account_id, parent_id, etc.
+            $potentialCols = [
+                $secondaryIndex,
+                str_replace('id', '_id', $secondaryIndex),
+                str_replace('id', 'id', $secondaryIndex), // already checked but for safety
+                'parent_id',
+                'contact_id',
+                'account_id',
+                'related_to',
+                'linktoaccountscontacts'
+            ];
+
+            foreach ($potentialCols as $col) {
+                if ($this->columnExists($joinedTable, $col)) {
+                    $query->leftJoin($secondaryTable, "{$secondaryTable}.{$secondaryIndex}", '=', "{$joinedTable}.{$col}");
+                    $joinedTables[] = $secondaryTable;
+                    $joined = true;
+                    break 2;
+                }
+            }
+
+            // 2. Inverse link: Secondary table has a column pointing to joined table
+            if ($joinedIndex) {
+                $potentialInverseCols = [
+                    $joinedIndex,
+                    str_replace('id', '_id', $joinedIndex),
+                    'parent_id',
+                    'related_to'
+                ];
+                foreach ($potentialInverseCols as $col) {
+                    if ($this->columnExists($secondaryTable, $col)) {
+                        $query->leftJoin($secondaryTable, "{$secondaryTable}.{$col}", '=', "{$joinedTable}.{$joinedIndex}");
+                        $joinedTables[] = $secondaryTable;
+                        $joined = true;
+                        break 2;
+                    }
+                }
+            }
         }
 
-        // 1. Direct link: Primary table points to secondary (e.g. Contact has accountid)
-        if ($this->columnExists($primaryTable, $secondaryIndex)) {
-            $query->leftJoin($secondaryTable, "{$secondaryTable}.{$secondaryIndex}", '=', "{$primaryTable}.{$secondaryIndex}");
+        // 3. Fallback: Many-to-Many or Complex relations via vtiger_crmentityrel
+        if (!$joined && $this->tableExists('vtiger_crmentityrel')) {
+            $primaryTable = $primaryModule->getBaseTable();
+            $primaryIndex = $primaryModule->getBaseIndex();
+
+            $relAlias = 'rel_' . $targetModule->getName();
+            $query->leftJoin("vtiger_crmentityrel as {$relAlias}", "{$relAlias}.crmid", '=', "{$primaryTable}.{$primaryIndex}");
+            $query->leftJoin($secondaryTable, "{$secondaryTable}.{$secondaryIndex}", '=', "{$relAlias}.relcrmid");
             $joinedTables[] = $secondaryTable;
-        }
-        // 2. Inverse link: Secondary table points to primary (e.g. Ticket has contactid/contact_id)
-        elseif ($this->columnExists($secondaryTable, $primaryIndex) || $this->columnExists($secondaryTable, str_replace('id', '_id', $primaryIndex))) {
-            $linkCol = $this->columnExists($secondaryTable, $primaryIndex) ? $primaryIndex : str_replace('id', '_id', $primaryIndex);
-            $query->leftJoin($secondaryTable, "{$secondaryTable}.{$linkCol}", '=', "{$primaryTable}.{$primaryIndex}");
-            $joinedTables[] = $secondaryTable;
-        }
-        // 3. Fallback for CRM Entities: Linking through crmentity handles most Vtiger relations
-        elseif ($primaryModule->isEntity() && $targetModule->isEntity()) {
-            // We need to join the secondary table on its own index matching the CRM ID
-            // But we need a way to link it to the primary table. 
-            // Often this is via vtiger_crmentityrel or just direct parent/child.
-            // For now, if no direct link found, try linking to the primary base index via secondaryIndex if it exists
-            if ($this->columnExists($secondaryTable, 'parent_id')) {
-                $query->leftJoin($secondaryTable, "{$secondaryTable}.parent_id", '=', "{$primaryTable}.{$primaryIndex}");
-                $joinedTables[] = $secondaryTable;
-            }
+            $joined = true;
         }
 
         // Join secondary custom fields table

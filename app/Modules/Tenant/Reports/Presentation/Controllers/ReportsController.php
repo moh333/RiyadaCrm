@@ -220,7 +220,11 @@ class ReportsController extends Controller
             'draw' => intval($request->input('draw')),
             'recordsTotal' => $totalCount,
             'recordsFiltered' => $totalCount, // Simplified search filtering for now
-            'data' => $rawData
+            'data' => $rawData,
+            'debug' => [
+                'sql' => $query->toSql(),
+                'bindings' => $query->getBindings()
+            ]
         ]);
     }
 
