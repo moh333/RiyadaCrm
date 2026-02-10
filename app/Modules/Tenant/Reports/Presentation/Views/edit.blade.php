@@ -651,7 +651,7 @@
 
             function addFieldToSelected(mod, field, label) {
                 $('.empty-msg').hide();
-                const value = mod + ':' + field;
+                const value = mod + ':' + field + ':' + label;
                 const exists = $('#selected-fields-list input[value="' + value + '"]').length > 0;
 
                 if (exists) return;
@@ -872,7 +872,13 @@
                     fieldOptionsHtml += `<optgroup label="${window.primaryModuleData.module.label}">`;
                     window.primaryModuleData.fields.forEach(f => {
                         const val = `${window.primaryModuleData.module.name}:${f.name}`;
-                        const selected = (data && data.columnname === val) ? 'selected' : '';
+                        let selected = '';
+                        if (data && data.columnname) {
+                            const dbParts = data.columnname.split(':');
+                            if (dbParts[0] === window.primaryModuleData.module.name && dbParts[1] === f.name) {
+                                selected = 'selected';
+                            }
+                        }
                         fieldOptionsHtml += `<option value="${val}" ${selected}>${f.label}</option>`;
                     });
                     fieldOptionsHtml += `</optgroup>`;
@@ -890,7 +896,13 @@
                         const fLabel = $(this).data('label');
                         const fMod = $(this).data('module');
                         const val = `${fMod}:${fName}`;
-                        const selected = (data && data.columnname === val) ? 'selected' : '';
+                        let selected = '';
+                        if (data && data.columnname) {
+                            const dbParts = data.columnname.split(':');
+                            if (dbParts[0] === fMod && dbParts[1] === fName) {
+                                selected = 'selected';
+                            }
+                        }
                         fieldOptionsHtml += `<option value="${val}" ${selected}>${fLabel}</option>`;
                     });
                     fieldOptionsHtml += `</optgroup>`;

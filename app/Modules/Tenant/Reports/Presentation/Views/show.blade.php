@@ -135,9 +135,15 @@
                         <div class="card-body p-0">
                             <ul class="list-group list-group-flush">
                                 @foreach($columns as $column)
-                                    <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
-                                        <span class="small">{{ $column['label'] }}</span>
-                                        <span class="badge bg-light text-muted">{{ $column['module'] }}</span>
+                                    <li class="list-group-item py-2 px-3">
+                                        <div class="justify-content-between align-items-center">
+                                            <span class="small fw-bold text-dark">{{ $column['label'] }}</span><br>
+                                        </div>
+                                        <div class="mt-1">
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-medium px-2 py-1" style="font-size: 9px; border-radius: 4px;">
+                                                <i class="bi bi-box-seam me-1"></i>{{ $column['module'] }}
+                                            </span>
+                                        </div>
                                     </li>
                                 @endforeach
                             </ul>
@@ -232,24 +238,24 @@
                         }
                     },
                     @foreach($columns as $column)
-                        {
-                                data: "{{ $column['alias'] }}",
-                                defaultContent: "-"
-                            },
+                                        {
+                            data: "{{ $column['alias'] }}",
+                            defaultContent: "-"
+                        },
                     @endforeach
-            ],
+                    ],
                 language: {
                     @if(app()->getLocale() == 'ar')
                         url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/ar.json'
                     @endif
-            },
+                    },
             pageLength: 20,
             lengthMenu: [10, 20, 50, 100],
             dom: '<"d-flex justify-content-between align-items-center mb-3"lf>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
             drawCallback: function () {
                 $('.dataTables_paginate > .pagination').addClass('pagination-sm');
             }
-        });
-    });
+                });
+            });
     </script>
 @endpush

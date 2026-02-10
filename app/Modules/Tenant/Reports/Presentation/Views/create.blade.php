@@ -519,25 +519,25 @@
                 const collapseId = `fields-${moduleName.replace(/[^a-zA-Z0-9]/g, '_')}`;
 
                 let html = `
-                                                            <div class="accordion-item border-0 mb-2 overflow-hidden rounded-3">
-                                                                <h2 class="accordion-header">
-                                                                    <button class="accordion-button bg-white fw-bold shadow-none ${showDefault ? '' : 'collapsed'}" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}">
-                                                                        ${moduleLabel}
-                                                                    </button>
-                                                                </h2>
-                                                                <div id="${collapseId}" class="accordion-collapse collapse ${showDefault ? 'show' : ''}">
-                                                                    <div class="accordion-body p-2">
-                                                                        <div class="list-group list-group-flush">
-                                                        `;
+                                                                    <div class="accordion-item border-0 mb-2 overflow-hidden rounded-3">
+                                                                        <h2 class="accordion-header">
+                                                                            <button class="accordion-button bg-white fw-bold shadow-none ${showDefault ? '' : 'collapsed'}" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}">
+                                                                                ${moduleLabel}
+                                                                            </button>
+                                                                        </h2>
+                                                                        <div id="${collapseId}" class="accordion-collapse collapse ${showDefault ? 'show' : ''}">
+                                                                            <div class="accordion-body p-2">
+                                                                                <div class="list-group list-group-flush">
+                                                                `;
 
                 fields.forEach(field => {
                     html += `
-                                                                <div class="list-group-item field-item py-2 px-3 border-0 small d-flex align-items-center justify-content-between" 
-                                                                    data-module="${moduleName}" data-field="${field.name}" data-label="${field.label}">
-                                                                    <span>${field.label}</span>
-                                                                    <i class="bi bi-plus-circle text-primary opacity-50"></i>
-                                                                </div>
-                                                            `;
+                                                                        <div class="list-group-item field-item py-2 px-3 border-0 small d-flex align-items-center justify-content-between" 
+                                                                            data-module="${moduleName}" data-field="${field.name}" data-label="${field.label}">
+                                                                            <span>${field.label}</span>
+                                                                            <i class="bi bi-plus-circle text-primary opacity-50"></i>
+                                                                        </div>
+                                                                    `;
                 });
 
                 html += '</div></div></div></div>';
@@ -554,26 +554,26 @@
 
             function addFieldToSelected(mod, field, label) {
                 $('.empty-msg').hide();
-                const value = mod + ':' + field;
+                const value = mod + ':' + field + ':' + label;
                 const exists = $('#selected-fields-list input[value="' + value + '"]').length > 0;
 
                 if (exists) return;
 
                 $('#selected-fields-list').append(`
-                                                                    <div class="selected-field-row p-3 rounded-3 d-flex align-items-center justify-content-between">
-                                                                        <div class="d-flex align-items-center gap-3">
-                                                                            <i class="bi bi-grip-vertical text-muted"></i>
-                                                                            <div>
-                                                                                <div class="fw-bold small">${label}</div>
-                                                                                <div class="text-muted" style="font-size: 10px;">${mod}:${field}</div>
+                                                                            <div class="selected-field-row p-3 rounded-3 d-flex align-items-center justify-content-between">
+                                                                                <div class="d-flex align-items-center gap-3">
+                                                                                    <i class="bi bi-grip-vertical text-muted"></i>
+                                                                                    <div>
+                                                                                        <div class="fw-bold small">${label}</div>
+                                                                                        <div class="text-muted" style="font-size: 10px;">${mod}:${field}</div>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <input type="hidden" name="columns[]" value="${value}">
+                                                                                <button type="button" class="btn btn-link btn-sm text-danger p-0 delete-field">
+                                                                                    <i class="bi bi-x-circle"></i>
+                                                                                </button>
                                                                             </div>
-                                                                        </div>
-                                                                        <input type="hidden" name="columns[]" value="${value}">
-                                                                        <button type="button" class="btn btn-link btn-sm text-danger p-0 delete-field">
-                                                                            <i class="bi bi-x-circle"></i>
-                                                                        </button>
-                                                                    </div>
-                                                                `);
+                                                                        `);
 
                 $('.delete-field').off('click').on('click', function () {
                     $(this).closest('.selected-field-row').remove();
@@ -617,12 +617,12 @@
 
                 $('.empty-sharing').hide();
                 $('#sharing-list').append(`
-                                                                    <div class="share-item badge bg-white border text-dark p-2 rounded-pivot d-flex align-items-center gap-2" data-value="${value}">
-                                                                        <span><strong>${type}:</strong> ${entityText}</span>
-                                                                        <input type="hidden" name="sharing[]" value="${value}">
-                                                                        <i class="bi bi-x-circle text-danger cursor-pointer delete-share"></i>
-                                                                    </div>
-                                                                `);
+                                                                            <div class="share-item badge bg-white border text-dark p-2 rounded-pivot d-flex align-items-center gap-2" data-value="${value}">
+                                                                                <span><strong>${type}:</strong> ${entityText}</span>
+                                                                                <input type="hidden" name="sharing[]" value="${value}">
+                                                                                <i class="bi bi-x-circle text-danger cursor-pointer delete-share"></i>
+                                                                            </div>
+                                                                        `);
 
                 $('.delete-share').off('click').on('click', function () {
                     $(this).closest('.share-item').remove();
@@ -677,11 +677,11 @@
 
                 annualDates.forEach(date => {
                     container.append(`
-                                <span class="badge bg-primary d-flex align-items-center gap-1">
-                                    ${date}
-                                    <i class="bi bi-x-circle cursor-pointer remove-annual-date" data-date="${date}" style="cursor: pointer;"></i>
-                                </span>
-                            `);
+                                        <span class="badge bg-primary d-flex align-items-center gap-1">
+                                            ${date}
+                                            <i class="bi bi-x-circle cursor-pointer remove-annual-date" data-date="${date}" style="cursor: pointer;"></i>
+                                        </span>
+                                    `);
                 });
 
                 $('#schannualdates').val(JSON.stringify(annualDates));
@@ -766,30 +766,30 @@
                 });
 
                 const html = `
-                                    <div class="condition-row row g-2 align-items-center mb-2" data-index="${index}" data-group="${type}">
-                                        <div class="col-md-4">
-                                            <select class="form-select form-select-sm field-selector" name="conditions[${index}][columnname]" required>
-                                                <option value="">{{ __("tenant::settings.select_field") }}</option>
-                                                ${fieldOptionsHtml}
-                                            </select>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <select class="form-select form-select-sm operator-selector" name="conditions[${index}][comparator]" required>
-                                                <option value="">{{ __("tenant::settings.select_operator") }}</option>
-                                                ${Object.entries(operators).map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}
-                                            </select>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <input type="text" class="form-control form-control-sm" name="conditions[${index}][value]" placeholder="{{ __('tenant::settings.enter_value') }}">
-                                            <input type="hidden" name="conditions[${index}][groupid]" value="${type === 'all' ? 1 : 2}">
-                                        </div>
-                                        <div class="col-md-1 text-end">
-                                            <button type="button" class="btn btn-sm btn-link text-danger remove-condition p-0">
-                                                <i class="bi bi-x-circle fs-5"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                `;
+                                            <div class="condition-row row g-2 align-items-center mb-2" data-index="${index}" data-group="${type}">
+                                                <div class="col-md-4">
+                                                    <select class="form-select form-select-sm field-selector" name="conditions[${index}][columnname]" required>
+                                                        <option value="">{{ __("tenant::settings.select_field") }}</option>
+                                                        ${fieldOptionsHtml}
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <select class="form-select form-select-sm operator-selector" name="conditions[${index}][comparator]" required>
+                                                        <option value="">{{ __("tenant::settings.select_operator") }}</option>
+                                                        ${Object.entries(operators).map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <input type="text" class="form-control form-control-sm" name="conditions[${index}][value]" placeholder="{{ __('tenant::settings.enter_value') }}">
+                                                    <input type="hidden" name="conditions[${index}][groupid]" value="${type === 'all' ? 1 : 2}">
+                                                </div>
+                                                <div class="col-md-1 text-end">
+                                                    <button type="button" class="btn btn-sm btn-link text-danger remove-condition p-0">
+                                                        <i class="bi bi-x-circle fs-5"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        `;
 
                 container.append(html);
 

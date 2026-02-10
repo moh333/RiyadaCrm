@@ -150,17 +150,34 @@ class ReportsController extends Controller
 
         // Get report columns for display
         $columns = [];
+
         if ($report->selectQuery && $report->selectQuery->columns) {
             foreach ($report->selectQuery->columns as $column) {
                 $parts = explode(':', $column->columnname);
-                $module = $parts[0] ?? '';
-                $label = isset($parts[2]) ? base64_decode($parts[2]) : ($parts[1] ?? '');
+                $modName = $parts[0] ?? '';
+                $fieldName = $parts[1] ?? '';
+                $rawLabel = $parts[2] ?? ($parts[1] ?? '');
+
+                $resolvedModule = null;
+                if ($this->moduleRegistry->has($modName)) {
+                    $resolvedModule = $this->moduleRegistry->get($modName);
+                } else {
+                    $resolvedModule = $this->moduleRegistry->all()->first(fn($m) => $m->getBaseTable() === $modName);
+                }
+
+                $fieldLabel = vtranslate($rawLabel, $resolvedModule ? $resolvedModule->getName() : $modName);
+                if ($resolvedModule) {
+                    $field = $resolvedModule->getField($fieldName);
+                    if ($field) {
+                        $fieldLabel = $field->getLabel();
+                    }
+                }
 
                 $columns[] = [
-                    'module' => vtranslate($module, 'Vtiger'),
-                    'field' => $parts[1] ?? '',
-                    'label' => vtranslate($label, $module),
-                    'alias' => $module . '_' . ($parts[1] ?? ''),
+                    'module' => $resolvedModule ? $resolvedModule->getLabel() : vtranslate($modName, 'Vtiger'),
+                    'field' => $fieldName,
+                    'label' => $fieldLabel,
+                    'alias' => ($parts[0] ?? '') . '_' . $fieldName,
                     'raw' => $column->columnname
                 ];
             }
@@ -222,12 +239,27 @@ class ReportsController extends Controller
         if ($report->selectQuery && $report->selectQuery->columns) {
             foreach ($report->selectQuery->columns as $column) {
                 $parts = explode(':', $column->columnname);
-                $module = $parts[0] ?? '';
-                $field = $parts[1] ?? '';
-                $label = isset($parts[2]) ? base64_decode($parts[2]) : ($parts[1] ?? '');
+                $modName = $parts[0] ?? '';
+                $fieldName = $parts[1] ?? '';
+                $rawLabel = $parts[2] ?? ($parts[1] ?? '');
 
-                $alias = $module . '_' . $field;
-                $headerMap[$alias] = vtranslate($label, $module);
+                $resolvedModule = null;
+                if ($this->moduleRegistry->has($modName)) {
+                    $resolvedModule = $this->moduleRegistry->get($modName);
+                } else {
+                    $resolvedModule = $this->moduleRegistry->all()->first(fn($m) => $m->getBaseTable() === $modName);
+                }
+
+                $fieldLabel = vtranslate($rawLabel, $resolvedModule ? $resolvedModule->getName() : $modName);
+                if ($resolvedModule) {
+                    $field = $resolvedModule->getField($fieldName);
+                    if ($field) {
+                        $fieldLabel = $field->getLabel();
+                    }
+                }
+
+                $alias = ($parts[0] ?? '') . '_' . $fieldName;
+                $headerMap[$alias] = $fieldLabel;
             }
         }
 
